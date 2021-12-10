@@ -28,11 +28,13 @@ namespace UnitySymexActionIdentification
                         case "System.Char":
                         case "System.UInt16":
                         case "System.UInt32":
+                        case "System.UIntPtr":
                         case "System.UInt64":
                             return false;
                         case "System.SByte":
                         case "System.Int16":
                         case "System.Int32":
+                        case "System.IntPtr":
                         case "System.Int64":
                             return true;
                     }
@@ -76,9 +78,11 @@ namespace UnitySymexActionIdentification
                                 result = z3.MkFPSortSingle();
                                 break;
                             case "System.Int32":
+                            case "System.IntPtr":
                                 result = z3.MkBitVecSort(32);
                                 break;
                             case "System.UInt32":
+                            case "System.UIntPtr":
                                 result = z3.MkBitVecSort(32);
                                 break;
                             case "System.Int64":
@@ -115,6 +119,9 @@ namespace UnitySymexActionIdentification
                     case TypeKind.Interface:
                     case TypeKind.Array:
                         result = z3.MkIntSort(); // constant integer handle to reference
+                        break;
+                    case TypeKind.Pointer:
+                        result = z3.MkBitVecSort(32);
                         break;
                     default:
                         throw new NotImplementedException(typeFullName + " (kind " + type.Kind + ") unsupported");

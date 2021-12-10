@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Reflection.Metadata;
 using ICSharpCode.Decompiler.IL;
@@ -74,6 +75,14 @@ namespace UnitySymexActionIdentification
             else
             {
                 throw new NotImplementedException("MakeDefaultValue for type of kind " + type.Kind + " not implemented");
+            }
+        }
+    
+        public static void DebugLog(string message)
+        {
+            using (StreamWriter sw = File.AppendText(@"C:\Users\sasha-usc\Misc\debug.log"))
+            {
+                sw.WriteLine(message);
             }
         }
     }

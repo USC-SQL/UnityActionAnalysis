@@ -201,7 +201,7 @@ namespace UnitySymexActionIdentification
                     value = m;
                 } else
                 {
-                    ArrayType arrType = (ArrayType)type;
+                    IType elementType = type;
                     Expr elems;
                     Expr length;
 
@@ -209,7 +209,7 @@ namespace UnitySymexActionIdentification
                     if (!obj.TryGetValue("_elems", out elems))
                     {
                         elems = z3.MkConst(address.root + "_elems",
-                            z3.MkArraySort(z3.MkBitVecSort(32), SymexMachine.Instance.SortPool.TypeToSort(arrType.ElementType)));
+                            z3.MkArraySort(z3.MkBitVecSort(32), SymexMachine.Instance.SortPool.TypeToSort(elementType)));
                         obj["_elems"] = elems;
                     }
                     if (!obj.TryGetValue("_length", out length))

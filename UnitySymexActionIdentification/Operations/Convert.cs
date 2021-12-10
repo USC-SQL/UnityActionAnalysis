@@ -38,9 +38,19 @@ namespace UnitySymexActionIdentification.Operations
             }
             else if (sortFrom is BitVecSort && sortTo is BitVecSort)
             {
-                bool fromSigned = SymexMachine.Instance.SortPool.IsSigned(typeFrom);
+                uint bitsFrom = ((BitVecSort)sortFrom).Size;
                 uint bitsTo = ((BitVecSort)sortTo).Size;
-                result = z3.MkInt2BV(bitsTo, z3.MkBV2Int((BitVecExpr)valueFrom, fromSigned));
+                // TODO properly handle signed/unsigned
+                if (bitsFrom < bitsTo)
+                {
+                    // widen
+                    uint delta = bitsTo - bitsFrom;
+                    result = z3.MkConcat(z3.MkBV(0, delta), (BitVecExpr)valueFrom);
+                } else
+                {
+                    // narrow
+                    result = z3.MkExtract(bitsTo - 1, 0, (BitVecExpr)valueFrom);
+                }
             }
             else if (sortFrom is BitVecSort && sortTo is FPSort)
             {
@@ -58,7 +68,7 @@ namespace UnitySymexActionIdentification.Operations
             }
             else
             {
-                throw new Exception("unexpected conversion from " + typeFrom.FullName + " to " + typeTo.FullName);
+                throw new Exception("unexpected conversion from " + typeFrom.FullName + " to " + typeTo.FullName + " (sortFrom " + sortFrom.GetType() + ", sortTo " + sortTo.GetType() + ")");
             }
 
             state.MemoryWrite(resultVar.address, result);

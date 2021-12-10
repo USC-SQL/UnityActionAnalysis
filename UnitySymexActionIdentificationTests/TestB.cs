@@ -44,7 +44,6 @@ namespace UnitySymexActionIdentification.Tests
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2"))
                         {
-                            Console.WriteLine(m.Evaluate(arg0) + ", " + m.Evaluate(arg1) + "," + m.Evaluate(arg2));
                             uint x = uint.Parse(m.Evaluate(arg0).ToString());
                             uint y = uint.Parse(m.Evaluate(arg1).ToString());
                             uint z = uint.Parse(m.Evaluate(arg2).ToString());

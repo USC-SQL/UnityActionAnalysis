@@ -36,6 +36,8 @@ namespace UnitySymexActionIdentification.Tests
             return machine;
         }
 
+        public delegate bool StatePredicate(SymexState s, Model m);
+
         public class SymexMachineHelper
         {
             private List<(SymexState, Model)> solved;
@@ -53,18 +55,28 @@ namespace UnitySymexActionIdentification.Tests
                 }
             }
 
-            public void AssertExistsPathConditionWhere(Predicate<Model> pred)
+            public bool ExistsState(StatePredicate pred)
             {
-                bool exists = false;
                 foreach (var p in solved)
                 {
-                    if (pred(p.Item2))
+                    if (pred(p.Item1, p.Item2))
                     {
-                        exists = true;
-                        break;
+                        return true;
                     }
                 }
-                Assert.IsTrue(exists);
+                return false;
+            }
+
+            public bool ForAllStates(StatePredicate pred)
+            {
+                foreach (var p in solved)
+                {
+                    if (!pred(p.Item1, p.Item2))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 

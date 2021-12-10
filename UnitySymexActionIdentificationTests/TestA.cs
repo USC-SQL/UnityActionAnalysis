@@ -36,41 +36,44 @@ namespace UnitySymexActionIdentification.Tests
                     TestHelpers.SymexMachineHelper helper = new TestHelpers.SymexMachineHelper(machine, z3);
                     var arg0 = z3.MkConst("F0_arg0", z3.MkBitVecSort(32));
                     var arg1 = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
-                    helper.AssertExistsPathConditionWhere(m =>
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1"))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             int y = int.Parse(m.Evaluate(arg1).ToString());
                             return x > 0 && y > 0;
-                        } else
+                        }
+                        else
                         {
                             return false;
                         }
-                    });
-                    helper.AssertExistsPathConditionWhere(m =>
+                    }));
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1"))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             int y = int.Parse(m.Evaluate(arg1).ToString());
                             return x > 0 && y <= 0;
-                        } else
+                        }
+                        else
                         {
                             return false;
                         }
-                    });
-                    helper.AssertExistsPathConditionWhere(m =>
+                    }));
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0"))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             return x <= 0;
-                        } else
+                        }
+                        else
                         {
                             return false;
                         }
-                    });
+                    }));
                 }
             }
         }

@@ -18,7 +18,7 @@ namespace TestCases.TestA
             }
             else
             {
-                Console.WriteLine("B");
+                Console.WriteLine("C");
             }
         }
     }

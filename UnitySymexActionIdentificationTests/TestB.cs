@@ -40,7 +40,7 @@ namespace UnitySymexActionIdentification.Tests
                     var arg0 = z3.MkConst("F0_arg0", z3.MkBitVecSort(32));
                     var arg1 = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
                     var arg2 = z3.MkConst("F0_arg2", z3.MkBitVecSort(32));
-                    helper.AssertExistsPathConditionWhere(m =>
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2"))
                         {
@@ -48,12 +48,13 @@ namespace UnitySymexActionIdentification.Tests
                             uint y = uint.Parse(m.Evaluate(arg1).ToString());
                             uint z = uint.Parse(m.Evaluate(arg2).ToString());
                             return (int)(x + y + z) == 10;
-                        } else
+                        }
+                        else
                         {
                             return false;
                         }
-                    });
-                    helper.AssertExistsPathConditionWhere(m =>
+                    }));
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2"))
                         {
@@ -66,8 +67,8 @@ namespace UnitySymexActionIdentification.Tests
                         {
                             return false;
                         }
-                    });
-                    helper.AssertExistsPathConditionWhere(m =>
+                    }));
+                    Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2"))
                         {
@@ -81,7 +82,7 @@ namespace UnitySymexActionIdentification.Tests
                         {
                             return false;
                         }
-                    });
+                    }));
                 }
             }
         }

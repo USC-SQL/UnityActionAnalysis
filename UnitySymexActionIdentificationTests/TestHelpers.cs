@@ -80,9 +80,13 @@ namespace UnitySymexActionIdentification.Tests
             }
         }
 
-        public static bool ModelContainsVariables(Model m, params string[] varNames)
+        public static bool ModelContainsVariables(Model m, params Expr[] consts)
         {
-            HashSet<string> remaining = new HashSet<string>(varNames);
+            HashSet<string> remaining = new HashSet<string>();
+            foreach (Expr c in consts)
+            {
+                remaining.Add(c.ToString());
+            }
             foreach (FuncDecl decl in m.Decls)
             {
                 remaining.Remove(decl.Name.ToString());

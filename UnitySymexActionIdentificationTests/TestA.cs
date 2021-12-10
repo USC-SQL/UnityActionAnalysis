@@ -2,27 +2,18 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Z3;
 
 namespace UnitySymexActionIdentification.Tests
 {
-    public class ConfigA : Configuration
-    {
-        public override bool IsMethodSymbolic(IMethod method)
-        {
-            return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
-        }
-    }
-
     [TestClass()]
     public class TestA
     {
         [TestMethod()]
         public void TestPathConditions()
         {
-            using (SymexMachine machine = TestHelpers.CreateMachine("TestCases.TestA.ProgramA", "Main", new ConfigA()))
+            using (SymexMachine machine = TestHelpers.CreateMachine("TestCases.TestA.ProgramA", "Main", new TestConfig()))
             {
                 machine.Run();
 
@@ -38,7 +29,7 @@ namespace UnitySymexActionIdentification.Tests
                     var arg1 = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1"))
+                        if (TestHelpers.ModelContainsVariables(m, arg0, arg1))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             int y = int.Parse(m.Evaluate(arg1).ToString());
@@ -51,7 +42,7 @@ namespace UnitySymexActionIdentification.Tests
                     }));
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1"))
+                        if (TestHelpers.ModelContainsVariables(m, arg0, arg1))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             int y = int.Parse(m.Evaluate(arg1).ToString());
@@ -64,7 +55,7 @@ namespace UnitySymexActionIdentification.Tests
                     }));
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg0"))
+                        if (TestHelpers.ModelContainsVariables(m, arg0))
                         {
                             int x = int.Parse(m.Evaluate(arg0).ToString());
                             return x <= 0;

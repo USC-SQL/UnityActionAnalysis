@@ -8,14 +8,6 @@ using Microsoft.Z3;
 
 namespace UnitySymexActionIdentification.Tests
 {
-    public class ConfigC : Configuration
-    {
-        public override bool IsMethodSymbolic(IMethod method)
-        {
-            return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
-        }
-    }
-
 
     [TestClass()]
     public class TestC
@@ -23,7 +15,7 @@ namespace UnitySymexActionIdentification.Tests
         [TestMethod()]
         public void TestPathConditions()
         {
-            using (SymexMachine machine = TestHelpers.CreateMachine("TestCases.TestC.ProgramC", "Main", new ConfigA()))
+            using (SymexMachine machine = TestHelpers.CreateMachine("TestCases.TestC.ProgramC", "Main", new TestConfig()))
             {  
                 machine.Run();
 
@@ -45,7 +37,7 @@ namespace UnitySymexActionIdentification.Tests
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg4"))
+                        if (TestHelpers.ModelContainsVariables(m, arg4))
                         {
                             int length = (int)uint.Parse(m.Evaluate(arg4).ToString());
                             return length < 4;
@@ -55,7 +47,7 @@ namespace UnitySymexActionIdentification.Tests
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2", "F0_arg3", "F0_arg4"))
+                        if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2, arg3, arg4))
                         {
                             int x = (int)uint.Parse(m.Evaluate(arg0).ToString());
                             uint y = uint.Parse(m.Evaluate(arg1).ToString());
@@ -75,7 +67,7 @@ namespace UnitySymexActionIdentification.Tests
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
-                        if (TestHelpers.ModelContainsVariables(m, "F0_arg0", "F0_arg1", "F0_arg2", "F0_arg3", "F0_arg4"))
+                        if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2, arg3, arg4))
                         {
                             int x = (int)uint.Parse(m.Evaluate(arg0).ToString());
                             uint y = uint.Parse(m.Evaluate(arg1).ToString());

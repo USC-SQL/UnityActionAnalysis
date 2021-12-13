@@ -38,8 +38,16 @@ namespace UnitySymexActionIdentification.Tests
                 {
                     TestHelpers.SymexMachineHelper helper = new TestHelpers.SymexMachineHelper(machine, z3);
 
-                    var arg1 = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
-                    var arg3 = z3.MkConst("F0_arg3", z3.MkBitVecSort(32));
+                    var arg1 = z3.MkConst("frame0__arg1", z3.MkBitVecSort(32));
+                    var arg3 = z3.MkConst("frame0__arg3", z3.MkBitVecSort(32));
+
+                    helper.ForAllStates((s, m) =>
+                    {
+                        Console.WriteLine(m);
+                        return true;
+                    });
+
+                    return;
                     var p1FavoriteColor = z3.MkConst("heap_8_<P1FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
                     var p2FavoriteColor = z3.MkConst("heap_9_<P2FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
 

@@ -29,9 +29,9 @@ namespace UnitySymexActionIdentification.Tests
                 using (var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } }))
                 {
                     TestHelpers.SymexMachineHelper helper = new TestHelpers.SymexMachineHelper(machine, z3);
-                    var arg0 = z3.MkConst("F0_arg0", z3.MkBitVecSort(32));
-                    var arg1 = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
-                    var arg2 = z3.MkConst("F0_arg2", z3.MkBitVecSort(32));
+                    var arg0 = z3.MkConst("frame0__arg0", z3.MkBitVecSort(32));
+                    var arg1 = z3.MkConst("frame0__arg1", z3.MkBitVecSort(32));
+                    var arg2 = z3.MkConst("frame0__arg2", z3.MkBitVecSort(32));
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
                         if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2))

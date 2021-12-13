@@ -179,7 +179,7 @@ namespace UnitySymexActionIdentification
                     MemoryAddressField f = (MemoryAddressField)c;
                     if (!obj.ContainsKey(f.field.Name))
                     {
-                        obj[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + "_" + f.field.Name);
+                        obj[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + "__instancefield__" + f.field.Name);
                     }
                     value = obj[f.field.Name];
                 } else if (c is MemoryAddressString)
@@ -299,7 +299,7 @@ namespace UnitySymexActionIdentification
                     List<Expr> elems = new List<Expr>();
                     foreach (IField field in Helpers.GetInstanceFields(type))
                     {
-                        elems.Add(MakeSymbolicValue(field.Type, name + "_" + field.Name));
+                        elems.Add(MakeSymbolicValue(field.Type, name + "__instancefield__" + field.Name));
                     }
                     FuncDecl ctor = dsort.Constructors[0];
                     return ctor.Apply(elems.ToArray());
@@ -320,7 +320,7 @@ namespace UnitySymexActionIdentification
             {
                 heapId = 0;
             }
-            MemoryAddress address = new MemoryAddress(true, name + "_" + heapId);
+            MemoryAddress address = new MemoryAddress(true, name + (heapId > 0 ? "__heapid__" + heapId : ""));
             objects[address.root] = new Dictionary<string, Expr>();
             heapCounters[name] = heapId + 1;
             return address;

@@ -23,7 +23,8 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             int symId = state.symbolicMethodCounter++;
-            string name = method.FullName + "_" + symId;
+            string symcallId = method.FullName + "_" + symId;
+            string name = "symcall__" + symcallId;
             Expr value = state.MakeSymbolicValue(method.ReturnType, name);
             List<Expr> argValues = new List<Expr>(argVars.Count + 1);
             argValues.Add(state.MemoryRead(thisVar.address, thisVar.type));

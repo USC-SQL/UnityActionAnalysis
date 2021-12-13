@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitySymexCrawler", "UnityS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCases", "..\TestCases\TestCases.csproj", "{F6F3DB77-82BA-4A76-95A4-25152BA02F5E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitySymexCrawlerTests", "..\UnitySymexActionIdentificationTests\UnitySymexCrawlerTests.csproj", "{D9761AB2-6A09-4917-8232-FAF3FD6776BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitySymexCrawlerTests", "..\UnitySymexCrawlerTests\UnitySymexCrawlerTests.csproj", "{D9761AB2-6A09-4917-8232-FAF3FD6776BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

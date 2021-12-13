@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TestCases\TestCases.csproj" />
-    <ProjectReference Include="..\UnitySymexActionIdentification\UnitySymexCrawler.csproj" />
+    <ProjectReference Include="..\UnitySymexCrawler\UnitySymexCrawler.csproj" />
   </ItemGroup>
 
 </Project>

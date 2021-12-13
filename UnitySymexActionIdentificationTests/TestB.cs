@@ -22,8 +22,8 @@ namespace UnitySymexActionIdentification.Tests
 
                 TestHelpers.CommonAssertionsAfterRun(machine);
 
-                Assert.AreEqual(3, machine.States.Count);
-                Assert.AreEqual(2, machine.States.Where(s => s.execStatus == ExecutionStatus.HALTED).Count());
+                Assert.AreEqual(2, machine.States.Count);
+                Assert.AreEqual(1, machine.States.Where(s => s.execStatus == ExecutionStatus.HALTED).Count());
                 Assert.AreEqual(1, machine.States.Where(s => s.execStatus == ExecutionStatus.ABORTED).Count());
 
                 using (var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } }))
@@ -45,10 +45,11 @@ namespace UnitySymexActionIdentification.Tests
                     {
                         if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2))
                         {
-                            uint x = uint.Parse(m.Evaluate(arg0).ToString());
-                            uint y = uint.Parse(m.Evaluate(arg1).ToString());
-                            uint z = uint.Parse(m.Evaluate(arg2).ToString());
-                            return (int)(x + y + z) == 10;
+                            int x = (int)uint.Parse(m.Evaluate(arg0).ToString());
+                            int y = (int)uint.Parse(m.Evaluate(arg1).ToString());
+                            int z = (int)uint.Parse(m.Evaluate(arg2).ToString());
+                            float vectorSum = ((float)x) + ((float)y) + ((float)z);
+                            return vectorSum <= 10000.0f;
                         }
                         else
                         {
@@ -59,25 +60,11 @@ namespace UnitySymexActionIdentification.Tests
                     {
                         if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2))
                         {
-                            uint x = uint.Parse(m.Evaluate(arg0).ToString());
-                            uint y = uint.Parse(m.Evaluate(arg1).ToString());
-                            uint z = uint.Parse(m.Evaluate(arg2).ToString());
-                            return (int)(x + y + z) == 15;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }));
-                    Assert.IsTrue(helper.ExistsState((s, m) =>
-                    {
-                        if (TestHelpers.ModelContainsVariables(m, arg0, arg1, arg2))
-                        {
-                            uint x = uint.Parse(m.Evaluate(arg0).ToString());
-                            uint y = uint.Parse(m.Evaluate(arg1).ToString());
-                            uint z = uint.Parse(m.Evaluate(arg2).ToString());
-                            int sum = (int)(x + y + z);
-                            return sum != 10 && sum != 15;
+                            int x = (int)uint.Parse(m.Evaluate(arg0).ToString());
+                            int y = (int)uint.Parse(m.Evaluate(arg1).ToString());
+                            int z = (int)uint.Parse(m.Evaluate(arg2).ToString());
+                            float vectorSum = ((float)x) + ((float)y) + ((float)z);
+                            return vectorSum > 10000.0f;
                         }
                         else
                         {

@@ -38,21 +38,14 @@ namespace UnitySymexActionIdentification.Tests
                 {
                     TestHelpers.SymexMachineHelper helper = new TestHelpers.SymexMachineHelper(machine, z3);
 
-                    var arg1 = z3.MkConst("frame0__arg1", z3.MkBitVecSort(32));
-                    var arg3 = z3.MkConst("frame0__arg3", z3.MkBitVecSort(32));
-
-                    helper.ForAllStates((s, m) =>
-                    {
-                        Console.WriteLine(m);
-                        return true;
-                    });
-
-                    return;
-                    var p1FavoriteColor = z3.MkConst("heap_8_<P1FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
-                    var p2FavoriteColor = z3.MkConst("heap_9_<P2FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
+                    var arg1 = z3.MkConst("frame:0:arg:1", z3.MkBitVecSort(32));
+                    var arg3 = z3.MkConst("frame:0:arg:3", z3.MkBitVecSort(32));
+                    var p1FavoriteColor = z3.MkConst("frame:5:this:instancefield:<P1FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
+                    var p2FavoriteColor = z3.MkConst("frame:7:this:instancefield:<P2FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
+                        Console.WriteLine(m);
                         if (TestHelpers.ModelContainsVariables(m, arg1, arg3, p1FavoriteColor, p2FavoriteColor))
                         {
                             int id1 = (int)uint.Parse(m.Evaluate(arg1).ToString());

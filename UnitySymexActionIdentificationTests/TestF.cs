@@ -25,8 +25,8 @@ namespace UnitySymexActionIdentification.Tests
                 {
                     TestHelpers.SymexMachineHelper helper = new TestHelpers.SymexMachineHelper(machine, z3);
 
-                    var arg_len = z3.MkConst("F0_arg0", z3.MkBitVecSort(32));
-                    var arg_xval = z3.MkConst("F0_arg1", z3.MkBitVecSort(32));
+                    var arg_len = z3.MkConst("frame:0:arg:0", z3.MkBitVecSort(32));
+                    var arg_xval = z3.MkConst("frame:0:arg:1", z3.MkBitVecSort(32));
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {

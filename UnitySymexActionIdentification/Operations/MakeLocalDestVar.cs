@@ -20,15 +20,15 @@ namespace UnitySymexActionIdentification.Operations
             {
                 case VariableKind.StackSlot:
                 case VariableKind.Local:
-                    variable.address = new MemoryAddress(false, "frame" + state.frameID + "__" + localDestVar.Name);
+                    variable.address = new MemoryAddress(false, "frame:" + state.frameID + ":local:" + localDestVar.Name);
                     break;
                 case VariableKind.Parameter:
                     if (localDestVar.Index < 0)
                     {
-                        variable.address = new MemoryAddress(false, "frame" + state.frameID + "__this");
+                        variable.address = new MemoryAddress(false, "frame:" + state.frameID + ":this");
                     } else
                     {
-                        variable.address = new MemoryAddress(false, "frame" + state.frameID + "__arg" + localDestVar.Index);
+                        variable.address = new MemoryAddress(false, "frame:" + state.frameID + ":arg:" + localDestVar.Index);
                     }
                     break;
                 default:

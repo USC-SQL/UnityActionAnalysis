@@ -84,7 +84,7 @@ namespace UnitySymexActionIdentification.Tests
             HashSet<string> remaining = new HashSet<string>();
             foreach (Expr c in consts)
             {
-                remaining.Add(c.ToString());
+                remaining.Add(c.ToString().Replace("|", ""));
             }
             foreach (FuncDecl decl in m.Decls)
             {

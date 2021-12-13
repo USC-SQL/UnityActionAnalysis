@@ -21,15 +21,14 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             int symId = state.symbolicMethodCounter++;
-            string symcallId = ctor.FullName + "_" + symId;
-            string name = "symcall__" + symcallId;
+            string name = "symcall:" + symId;
             Expr value = state.MakeSymbolicValue(ctor.DeclaringType, name);
             List<Expr> argValues = new List<Expr>(argVars.Count);
             foreach (Variable argVar in argVars)
             {
                 argValues.Add(state.MemoryRead(argVar.address, argVar.type));
             }
-            state.symbolicMethodCalls[symcallId] = new SymbolicMethodCall(ctor, argValues, new List<BoolExpr>(state.pathCondition));
+            state.symbolicMethodCalls[symId] = new SymbolicMethodCall(ctor, argValues, new List<BoolExpr>(state.pathCondition));
             state.MemoryWrite(resultVar.address, value);
         }
     }

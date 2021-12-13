@@ -31,10 +31,10 @@ namespace TestCases.TestB
         public static void Main(int x, int y, int z)
         {
             Vector3 v = MakeVector(x, y, z);
-            if (VectorSum(v) == 10)
+            if ((int)VectorSum(v) == 10)
             {
                 Console.WriteLine("A");
-            } else if (VectorSum(v) == 15)
+            } else if ((int)VectorSum(v) == 15)
             {
                 throw new Exception("exception");
             } else

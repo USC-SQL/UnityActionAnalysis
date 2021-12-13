@@ -44,7 +44,9 @@ namespace TestCases.TestG
 
     public class ProgramG
     {
+#pragma warning disable CS0626 
         private static extern Record FetchRecordFromDB(int id);
+#pragma warning restore CS0626 
 
         private static bool CompareRecords(Record rec1, Record rec2)
         {

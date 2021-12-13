@@ -34,7 +34,7 @@ namespace UnitySymexActionIdentification
     {
         public Dictionary<string, Expr> mem;
         public Dictionary<string, Dictionary<string, Expr>> objects;
-        public Dictionary<string, SymbolicMethodCall> symbolicMethodCalls;
+        public Dictionary<int, SymbolicMethodCall> symbolicMethodCalls;
         public Stack<FrameStackElement> frameStack;
         public Queue<Operation> opQueue;
         public List<BoolExpr> pathCondition;
@@ -53,7 +53,7 @@ namespace UnitySymexActionIdentification
         {
             mem = new Dictionary<string, Expr>();
             objects = new Dictionary<string, Dictionary<string, Expr>>();
-            symbolicMethodCalls = new Dictionary<string, SymbolicMethodCall>();
+            symbolicMethodCalls = new Dictionary<int, SymbolicMethodCall>();
             frameStack = new Stack<FrameStackElement>();
             opQueue = new Queue<Operation>();
             pathCondition = new List<BoolExpr>();
@@ -61,9 +61,9 @@ namespace UnitySymexActionIdentification
 
             frameID = 0;
             frameCounter = 1;
-            tempVarCounter = 1;
+            tempVarCounter = 0;
             heapCounters = new Dictionary<string, int>();
-            symbolicMethodCounter = 1;
+            symbolicMethodCounter = 0;
 
             this.z3 = z3;
         }
@@ -76,7 +76,7 @@ namespace UnitySymexActionIdentification
             {
                 objects[p.Key] = new Dictionary<string, Expr>(p.Value);
             }
-            symbolicMethodCalls = new Dictionary<string, SymbolicMethodCall>(o.symbolicMethodCalls);
+            symbolicMethodCalls = new Dictionary<int, SymbolicMethodCall>(o.symbolicMethodCalls);
 
             frameStack = new Stack<FrameStackElement>(o.frameStack);
             opQueue = new Queue<Operation>(o.opQueue);
@@ -179,7 +179,7 @@ namespace UnitySymexActionIdentification
                     MemoryAddressField f = (MemoryAddressField)c;
                     if (!obj.ContainsKey(f.field.Name))
                     {
-                        obj[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + "__instancefield__" + f.field.Name);
+                        obj[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + ":instancefield:" + f.field.Name);
                     }
                     value = obj[f.field.Name];
                 } else if (c is MemoryAddressString)
@@ -299,7 +299,7 @@ namespace UnitySymexActionIdentification
                     List<Expr> elems = new List<Expr>();
                     foreach (IField field in Helpers.GetInstanceFields(type))
                     {
-                        elems.Add(MakeSymbolicValue(field.Type, name + "__instancefield__" + field.Name));
+                        elems.Add(MakeSymbolicValue(field.Type, name + ":instancefield:" + field.Name));
                     }
                     FuncDecl ctor = dsort.Constructors[0];
                     return ctor.Apply(elems.ToArray());
@@ -320,7 +320,7 @@ namespace UnitySymexActionIdentification
             {
                 heapId = 0;
             }
-            MemoryAddress address = new MemoryAddress(true, name + (heapId > 0 ? "__heapid__" + heapId : ""));
+            MemoryAddress address = new MemoryAddress(true, name + (heapId > 0 ? ":heapid:" + heapId : ""));
             objects[address.root] = new Dictionary<string, Expr>();
             heapCounters[name] = heapId + 1;
             return address;

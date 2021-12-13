@@ -16,7 +16,7 @@ namespace UnitySymexActionIdentification.Operations
 
         public override void Perform(SymexState state)
         {
-            variable.address = new MemoryAddress(false, "frame" + state.NextFrameID() + "__arg" + argIndex);
+            variable.address = new MemoryAddress(false, "frame:" + state.NextFrameID() + ":arg:" + argIndex);
         }
     }
 }

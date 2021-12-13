@@ -21,8 +21,7 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             int symId = state.symbolicMethodCounter++;
-            string symcallId = method.FullName + "_" + symId;
-            string name = "symcall__" + symcallId;
+            string name = "symcall:" + symId;
             Expr value = state.MakeSymbolicValue(method.ReturnType, name);
             List<Expr> argValues = new List<Expr>(argVars.Count);
             foreach (Variable argVar in argVars)
@@ -30,7 +29,7 @@ namespace UnitySymexActionIdentification.Operations
                 Expr argValue = state.MemoryRead(argVar.address, argVar.type);
                 argValues.Add(argValue);
             }
-            state.symbolicMethodCalls[name] = new SymbolicMethodCall(method, argValues, new List<BoolExpr>(state.pathCondition));
+            state.symbolicMethodCalls[symId] = new SymbolicMethodCall(method, argValues, new List<BoolExpr>(state.pathCondition));
             state.MemoryWrite(resultVar.address, value);
         }
     }

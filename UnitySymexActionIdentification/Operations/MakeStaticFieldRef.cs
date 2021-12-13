@@ -20,7 +20,7 @@ namespace UnitySymexActionIdentification.Operations
 
         public override void Perform(SymexState state)
         {
-            MemoryAddress address = new MemoryAddress(false, "staticfield__" + field.DeclaringType.FullName + "." + field.Name);
+            MemoryAddress address = new MemoryAddress(false, "staticfield:" + field.DeclaringType.FullName + "." + field.Name);
             Reference r = new Reference(field.Type, address);
             state.MemoryRead(r.address, r.type);
             state.MemoryWrite(resultVar.address, r.ToExpr());

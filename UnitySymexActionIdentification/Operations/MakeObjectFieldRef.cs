@@ -25,7 +25,6 @@ namespace UnitySymexActionIdentification.Operations
         {
             Debug.Assert(refVar.IsReferenceType());
             Reference r = Reference.FromExpr(state.MemoryRead(refVar.address, null));
-
             List<MemoryAddressComponent> components = new List<MemoryAddressComponent>(r.address.components.Count + 1);
             foreach (MemoryAddressComponent c in r.address.components)
             {

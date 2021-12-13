@@ -84,7 +84,10 @@ namespace UnitySymexActionIdentification.Operations
                         }
                         else
                         {
-                            result = z3.MkFPLt((FPExpr)value1, (FPExpr)value2);
+                            result = z3.MkAnd(
+                                z3.MkFPLt((FPExpr)value1, (FPExpr)value2), 
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)), 
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
                         }
                         break;
                     case ComparisonKind.LessThanOrEqual:
@@ -101,7 +104,10 @@ namespace UnitySymexActionIdentification.Operations
                         }
                         else
                         {
-                            result = z3.MkFPLEq((FPExpr)value1, (FPExpr)value2);
+                            result = z3.MkAnd(
+                                z3.MkFPLEq((FPExpr)value1, (FPExpr)value2),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
                         }
                         break;
                     case ComparisonKind.GreaterThan:
@@ -118,7 +124,10 @@ namespace UnitySymexActionIdentification.Operations
                         }
                         else
                         {
-                            result = z3.MkFPGt((FPExpr)value1, (FPExpr)value2);
+                            result = z3.MkAnd(
+                                z3.MkFPGt((FPExpr)value1, (FPExpr)value2),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
                         }
                         break;
                     case ComparisonKind.GreaterThanOrEqual:
@@ -135,7 +144,10 @@ namespace UnitySymexActionIdentification.Operations
                         }
                         else
                         {
-                            result = z3.MkFPGEq((FPExpr)value1, (FPExpr)value2);
+                            result = z3.MkAnd(
+                                z3.MkFPGEq((FPExpr)value1, (FPExpr)value2),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
                         }
                         break;
                     default:

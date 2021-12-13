@@ -92,8 +92,8 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate();
-            MemoryAddress stringAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressString() });
+            MemoryAddress address = state.HeapAllocate("string");
+            MemoryAddress stringAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressString() });
             state.MemoryWrite(stringAddress, z3.MkString(value));
             IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.String);
             Reference r = new Reference(type, address);
@@ -115,8 +115,8 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate();
-            MemoryAddress memberAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressMemberToken() });
+            MemoryAddress address = state.HeapAllocate("membertoken");
+            MemoryAddress memberAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressMemberToken() });
             state.MemoryWrite(memberAddress, z3.MkString("membertoken:" + member.FullName));
             IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Object);
             Reference r = new Reference(type, address);

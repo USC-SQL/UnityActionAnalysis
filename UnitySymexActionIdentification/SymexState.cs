@@ -44,7 +44,7 @@ namespace UnitySymexActionIdentification
 
         public int frameCounter;
         public int tempVarCounter;
-        public int heapCounter;
+        public Dictionary<string, int> heapCounters;
         public int symbolicMethodCounter;
 
         private Context z3;
@@ -62,7 +62,7 @@ namespace UnitySymexActionIdentification
             frameID = 0;
             frameCounter = 1;
             tempVarCounter = 1;
-            heapCounter = 1;
+            heapCounters = new Dictionary<string, int>();
             symbolicMethodCounter = 1;
 
             this.z3 = z3;
@@ -86,7 +86,7 @@ namespace UnitySymexActionIdentification
             frameID = o.frameID;
             frameCounter = o.frameCounter;
             tempVarCounter = o.tempVarCounter;
-            heapCounter = o.heapCounter;
+            heapCounters = new Dictionary<string, int>(o.heapCounters);
             symbolicMethodCounter = o.symbolicMethodCounter;
 
             z3 = o.z3; 
@@ -94,7 +94,7 @@ namespace UnitySymexActionIdentification
 
         public void MemoryWrite(MemoryAddress address, Expr value)
         {
-            if (address.root.StartsWith("heap_"))
+            if (address.heap)
             {
                 var obj = objects[address.root];
                 var c = address.components[0];
@@ -169,7 +169,7 @@ namespace UnitySymexActionIdentification
 
         public Expr MemoryRead(MemoryAddress address, IType type)
         {
-            if (address.root.StartsWith("heap_"))
+            if (address.heap)
             {
                 var obj = objects[address.root];
                 var c = address.components[0];
@@ -205,7 +205,6 @@ namespace UnitySymexActionIdentification
                     Expr elems;
                     Expr length;
 
-                    // this can happen if an array reference was read through an object reference initially
                     if (!obj.TryGetValue("_elems", out elems))
                     {
                         elems = z3.MkConst(address.root + "_elems",
@@ -250,6 +249,10 @@ namespace UnitySymexActionIdentification
                 Expr value;
                 if (!mem.TryGetValue(address.root, out value))
                 {
+                    if (address.components.Count > 0)
+                    {
+                        throw new Exception("expected to find value at address when components.Count > 0");
+                    }
                     value = MakeSymbolicValue(type, address.root);
                     mem[address.root] = value;
                 }
@@ -271,14 +274,14 @@ namespace UnitySymexActionIdentification
         {
             if (type.Kind == TypeKind.Class || type.Kind == TypeKind.Interface)
             {
-                MemoryAddress address = HeapAllocate();
+                MemoryAddress address = HeapAllocate(name);
                 Reference r = new Reference(type, address);
                 return r.ToExpr();
             } else if (type.Kind == TypeKind.Array)
             {
-                MemoryAddress address = HeapAllocate();
-                MemoryAddress elemsAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElements() });
-                MemoryAddress lenAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
+                MemoryAddress address = HeapAllocate(name);
+                MemoryAddress elemsAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElements() });
+                MemoryAddress lenAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
                 ArrayType arrType = (ArrayType)type;
                 MemoryWrite(elemsAddress,
                     z3.MkConst(name + "_elems",
@@ -310,11 +313,16 @@ namespace UnitySymexActionIdentification
             }
         }
 
-        public MemoryAddress HeapAllocate()
+        public MemoryAddress HeapAllocate(string name)
         {
-            int heapId = heapCounter++;
-            MemoryAddress address = new MemoryAddress("heap_" + heapId);
+            int heapId;
+            if (!heapCounters.TryGetValue(name, out heapId))
+            {
+                heapId = 0;
+            }
+            MemoryAddress address = new MemoryAddress(true, name + "_" + heapId);
             objects[address.root] = new Dictionary<string, Expr>();
+            heapCounters[name] = heapId + 1;
             return address;
         }
 

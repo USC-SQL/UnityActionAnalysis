@@ -118,17 +118,20 @@ namespace UnitySymexActionIdentification
 
     public class MemoryAddress : IEquatable<MemoryAddress>
     {
+        public readonly bool heap;
         public readonly string root;
         public readonly List<MemoryAddressComponent> components;
 
-        public MemoryAddress(string root, List<MemoryAddressComponent> components)
+        public MemoryAddress(bool heap, string root, List<MemoryAddressComponent> components)
         {
+            this.heap = heap;
             this.root = root;
             this.components = components;
         }
 
-        public MemoryAddress(string root)
+        public MemoryAddress(bool heap, string root)
         {
+            this.heap = heap;
             this.root = root;
             components = new List<MemoryAddressComponent>();
         }

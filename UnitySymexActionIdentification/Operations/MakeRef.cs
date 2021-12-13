@@ -16,6 +16,7 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             Reference r = new Reference(targetVar.type, targetVar.address);
+            state.MemoryRead(r.address, r.type);
             state.MemoryWrite(resultVar.address, r.ToExpr());
         }
     }

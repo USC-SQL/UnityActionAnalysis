@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
 using System.Reflection.Metadata;
 using ICSharpCode.Decompiler.IL;
@@ -27,6 +28,7 @@ namespace UnitySymexActionIdentification
                 MethodBodyBlock methodBody = peFile.Reader.GetMethodBody(methodDef.RelativeVirtualAddress);
                 ILReader reader = new ILReader(module);
                 ILFunction ilFunction = reader.ReadIL(methodDefHandle, methodBody);
+                Console.WriteLine(ilFunction);
                 BlockContainer bc = (BlockContainer)ilFunction.Body;
                 InstructionPointer IP = new InstructionPointer(bc.Blocks[0], 0);
                 entryPoints[method] = IP;

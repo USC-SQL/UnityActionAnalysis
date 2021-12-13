@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Z3;
 using ICSharpCode.Decompiler.TypeSystem;
@@ -41,6 +42,14 @@ namespace UnitySymexActionIdentification.Operations
                         break;
                     case ComparisonKind.Inequality:
                         compResult = !ref1.Equals(ref2);
+                        break;
+                    case ComparisonKind.GreaterThan:
+                        Debug.Assert(ref2.address == null);
+                        compResult = ref1.address != null && ref2.address == null;
+                        break;
+                    case ComparisonKind.LessThan:
+                        Debug.Assert(ref1.address == null);
+                        compResult = ref1.address == null && ref2.address != null;
                         break;
                     default:
                         throw new Exception("unexpected reference comparison kind " + op);

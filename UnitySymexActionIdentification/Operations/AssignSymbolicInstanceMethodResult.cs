@@ -31,7 +31,7 @@ namespace UnitySymexActionIdentification.Operations
             {
                 argValues.Add(state.MemoryRead(argVar.address, argVar.type));
             }
-            state.symbolicMethodCalls[name] = new SymbolicMethodCall(method, argValues);
+            state.symbolicMethodCalls[name] = new SymbolicMethodCall(method, argValues, new List<BoolExpr>(state.pathCondition));
             state.MemoryWrite(resultVar.address, value);
         }
     }

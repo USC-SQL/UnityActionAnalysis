@@ -10,7 +10,6 @@ using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.TypeSystem;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ICSharpCode.Decompiler.IL;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Z3;
 
 namespace UnitySymexActionIdentification.Tests
@@ -30,8 +29,8 @@ namespace UnitySymexActionIdentification.Tests
                 MetadataReaderOptions.None);
             var settings = new DecompilerSettings();
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);
-            IType programA = decompiler.TypeSystem.MainModule.Compilation.FindType(new FullTypeName(entryPointClassFullName));
-            IMethod main = programA.GetMethods().Where(m => m.Name == entryPointMethodName).First();
+            IType program = decompiler.TypeSystem.MainModule.Compilation.FindType(new FullTypeName(entryPointClassFullName));
+            IMethod main = program.GetMethods().Where(m => m.Name == entryPointMethodName).First();
             var machine = new SymexMachine(decompiler, main, config);
             return machine;
         }

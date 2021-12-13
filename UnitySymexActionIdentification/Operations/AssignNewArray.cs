@@ -22,9 +22,9 @@ namespace UnitySymexActionIdentification.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate();
-            MemoryAddress elemsAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElements() });
-            MemoryAddress lenAddress = new MemoryAddress(address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
+            MemoryAddress address = state.HeapAllocate(type.FullName);
+            MemoryAddress elemsAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElements() });
+            MemoryAddress lenAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
             Expr defaultElemValue = Helpers.MakeDefaultValue(type.ElementType);
             Expr length = state.MemoryRead(lengthVar.address, lengthVar.type);
             state.MemoryWrite(elemsAddress, z3.MkConstArray(z3.MkBitVecSort(32), defaultElemValue));

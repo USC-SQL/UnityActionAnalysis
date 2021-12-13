@@ -29,7 +29,7 @@ namespace UnitySymexActionIdentification.Operations
                 Expr argValue = state.MemoryRead(argVar.address, argVar.type);
                 argValues.Add(argValue);
             }
-            state.symbolicMethodCalls[name] = new SymbolicMethodCall(method, argValues);
+            state.symbolicMethodCalls[name] = new SymbolicMethodCall(method, argValues, new List<BoolExpr>(state.pathCondition));
             state.MemoryWrite(resultVar.address, value);
         }
     }

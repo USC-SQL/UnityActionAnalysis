@@ -20,8 +20,9 @@ namespace UnitySymexActionIdentification.Operations
 
         public override void Perform(SymexState state)
         {
-            MemoryAddress address = new MemoryAddress(field.DeclaringType.FullName + "_" + field.Name);
+            MemoryAddress address = new MemoryAddress(false, field.DeclaringType.FullName + "_" + field.Name);
             Reference r = new Reference(field.Type, address);
+            state.MemoryRead(r.address, r.type);
             state.MemoryWrite(resultVar.address, r.ToExpr());
         }
     }

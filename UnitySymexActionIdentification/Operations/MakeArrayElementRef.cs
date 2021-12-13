@@ -27,9 +27,10 @@ namespace UnitySymexActionIdentification.Operations
             Reference r = Reference.FromExpr(refExpr);
             BitVecExpr index = (BitVecExpr)state.MemoryRead(indexVar.address, indexVar.type);
             Debug.Assert(r.address.components.Count == 0);
-            MemoryAddress address = new MemoryAddress(r.address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElement(index) });
+            MemoryAddress address = new MemoryAddress(r.address.heap, r.address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElement(index) });
             ArrayType arrType = (ArrayType)r.type;
             Reference res = new Reference(arrType.ElementType, address);
+            state.MemoryRead(res.address, res.type); 
             state.MemoryWrite(resultVar.address, res.ToExpr());
         }
     }

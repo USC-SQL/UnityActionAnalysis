@@ -62,6 +62,7 @@ namespace UnitySymexCrawler
 
         private bool Step()
         {
+            int index = 0;
             foreach (SymexState state in states)
             {
                 if (state.execStatus == ExecutionStatus.ACTIVE)
@@ -69,6 +70,7 @@ namespace UnitySymexCrawler
                     Operation op = state.opQueue.Dequeue();
                     op.Perform(state);
                 }
+                ++index;
             }
             states.AddRange(statesToAdd);
             statesToAdd.Clear();

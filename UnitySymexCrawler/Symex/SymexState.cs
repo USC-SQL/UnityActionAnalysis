@@ -6,7 +6,7 @@ using Microsoft.Z3;
 
 namespace UnitySymexCrawler
 {
-    public class FrameStackElement : ICloneable
+    public class FrameStackElement
     {
         public readonly Queue<Operation> opQueue;
         public readonly int frameID;
@@ -15,11 +15,6 @@ namespace UnitySymexCrawler
         {
             this.opQueue = opQueue;
             this.frameID = frameID;
-        }
-
-        public object Clone()
-        {
-            return new FrameStackElement(opQueue, frameID);
         }
     }
 
@@ -30,7 +25,7 @@ namespace UnitySymexCrawler
         HALTED
     }
 
-    public class SymexState : ICloneable
+    public class SymexState 
     {
         public Dictionary<string, Expr> mem;
         public Dictionary<string, Dictionary<string, Expr>> objects;
@@ -78,7 +73,12 @@ namespace UnitySymexCrawler
             }
             symbolicMethodCalls = new Dictionary<int, SymbolicMethodCall>(o.symbolicMethodCalls);
 
-            frameStack = new Stack<FrameStackElement>(o.frameStack);
+            frameStack = new Stack<FrameStackElement>(o.frameStack.Count);
+            foreach (FrameStackElement fse in o.frameStack)
+            {
+                frameStack.Push(new FrameStackElement(new Queue<Operation>(fse.opQueue), fse.frameID));
+            }
+
             opQueue = new Queue<Operation>(o.opQueue);
             pathCondition = new List<BoolExpr>(o.pathCondition);
             execStatus = o.execStatus;
@@ -258,6 +258,7 @@ namespace UnitySymexCrawler
                 }
                 if (address.components.Count > 0)
                 {
+                    Console.WriteLine("value = " + value + ", address = " + address);
                     foreach (MemoryAddressComponent c in address.components)
                     {
                         var dsort = (DatatypeSort)value.Sort;
@@ -373,11 +374,6 @@ namespace UnitySymexCrawler
             string result = s.ToString();
             s.Dispose();
             return result;
-        }
-
-        public object Clone()
-        {
-            return new SymexState(this);
         }
 
         private Expr MemoryTransform(Expr input, List<MemoryAddressComponent> components, int cindex, Expr value)

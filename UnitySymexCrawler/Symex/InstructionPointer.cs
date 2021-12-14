@@ -5,7 +5,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 
 namespace UnitySymexCrawler
 {
-    public class InstructionPointer : ICloneable
+    public class InstructionPointer
     {
         public readonly Block block;
         public readonly int index;
@@ -36,11 +36,6 @@ namespace UnitySymexCrawler
         {
             ILFunction func = (ILFunction)block.Parent.Parent;
             return func.Method;
-        }
-
-        public object Clone()
-        {
-            return new InstructionPointer(this);
         }
     }
 }

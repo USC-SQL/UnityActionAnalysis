@@ -478,12 +478,6 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState s)
         {
-            if (IP.index >= IP.block.Instructions.Count)
-            {
-                // reached end of program
-                return;
-            }
-
             ILInstruction inst = IP.block.Instructions[IP.index];
             switch (inst.OpCode)
             {

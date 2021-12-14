@@ -47,7 +47,17 @@ namespace UnitySymexCrawler
             SymexMachine m = new SymexMachine(decompiler, fixedUpdate, new UnityConfiguration());
             m.Run();
 
-            Console.WriteLine(m.States.Count);
+            foreach (SymexState s in m.States)
+            {
+                Console.WriteLine(s.PathConditionString());
+
+                foreach (var p in s.symbolicMethodCalls)
+                {
+                    Console.WriteLine("symcall:" + p.Key + ": " + p.Value.method.FullName + "(" + string.Join(",", p.Value.args) + ")");
+                }
+
+                Console.WriteLine("--");
+            }
         }
     }
 }

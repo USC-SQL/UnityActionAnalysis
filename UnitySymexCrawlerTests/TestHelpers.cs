@@ -18,6 +18,7 @@ namespace UnitySymexCrawler.Tests
     {
         public static SymexMachine CreateMachine(string entryPointClassFullName, string entryPointMethodName, Configuration config)
         {
+            SymexMachine.SetUpGlobals();
             string assemblyPath = @"..\..\..\..\TestCases\bin\Debug\netcoreapp3.1\TestCases.dll";
             var peFile = new PEFile(assemblyPath,
                 new FileStream(assemblyPath, FileMode.Open, FileAccess.Read),

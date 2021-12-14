@@ -13,6 +13,8 @@ namespace UnitySymexCrawler
 {
     public class SymexMachine : IDisposable
     {
+        private static bool didSetUpGlobals = false;
+
         public static SymexMachine Instance { get; set; }
 
         public CSharpDecompiler CSD { get => csd; }
@@ -31,6 +33,10 @@ namespace UnitySymexCrawler
 
         public SymexMachine(CSharpDecompiler csd, IMethod entrypoint, Configuration config)
         {
+            if (!didSetUpGlobals)
+            {
+                throw new Exception("call SymexMachine.SetUpGlobals() once before creating any instances");
+            }
             if (Instance != null)
             {
                 throw new Exception("Only one SymexMachine supported at a time");
@@ -43,7 +49,7 @@ namespace UnitySymexCrawler
             states = new List<SymexState>();
             statesToAdd = new List<SymexState>();
 
-            z3 = new Context(new Dictionary<string, string>());
+            z3 = new Context();
             SortPool = new SortPool(z3);
 
             RefStorage = new ReferenceStorage();
@@ -83,6 +89,11 @@ namespace UnitySymexCrawler
         {
             z3.Dispose();
             Instance = null;
+        }
+
+        public static void SetUpGlobals()
+        {
+            didSetUpGlobals = true;
         }
     }
 }

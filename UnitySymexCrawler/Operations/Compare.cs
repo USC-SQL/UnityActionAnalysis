@@ -65,10 +65,28 @@ namespace UnitySymexCrawler.Operations
                 switch (op)
                 {
                     case ComparisonKind.Equality:
-                        result = z3.MkEq(value1, value2);
+                        if (isBV)
+                        {
+                            result = z3.MkEq(value1, value2);
+                        } else
+                        {
+                            result = z3.MkAnd(
+                                z3.MkEq(value1, value2),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                        }
                         break;
                     case ComparisonKind.Inequality:
-                        result = z3.MkNot(z3.MkEq(value1, value2));
+                        if (isBV)
+                        {
+                            result = z3.MkNot(z3.MkEq(value1, value2));
+                        } else
+                        {
+                            result = z3.MkAnd(
+                                z3.MkNot(z3.MkEq(value1, value2)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
+                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                        }
                         break;
                     case ComparisonKind.LessThan:
                         if (isBV)
@@ -152,6 +170,20 @@ namespace UnitySymexCrawler.Operations
                         break;
                     default:
                         throw new Exception("unknown comparison kind " + op);
+                }
+
+                if (isBV)
+                {
+                    if (value1.IsBVUDiv || value1.IsBVSDiv || value1.IsBVURem || value1.IsBVSRem)
+                    {
+                        BitVecExpr arg2 = (BitVecExpr)value1.Args[1];
+                        result = z3.MkAnd(result, z3.MkNot(z3.MkEq(arg2, z3.MkBV(0, arg2.SortSize))));
+                    }
+                    if (value2.IsBVUDiv || value2.IsBVSDiv || value2.IsBVURem || value2.IsBVSRem)
+                    {
+                        BitVecExpr arg2 = (BitVecExpr)value2.Args[1];
+                        result = z3.MkAnd(result, z3.MkNot(z3.MkEq(arg2, z3.MkBV(0, arg2.SortSize))));
+                    }
                 }
 
                 BitVecExpr bvResult = (BitVecExpr)z3.MkITE(result, z3.MkBV(1, resultSort.Size), z3.MkBV(0, resultSort.Size));

@@ -135,7 +135,6 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState state)
         {
-            Context z3 = SymexMachine.Instance.Z3;
             IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Object);
             Reference r = new Reference(type);
             state.MemoryWrite(destVar.address, r.ToExpr());

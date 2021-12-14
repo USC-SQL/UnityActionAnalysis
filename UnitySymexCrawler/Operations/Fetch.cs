@@ -421,7 +421,7 @@ namespace UnitySymexCrawler.Operations
                     {
                         Conv conv = (Conv)inst;
                         IType typeFrom = SymexMachine.Instance.CSD.TypeSystem.FindType(TypeUtils.ToKnownTypeCode(conv.InputType, conv.InputSign));
-                        IType typeTo = SymexMachine.Instance.CSD.TypeSystem.FindType(TypeUtils.ToKnownTypeCode(conv.TargetType));
+                        IType typeTo = resultVar.type;
                         Variable valueVar = new Variable(typeFrom);
                         Enqueue(s, new MakeTempVar(valueVar, inst));
                         EnqueueEvaluate(s, conv.Argument, valueVar);
@@ -543,18 +543,23 @@ namespace UnitySymexCrawler.Operations
                     {
                         SwitchInstruction swinst = (SwitchInstruction)inst;
                         IType boolType = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Boolean);
-                        Variable valVar = new Variable(boolType);
+                        IType valType = SymexMachine.Instance.CSD.TypeSystem.FindType(TypeUtils.ToKnownTypeCode(swinst.Value.ResultType));
+                        IType longType = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Int64);
+                        Variable valVar = new Variable(valType);
+                        Variable longValVar = new Variable(longType);
                         List<Variable> condVars = new List<Variable>();
                         foreach (SwitchSection section in swinst.Sections)
                         {
                             condVars.Add(new Variable(boolType));
                         }
                         Enqueue(s, new MakeTempVar(valVar, inst));
+                        Enqueue(s, new MakeTempVar(longValVar, inst));
                         foreach (Variable condVar in condVars)
                         {
                             Enqueue(s, new MakeTempVar(condVar, inst));
                         }
                         EnqueueEvaluate(s, swinst.Value, valVar);
+                        Enqueue(s, new Convert(valVar, longType, longValVar, swinst));
                         for (int i = 0, n = swinst.Sections.Count; i < n; ++i)
                         {
                             SwitchSection section = swinst.Sections[i];
@@ -563,7 +568,7 @@ namespace UnitySymexCrawler.Operations
                             {
                                 throw new NotImplementedException("support for switch sections with HasNullLabel not implemented");
                             }
-                            Enqueue(s, new ValueInLongSet(valVar, section.Labels, condVar, inst));
+                            Enqueue(s, new ValueInLongSet(longValVar, section.Labels, condVar, inst));
                         }
                         List<BranchCase> branchCases = new List<BranchCase>();
                         for (int i = 0, n = swinst.Sections.Count; i < n; ++i)

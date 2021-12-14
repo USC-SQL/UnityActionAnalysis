@@ -23,23 +23,16 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState state)
         {
+            Debug.Assert(valueVar.type.FullName == "System.Int64");
             Context z3 = SymexMachine.Instance.Z3;
             BitVecExpr value = (BitVecExpr)state.MemoryRead(valueVar.address, valueVar.type);
             BitVecSort resultSort = (BitVecSort)SymexMachine.Instance.SortPool.TypeToSort(resultVar.type);
-            bool isUnsigned = SymexMachine.Instance.SortPool.IsSigned(valueVar.type);
             List<BoolExpr> conditions = new List<BoolExpr>();
             foreach (LongInterval ivl in longSet.Intervals)
             {
-                BitVecExpr start = z3.MkBV(ivl.Start, value.SortSize);
-                BitVecExpr endInclusive = z3.MkBV(ivl.InclusiveEnd, value.SortSize);
-                BoolExpr condition;
-                if (isUnsigned)
-                {
-                    condition = z3.MkAnd(z3.MkBVUGE(value, start), z3.MkBVULE(value, endInclusive));
-                } else
-                {
-                    condition = z3.MkAnd(z3.MkBVSGE(value, start), z3.MkBVSLE(value, endInclusive));
-                }
+                BitVecExpr start = z3.MkBV(ivl.Start, 64);
+                BitVecExpr endInclusive = z3.MkBV(ivl.InclusiveEnd, 64);
+                BoolExpr condition = z3.MkAnd(z3.MkBVSGE(value, start), z3.MkBVSLE(value, endInclusive));
                 conditions.Add(condition);
             }
             BoolExpr result = z3.MkOr(conditions);

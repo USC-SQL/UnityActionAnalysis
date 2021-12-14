@@ -40,7 +40,6 @@ namespace UnitySymexCrawler.Operations
             {
                 uint bitsFrom = ((BitVecSort)sortFrom).Size;
                 uint bitsTo = ((BitVecSort)sortTo).Size;
-                // TODO properly handle signed/unsigned
                 if (bitsFrom < bitsTo)
                 {
                     // widen

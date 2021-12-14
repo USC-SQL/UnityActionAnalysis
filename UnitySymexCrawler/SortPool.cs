@@ -40,7 +40,7 @@ namespace UnitySymexCrawler
                     }
                     break;
                 case TypeKind.Enum:
-                    return IsSigned(type.GetEnumUnderlyingType());
+                    return true;
             }
             throw new ArgumentException("unexpected IsSigned call on " + type.FullName);
         }
@@ -113,7 +113,17 @@ namespace UnitySymexCrawler
                         }
                         break;
                     case TypeKind.Enum:
-                        result = TypeToSort(type.GetEnumUnderlyingType());
+                        {
+                            IType underlyingType = type.GetEnumUnderlyingType();
+                            BitVecSort s = (BitVecSort)TypeToSort(underlyingType);
+                            if (s.Size > 32)
+                            {
+                                result = z3.MkBitVecSort(64);
+                            } else
+                            {
+                                result = z3.MkBitVecSort(32);
+                            }
+                        }
                         break;
                     case TypeKind.Class:
                     case TypeKind.Interface:

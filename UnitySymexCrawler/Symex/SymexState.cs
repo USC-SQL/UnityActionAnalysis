@@ -258,7 +258,6 @@ namespace UnitySymexCrawler
                 }
                 if (address.components.Count > 0)
                 {
-                    Console.WriteLine("value = " + value + ", address = " + address);
                     foreach (MemoryAddressComponent c in address.components)
                     {
                         var dsort = (DatatypeSort)value.Sort;

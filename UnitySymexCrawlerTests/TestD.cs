@@ -40,8 +40,8 @@ namespace UnitySymexCrawler.Tests
 
                     var arg1 = z3.MkConst("frame:0:arg:1", z3.MkBitVecSort(32));
                     var arg3 = z3.MkConst("frame:0:arg:3", z3.MkBitVecSort(32));
-                    var p1FavoriteColor = z3.MkConst("frame:5:this:instancefield:<P1FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
-                    var p2FavoriteColor = z3.MkConst("frame:7:this:instancefield:<P2FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
+                    var p1FavoriteColor = z3.MkConst("frame:0:this:instancefield:<P1FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
+                    var p2FavoriteColor = z3.MkConst("frame:0:this:instancefield:<P2FavoriteColor>k__BackingField", z3.MkBitVecSort(32));
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {

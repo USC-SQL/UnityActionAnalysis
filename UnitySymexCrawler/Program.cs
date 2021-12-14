@@ -44,8 +44,6 @@ namespace UnitySymexCrawler
             var playerController = decompiler.TypeSystem.MainModule.Compilation.FindType(name);
             var fixedUpdate = playerController.GetMethods().Where(m => m.FullNameIs("PlayerController", "FixedUpdate")).First();
 
-            Console.WriteLine(fixedUpdate);
-
             SymexMachine m = new SymexMachine(decompiler, fixedUpdate, new UnityConfiguration());
             m.Run();
 

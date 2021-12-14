@@ -324,95 +324,97 @@ namespace UnitySymexCrawler.Operations
                     }
                     break;
                 case OpCode.Call:
-                    {
-                        ICSharpCode.Decompiler.IL.Call call = (ICSharpCode.Decompiler.IL.Call)inst;
-                        IMethod method = call.Method;
-                        List<Variable> argVars = new List<Variable>();
-                        for (int i = 0, n = method.Parameters.Count; i < n; ++i)
-                        {
-                            IParameter param = method.Parameters[i];
-                            argVars.Add(new Variable(param.Type));
-                        }
-                        if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
-                        {
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
-                            {
-                                Enqueue(s, new MakeTempVar(argVars[i], inst));
-                            }
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
-                            {
-                                EnqueueEvaluate(s, call.Arguments[i], argVars[i]);
-                            }
-                            if (resultVar != null)
-                            {
-                                Enqueue(s, new AssignSymbolicStaticMethodResult(resultVar, method, argVars, inst));
-                            }
-                        } else
-                        {
-                            Variable retVar = new Variable(method.ReturnType);
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
-                            {
-                                Enqueue(s, new MakeInvokeArgVar(argVars[i], i, inst));
-                            }
-                            Enqueue(s, new MakeInvokeReturnVar(retVar, inst));
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
-                            {
-                                EnqueueEvaluate(s, call.Arguments[i], argVars[i]);
-                            }
-                            Enqueue(s, new Call(SymexMachine.Instance.MethodPool.MethodEntryPoint(method), inst));
-                            if (resultVar != null)
-                            {
-                                Enqueue(s, new Assign(resultVar, retVar, inst));
-                            }
-                        }
-                    }
-                    break;
                 case OpCode.CallVirt:
                     {
-                        CallVirt callvirt = (CallVirt)inst;
-                        IMethod method = callvirt.Method;
-                        IType thisType = method.DeclaringType;
-                        Variable thisVar = new Variable(thisType);
-                        List<Variable> argVars = new List<Variable>();
-                        for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                        CallInstruction call = (CallInstruction)inst;
+                        IMethod method = call.Method;
+                        if (method.IsStatic)
                         {
-                            IParameter param = method.Parameters[i];
-                            argVars.Add(new Variable(param.Type));
-                        }
-                        if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
-                        {
-                            Enqueue(s, new MakeTempVar(thisVar, inst));
+                            List<Variable> argVars = new List<Variable>();
                             for (int i = 0, n = method.Parameters.Count; i < n; ++i)
                             {
-                                Enqueue(s, new MakeTempVar(argVars[i], inst));
+                                IParameter param = method.Parameters[i];
+                                argVars.Add(new Variable(param.Type));
                             }
-                            EnqueueEvaluate(s, callvirt.Arguments[0], thisVar);
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                            if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
                             {
-                                EnqueueEvaluate(s, callvirt.Arguments[i + 1], argVars[i]);
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    Enqueue(s, new MakeTempVar(argVars[i], inst));
+                                }
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    EnqueueEvaluate(s, call.Arguments[i], argVars[i]);
+                                }
+                                if (resultVar != null)
+                                {
+                                    Enqueue(s, new AssignSymbolicStaticMethodResult(resultVar, method, argVars, inst));
+                                }
                             }
-                            if (resultVar != null)
+                            else
                             {
-                                Enqueue(s, new AssignSymbolicInstanceMethodResult(resultVar, method, thisVar, argVars, inst));
+                                Variable retVar = new Variable(method.ReturnType);
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    Enqueue(s, new MakeInvokeArgVar(argVars[i], i, inst));
+                                }
+                                Enqueue(s, new MakeInvokeReturnVar(retVar, inst));
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    EnqueueEvaluate(s, call.Arguments[i], argVars[i]);
+                                }
+                                Enqueue(s, new Call(SymexMachine.Instance.MethodPool.MethodEntryPoint(method), inst));
+                                if (resultVar != null)
+                                {
+                                    Enqueue(s, new Assign(resultVar, retVar, inst));
+                                }
                             }
                         } else
                         {
-                            Variable retVar = new Variable(method.ReturnType);
-                            Enqueue(s, new MakeInvokeThisVar(thisVar, inst));
+                            IType thisType = method.DeclaringType;
+                            Variable thisVar = new Variable(thisType);
+                            List<Variable> argVars = new List<Variable>();
                             for (int i = 0, n = method.Parameters.Count; i < n; ++i)
                             {
-                                Enqueue(s, new MakeInvokeArgVar(argVars[i], i, inst));
+                                IParameter param = method.Parameters[i];
+                                argVars.Add(new Variable(param.Type));
                             }
-                            Enqueue(s, new MakeInvokeReturnVar(retVar, inst));
-                            EnqueueEvaluate(s, callvirt.Arguments[0], thisVar);
-                            for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                            if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
                             {
-                                EnqueueEvaluate(s, callvirt.Arguments[i + 1], argVars[i]);
+                                Enqueue(s, new MakeTempVar(thisVar, inst));
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    Enqueue(s, new MakeTempVar(argVars[i], inst));
+                                }
+                                EnqueueEvaluate(s, call.Arguments[0], thisVar);
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    EnqueueEvaluate(s, call.Arguments[i + 1], argVars[i]);
+                                }
+                                if (resultVar != null)
+                                {
+                                    Enqueue(s, new AssignSymbolicInstanceMethodResult(resultVar, method, thisVar, argVars, inst));
+                                }
                             }
-                            Enqueue(s, new Call(SymexMachine.Instance.MethodPool.MethodEntryPoint(method), inst));
-                            if (resultVar != null)
+                            else
                             {
-                                Enqueue(s, new Assign(resultVar, retVar, inst));
+                                Variable retVar = new Variable(method.ReturnType);
+                                Enqueue(s, new MakeInvokeThisVar(thisVar, inst));
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    Enqueue(s, new MakeInvokeArgVar(argVars[i], i, inst));
+                                }
+                                Enqueue(s, new MakeInvokeReturnVar(retVar, inst));
+                                EnqueueEvaluate(s, call.Arguments[0], thisVar);
+                                for (int i = 0, n = method.Parameters.Count; i < n; ++i)
+                                {
+                                    EnqueueEvaluate(s, call.Arguments[i + 1], argVars[i]);
+                                }
+                                Enqueue(s, new Call(SymexMachine.Instance.MethodPool.MethodEntryPoint(method), inst));
+                                if (resultVar != null)
+                                {
+                                    Enqueue(s, new Assign(resultVar, retVar, inst));
+                                }
                             }
                         }
                     }

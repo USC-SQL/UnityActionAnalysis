@@ -1,10 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
-using ICSharpCode.Decompiler.IL;
 using ICSharpCode.Decompiler.TypeSystem;
-using ICSharpCode.Decompiler.Metadata;
 using Microsoft.Z3;
 
 namespace UnitySymexCrawler

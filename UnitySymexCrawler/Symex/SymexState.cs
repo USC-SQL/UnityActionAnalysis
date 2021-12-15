@@ -376,6 +376,48 @@ namespace UnitySymexCrawler
             return result;
         }
 
+        public object SerializeExpr(Expr expr)
+        {
+            if (expr.Sort is IntSort)
+            {
+                Reference r = Reference.FromExpr(expr);
+                if (r.address.heap && r.address.components.Count == 0)
+                {
+                    Dictionary<string, Expr> obj = objects[r.address.root];
+                    if (obj.TryGetValue("_string", out Expr strExpr) && strExpr.Sort == z3.StringSort && strExpr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_INTERNAL)
+                    {
+                        var str = strExpr.ToString();
+                        return str.Substring(1, str.Length - 2);
+                    } else
+                    {
+                        Dictionary<string, object> result = new Dictionary<string, object>();
+                        result["_address"] = r.address.ToString();
+                        foreach (var p in obj)
+                        {
+                            result[p.Key] = SerializeExpr(p.Value);
+                        }
+                        return result;
+                    }
+                }
+                else
+                {
+                    return SerializeExpr(MemoryRead(r.address, r.type));
+                }
+            } 
+            else if (expr.Sort is BitVecSort && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_BNUM)
+            {
+                return ulong.Parse(expr.ToString());
+            } 
+            else
+            {
+                using (Solver s = z3.MkSolver())
+                {
+                    s.Assert(z3.MkEq(expr, z3.MkConst("_", expr.Sort)));
+                    return s.ToString();
+                }
+            }
+        }
+
         private Expr MemoryTransform(Expr input, List<MemoryAddressComponent> components, int cindex, Expr value)
         {
             if (cindex >= components.Count)

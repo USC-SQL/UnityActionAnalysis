@@ -60,7 +60,7 @@ namespace UnitySymexCrawler
                         switch (typeFullName)
                         {
                             case "System.Boolean":
-                                result = z3.MkBitVecSort(1);
+                                result = z3.MkBitVecSort(32);
                                 break;
                             case "System.Byte":
                                 result = z3.MkBitVecSort(8);

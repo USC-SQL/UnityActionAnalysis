@@ -39,7 +39,7 @@ namespace UnitySymexCrawler
             }
             if (Instance != null)
             {
-                throw new Exception("Only one SymexMachine supported at a time");
+                throw new Exception("Only one SymexMachine supported at a time (call Dispose() on any prior instances if you are done with them)");
             }
             Instance = this;
 

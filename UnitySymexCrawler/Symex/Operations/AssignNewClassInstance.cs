@@ -21,7 +21,7 @@ namespace UnitySymexCrawler.Operations
             MemoryAddress address = state.HeapAllocate(type.FullName);
             foreach (IField field in Helpers.GetInstanceFields(type))
             {
-                MemoryAddress fieldAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressField(field) });
+                MemoryAddress fieldAddress = address.WithComponent(new MemoryAddressField(field));
                 state.MemoryWrite(fieldAddress, Helpers.MakeDefaultValue(field.Type));
             }
             Reference r = new Reference(type, address);

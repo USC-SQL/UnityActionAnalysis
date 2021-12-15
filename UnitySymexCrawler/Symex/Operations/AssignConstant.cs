@@ -93,7 +93,7 @@ namespace UnitySymexCrawler.Operations
         {
             Context z3 = SymexMachine.Instance.Z3;
             MemoryAddress address = state.HeapAllocate("string");
-            MemoryAddress stringAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressString() });
+            MemoryAddress stringAddress = address.WithComponent(new MemoryAddressString());
             state.MemoryWrite(stringAddress, z3.MkString(value));
             IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.String);
             Reference r = new Reference(type, address);
@@ -116,7 +116,7 @@ namespace UnitySymexCrawler.Operations
         {
             Context z3 = SymexMachine.Instance.Z3;
             MemoryAddress address = state.HeapAllocate("membertoken");
-            MemoryAddress memberAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressMemberToken() });
+            MemoryAddress memberAddress = address.WithComponent(new MemoryAddressMemberToken());
             state.MemoryWrite(memberAddress, z3.MkString("membertoken:" + member.FullName));
             IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Object);
             Reference r = new Reference(type, address);

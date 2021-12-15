@@ -280,8 +280,8 @@ namespace UnitySymexCrawler
             } else if (type.Kind == TypeKind.Array)
             {
                 MemoryAddress address = HeapAllocate(name);
-                MemoryAddress elemsAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayElements() });
-                MemoryAddress lenAddress = new MemoryAddress(address.heap, address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
+                MemoryAddress elemsAddress = address.WithComponent(new MemoryAddressArrayElements());
+                MemoryAddress lenAddress = address.WithComponent(new MemoryAddressArrayLength());
                 ArrayType arrType = (ArrayType)type;
                 MemoryWrite(elemsAddress,
                     z3.MkConst(name + "_elems",

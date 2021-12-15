@@ -24,7 +24,7 @@ namespace UnitySymexCrawler.Operations
             Expr refExpr = state.MemoryRead(refVar.address, null);
             Reference r = Reference.FromExpr(refExpr);
             Debug.Assert(r.address.components.Count == 0);
-            MemoryAddress lengthAddress = new MemoryAddress(r.address.heap, r.address.root, new List<MemoryAddressComponent>() { new MemoryAddressArrayLength() });
+            MemoryAddress lengthAddress = r.address.WithComponent(new MemoryAddressArrayLength());
             Expr length = state.MemoryRead(lengthAddress, resultVar.type);
             state.MemoryWrite(resultVar.address, length);
         }

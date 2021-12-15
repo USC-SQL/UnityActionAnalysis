@@ -136,6 +136,13 @@ namespace UnitySymexCrawler
             components = new List<MemoryAddressComponent>();
         }
 
+        public MemoryAddress WithComponent(MemoryAddressComponent component)
+        {
+            List<MemoryAddressComponent> newComponents = new List<MemoryAddressComponent>(components);
+            newComponents.Add(component);
+            return new MemoryAddress(heap, root, newComponents);
+        }
+
         public bool Equals([AllowNull] MemoryAddress other)
         {
             if (root != other.root)

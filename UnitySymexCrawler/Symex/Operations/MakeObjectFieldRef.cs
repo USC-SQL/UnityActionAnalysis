@@ -25,13 +25,7 @@ namespace UnitySymexCrawler.Operations
         {
             Debug.Assert(refVar.IsReferenceType());
             Reference r = Reference.FromExpr(state.MemoryRead(refVar.address, null));
-            List<MemoryAddressComponent> components = new List<MemoryAddressComponent>(r.address.components.Count + 1);
-            foreach (MemoryAddressComponent c in r.address.components)
-            {
-                components.Add(c);
-            }
-            components.Add(new MemoryAddressField(field));
-            MemoryAddress address = new MemoryAddress(r.address.heap, r.address.root, components);
+            MemoryAddress address = r.address.WithComponent(new MemoryAddressField(field));
             Reference res = new Reference(field.Type, address);
             state.MemoryRead(res.address, res.type); 
             state.MemoryWrite(resultVar.address, res.ToExpr());

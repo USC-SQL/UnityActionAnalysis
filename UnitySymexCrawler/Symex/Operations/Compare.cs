@@ -65,28 +65,10 @@ namespace UnitySymexCrawler.Operations
                 switch (op)
                 {
                     case ComparisonKind.Equality:
-                        if (isBV)
-                        {
-                            result = z3.MkEq(value1, value2);
-                        } else
-                        {
-                            result = z3.MkAnd(
-                                z3.MkEq(value1, value2),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
-                        }
+                        result = z3.MkEq(value1, value2);
                         break;
                     case ComparisonKind.Inequality:
-                        if (isBV)
-                        {
-                            result = z3.MkNot(z3.MkEq(value1, value2));
-                        } else
-                        {
-                            result = z3.MkAnd(
-                                z3.MkNot(z3.MkEq(value1, value2)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
-                        }
+                        result = z3.MkNot(z3.MkEq(value1, value2));
                         break;
                     case ComparisonKind.LessThan:
                         if (isBV)
@@ -102,10 +84,7 @@ namespace UnitySymexCrawler.Operations
                         }
                         else
                         {
-                            result = z3.MkAnd(
-                                z3.MkFPLt((FPExpr)value1, (FPExpr)value2), 
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)), 
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                            result = z3.MkFPLt((FPExpr)value1, (FPExpr)value2);
                         }
                         break;
                     case ComparisonKind.LessThanOrEqual:
@@ -122,10 +101,7 @@ namespace UnitySymexCrawler.Operations
                         }
                         else
                         {
-                            result = z3.MkAnd(
-                                z3.MkFPLEq((FPExpr)value1, (FPExpr)value2),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                            result = z3.MkFPLEq((FPExpr)value1, (FPExpr)value2);
                         }
                         break;
                     case ComparisonKind.GreaterThan:
@@ -142,10 +118,7 @@ namespace UnitySymexCrawler.Operations
                         }
                         else
                         {
-                            result = z3.MkAnd(
-                                z3.MkFPGt((FPExpr)value1, (FPExpr)value2),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                            result = z3.MkFPGt((FPExpr)value1, (FPExpr)value2);
                         }
                         break;
                     case ComparisonKind.GreaterThanOrEqual:
@@ -162,10 +135,7 @@ namespace UnitySymexCrawler.Operations
                         }
                         else
                         {
-                            result = z3.MkAnd(
-                                z3.MkFPGEq((FPExpr)value1, (FPExpr)value2),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value1)),
-                                z3.MkNot(z3.MkFPIsNaN((FPExpr)value2)));
+                            result = z3.MkFPGEq((FPExpr)value1, (FPExpr)value2);
                         }
                         break;
                     default:

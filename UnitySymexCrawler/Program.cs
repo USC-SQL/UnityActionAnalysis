@@ -20,6 +20,28 @@ namespace UnitySymexCrawler
         {
             return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
         }
+
+        private static bool IsInputAPI(IMethod method)
+        {
+            return method.DeclaringType.FullName == "UnityEngine.Input" && method.Parameters.Count == 1;
+        }
+
+        public override int SymbolicMethodResultVarId(IMethod method, List<Expr> arguments, SymexState state)
+        {
+            if (IsInputAPI(method))
+            {
+                string arg = JsonSerializer.Serialize(state.SerializeExpr(arguments[0]));
+                foreach (var p in state.symbolicMethodCalls)
+                {
+                    SymbolicMethodCall smc = p.Value;
+                    if (IsInputAPI(smc.method) && JsonSerializer.Serialize(state.SerializeExpr(smc.args[0])) == arg)
+                    {
+                        return p.Key;
+                    }
+                }
+            }
+            return base.SymbolicMethodResultVarId(method, arguments, state);
+        }
     }
 
     public class Program

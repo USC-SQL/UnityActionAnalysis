@@ -77,7 +77,49 @@ namespace UnitySymexCrawler
                 throw new NotImplementedException("MakeDefaultValue for type of kind " + type.Kind + " not implemented");
             }
         }
-    
+
+        private static IEnumerable<FPExpr> FindFloatConstsVisitor(Expr expr)
+        {
+            if (expr is FPExpr && expr.IsConst && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
+            {
+                yield return (FPExpr)expr;
+            } else
+            {
+                for (uint i = 0, n = expr.NumArgs; i < n; ++i)
+                {
+                    foreach (FPExpr c in FindFloatConstsVisitor(expr.Arg(i)))
+                    {
+                        yield return c;
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<FPExpr> FindFloatConsts(Expr expr)
+        {
+            foreach (FPExpr c in FindFloatConstsVisitor(expr))
+            {
+                yield return c;
+            }
+        }
+
+        public static void AssertAssumptions(Solver s, Context z3)
+        {
+            // assume no NaN
+            Dictionary<int, FPExpr> floatConsts = new Dictionary<int, FPExpr>();
+            foreach (BoolExpr cond in s.Assertions)
+            {
+                foreach (FPExpr c in FindFloatConsts(cond))
+                {
+                    floatConsts[c.FuncDecl.Name.GetHashCode()] = c;
+                }
+            }
+            foreach (var p in floatConsts)
+            {
+                s.Assert(z3.MkNot(z3.MkFPIsNaN(p.Value)));
+            }
+        }
+
         public static void DebugLog(string message)
         {
             using (StreamWriter sw = File.AppendText(@"C:\Users\sasha-usc\Misc\debug.log"))

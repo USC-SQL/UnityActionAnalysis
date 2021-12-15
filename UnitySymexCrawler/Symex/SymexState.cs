@@ -370,6 +370,7 @@ namespace UnitySymexCrawler
             {
                 s.Assert(cond);
             }
+            Helpers.AssertAssumptions(s, z3);
             string result = s.ToString();
             s.Dispose();
             return result;

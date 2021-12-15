@@ -56,6 +56,7 @@ namespace UnitySymexCrawler.Operations
                 BitVecExpr bvCond = (BitVecExpr)state.MemoryRead(branchCase.condVar.address, branchCase.condVar.type);
                 BoolExpr cond = z3.MkNot(z3.MkEq(bvCond, z3.MkBV(0, bvCond.SortSize)));
                 s.Assert(cond);
+                Helpers.AssertAssumptions(s, z3);
                 if (s.Check() == Status.SATISFIABLE)
                 {
                     satCases.Add(new SATCase(branchCase, cond));

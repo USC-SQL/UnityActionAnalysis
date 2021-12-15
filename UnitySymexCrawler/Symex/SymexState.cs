@@ -187,7 +187,7 @@ namespace UnitySymexCrawler
                     Expr str;
                     if (!obj.TryGetValue("_string", out str))
                     {
-                        str = z3.MkConst(address.root + "_string", z3.StringSort);
+                        str = z3.MkConst(address.root + ":string", z3.StringSort);
                         obj["_string"] = str;
                     }
                     value = str;
@@ -207,13 +207,13 @@ namespace UnitySymexCrawler
 
                     if (!obj.TryGetValue("_elems", out elems))
                     {
-                        elems = z3.MkConst(address.root + "_elems",
+                        elems = z3.MkConst(address.root + ":elems",
                             z3.MkArraySort(z3.MkBitVecSort(32), SymexMachine.Instance.SortPool.TypeToSort(elementType)));
                         obj["_elems"] = elems;
                     }
                     if (!obj.TryGetValue("_length", out length))
                     {
-                        length = z3.MkConst(address.root + "_length", z3.MkBitVecSort(32));
+                        length = z3.MkConst(address.root + ":length", z3.MkBitVecSort(32));
                         obj["_length"] = length;
                     }
 
@@ -284,10 +284,10 @@ namespace UnitySymexCrawler
                 MemoryAddress lenAddress = address.WithComponent(new MemoryAddressArrayLength());
                 ArrayType arrType = (ArrayType)type;
                 MemoryWrite(elemsAddress,
-                    z3.MkConst(name + "_elems",
+                    z3.MkConst(name + ":elems",
                         z3.MkArraySort(z3.MkBitVecSort(32), SymexMachine.Instance.SortPool.TypeToSort(arrType.ElementType))));
                 MemoryWrite(lenAddress,
-                    z3.MkConst(name + "_length", z3.MkBitVecSort(32)));
+                    z3.MkConst(name + ":length", z3.MkBitVecSort(32)));
                 Reference r = new Reference(type, address);
                 return r.ToExpr();
             } else if (type.Kind == TypeKind.Struct || type.Kind == TypeKind.Enum)

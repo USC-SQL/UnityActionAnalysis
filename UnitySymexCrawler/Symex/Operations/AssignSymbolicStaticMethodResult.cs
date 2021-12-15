@@ -20,16 +20,16 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState state)
         {
-            int symId = state.symbolicMethodCounter++;
-            string name = "symcall:" + symId;
-            Expr value = state.MakeSymbolicValue(method.ReturnType, name);
             List<Expr> argValues = new List<Expr>(argVars.Count);
             foreach (Variable argVar in argVars)
             {
                 Expr argValue = state.MemoryRead(argVar.address, argVar.type);
                 argValues.Add(argValue);
             }
-            state.symbolicMethodCalls[symId] = new SymbolicMethodCall(method, argValues, new List<BoolExpr>(state.pathCondition));
+            int symId = SymexMachine.Instance.Config.SymbolicMethodResultVarId(method, argValues, state);
+            string name = "symcall:" + symId;
+            Expr value = state.MakeSymbolicValue(method.ReturnType, name);
+            state.symbolicMethodCalls[symId] = new SymbolicMethodCall(method, argValues);
             state.MemoryWrite(resultVar.address, value);
         }
     }

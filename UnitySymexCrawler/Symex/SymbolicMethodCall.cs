@@ -9,13 +9,11 @@ namespace UnitySymexCrawler
     {
         public readonly IMethod method;
         public readonly List<Expr> args;
-        public readonly List<BoolExpr> pathCondition;
 
-        public SymbolicMethodCall(IMethod method, List<Expr> args, List<BoolExpr> pathCondition)
+        public SymbolicMethodCall(IMethod method, List<Expr> args)
         {
             this.method = method;
             this.args = args;
-            this.pathCondition = pathCondition;
         }
     }
 }

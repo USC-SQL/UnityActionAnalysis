@@ -76,38 +76,21 @@ namespace UnitySymexCrawler
                 }
             }
 
-            foreach (IMethod method in targets)
+            var databaseFile = "symex.db";
+            if (File.Exists(databaseFile))
             {
-                Console.WriteLine("running symex on " + method);
-                SymexMachine m = new SymexMachine(decompiler, method, new UnityConfiguration());
-                m.Run();
-
-                using (Context z3 = new Context(new Dictionary<string, string>() { { "model", "true" } }))
+                File.Delete(databaseFile);
+            }
+            using (var db = new DatabaseUtil(databaseFile))
+            {
+                foreach (IMethod method in targets)
                 {
-                    foreach (SymexState s in m.States)
-                    {
-                        Solver solver = z3.MkSolver();
-                        solver.Assert(z3.ParseSMTLIB2String(s.PathConditionString()));
-                        solver.Check();
-                        Console.WriteLine(solver.Model);
-
-                        foreach (var p in s.symbolicMethodCalls)
-                        {
-                            List<string> methodArgs = new List<string>();
-                            foreach (Expr arg in p.Value.args)
-                            {
-                                methodArgs.Add(JsonSerializer.Serialize(s.SerializeExpr(arg)));
-                            }
-                            Console.WriteLine("symcall:" + p.Key + ": " + p.Value.method + "(" + string.Join(",", methodArgs) + ")");
-                        }
-
-                        Console.WriteLine("---");
-                    }
+                    Console.WriteLine("Processing " + method.FullName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")");
+                    SymexMachine m = new SymexMachine(decompiler, method, new UnityConfiguration());
+                    m.Run();
+                    db.AddPaths(method, m);
+                    m.Dispose();
                 }
-
-                Console.WriteLine("obtained " + m.States.Count + " states");
-
-                m.Dispose();
             }
         }
     }

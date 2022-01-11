@@ -117,6 +117,22 @@ namespace UnitySymexCrawler
             }
         }
 
+        public static string GetAssemblyQualifiedName(IType type)
+        {
+            var paramTypeDef = type.GetDefinition();
+            string suffix = "";
+            if (paramTypeDef != null)
+            {
+                string assemblyName = paramTypeDef.ParentModule.AssemblyName;
+                if (assemblyName != "System.Private.CoreLib")
+                {
+                    suffix = "," + assemblyName;
+                }
+            }
+            return type.ReflectionName + suffix;
+        }
+
+
         public static void DebugLog(string message)
         {
             using (StreamWriter sw = File.AppendText(@"C:\Users\sasha-usc\Misc\debug.log"))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -23,7 +24,7 @@ namespace UnitySymexCrawler
             var initCommand = connection.CreateCommand();
             initCommand.CommandText =
                 "create table methods (id integer primary key, signature text);\n" +
-                "create table arguments (argindex integer, value text, symcallid integer);\n" +
+                "create table smcarguments (argindex integer, value text, symcallid integer, pathid integer);\n" +
                 "create table symbolicmethodcalls (symcallid integer, method integer, pathid integer);\n" +
                 "create table paths (id integer primary key, method integer, condition text);\n";
             initCommand.ExecuteNonQuery();
@@ -31,7 +32,8 @@ namespace UnitySymexCrawler
 
         private static string MethodSignature(IMethod method)
         {
-            return method.ReflectionName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")";
+            return Helpers.GetAssemblyQualifiedName(method.DeclaringType) + ":" 
+                + method.Name + "(" + string.Join(";", method.Parameters.Select(param => Helpers.GetAssemblyQualifiedName(param.Type))) + ")";
         }
 
         private int GetMethodId(IMethod method)
@@ -53,13 +55,14 @@ namespace UnitySymexCrawler
             return Convert.ToInt32(insertCommand.ExecuteScalar());
         }
 
-        private void AddSymbolicMethodCallArgument(int symcallId, int argIndex, string value)
+        private void AddSymbolicMethodCallArgument(int symcallId, int pathId, int argIndex, string value)
         {
             var insertCommand = connection.CreateCommand();
-            insertCommand.CommandText = @"insert into arguments (argindex, value, symcallid) values ($argIndex, $value, $symcallId)";
+            insertCommand.CommandText = @"insert into smcarguments (argindex, value, symcallid, pathid) values ($argIndex, $value, $symcallId, $pathId)";
             insertCommand.Parameters.AddWithValue("$argIndex", argIndex);
             insertCommand.Parameters.AddWithValue("$value", value);
             insertCommand.Parameters.AddWithValue("$symcallId", symcallId);
+            insertCommand.Parameters.AddWithValue("$pathId", pathId);
             insertCommand.ExecuteNonQuery();
         }
 
@@ -75,7 +78,7 @@ namespace UnitySymexCrawler
             for (int i = 0, n = smc.args.Count; i < n; ++i)
             {
                 Expr arg = smc.args[i];
-                AddSymbolicMethodCallArgument(symcallId, i, JsonSerializer.Serialize(state.SerializeExpr(arg)));
+                AddSymbolicMethodCallArgument(symcallId, pathId, i, JsonSerializer.Serialize(state.SerializeExpr(arg)));
             }
         }
 

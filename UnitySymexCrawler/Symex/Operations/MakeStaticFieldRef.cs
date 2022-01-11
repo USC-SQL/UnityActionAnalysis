@@ -20,7 +20,7 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState state)
         {
-            MemoryAddress address = new MemoryAddress(false, "staticfield:" + field.DeclaringType.FullName + "." + field.Name);
+            MemoryAddress address = new MemoryAddress(false, "staticfield:" + Helpers.GetAssemblyQualifiedName(field.DeclaringType) + "." + field.Name);
             Reference r = new Reference(field.Type, address);
             state.MemoryRead(r.address, r.type);
             state.MemoryWrite(resultVar.address, r.ToExpr());

@@ -376,6 +376,11 @@ namespace UnitySymexCrawler
             return result;
         }
 
+        public const int TYPE_STRCONST = 1;
+        public const int TYPE_OBJECT = 2;
+        public const int TYPE_BVCONST = 3;
+        public const int TYPE_Z3EXPR = 4;
+
         public object SerializeExpr(Expr expr)
         {
             if (expr.Sort is IntSort)
@@ -387,16 +392,28 @@ namespace UnitySymexCrawler
                     if (obj.TryGetValue("_string", out Expr strExpr) && strExpr.Sort == z3.StringSort && strExpr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_INTERNAL)
                     {
                         var str = strExpr.ToString();
-                        return str.Substring(1, str.Length - 2);
+                        return new
+                        {
+                            type = TYPE_STRCONST,
+                            value = str.Substring(1, str.Length - 2)
+                        };
                     } else
                     {
                         Dictionary<string, object> result = new Dictionary<string, object>();
-                        result["_address"] = r.address.ToString();
+                        result["_address"] = new
+                        {
+                            type = TYPE_STRCONST,
+                            value = r.address.ToString()
+                        };
                         foreach (var p in obj)
                         {
                             result[p.Key] = SerializeExpr(p.Value);
                         }
-                        return result;
+                        return new
+                        {
+                            type = TYPE_OBJECT,
+                            value = result
+                        };
                     }
                 }
                 else
@@ -406,14 +423,22 @@ namespace UnitySymexCrawler
             } 
             else if (expr.Sort is BitVecSort && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_BNUM)
             {
-                return ulong.Parse(expr.ToString());
+                return new
+                {
+                    type = TYPE_BVCONST,
+                    value = ulong.Parse(expr.ToString())
+                };
             } 
             else
             {
                 using (Solver s = z3.MkSolver())
                 {
-                    s.Assert(z3.MkEq(expr, z3.MkConst("_", expr.Sort)));
-                    return s.ToString();
+                    s.Assert(z3.MkEq(expr, z3.MkConst("p", expr.Sort)));
+                    return new
+                    {
+                        type = TYPE_Z3EXPR,
+                        value = s.ToString()
+                    };
                 }
             }
         }

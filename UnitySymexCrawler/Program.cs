@@ -18,7 +18,7 @@ namespace UnitySymexCrawler
     {
         public override bool IsMethodSymbolic(IMethod method)
         {
-            return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
+            return !method.HasBody || method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
         }
 
         private static bool IsInputAPI(IMethod method)
@@ -58,7 +58,7 @@ namespace UnitySymexCrawler
             var assemblyResolver = new UniversalAssemblyResolver(assemblyFileName, true,
                 peFile.DetectTargetFrameworkId(),
                 peFile.DetectRuntimePack(),
-                PEStreamOptions.PrefetchMetadata,
+                PEStreamOptions.PrefetchEntireImage,
                 MetadataReaderOptions.None);
             assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.17f1\Editor\Data\Managed\UnityEngine");
             assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");

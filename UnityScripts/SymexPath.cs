@@ -182,7 +182,7 @@ public class SymexPath
         }
     }
 
-    private InputFact ModelInputVariableToFact(Model m, FuncDecl varDecl, Expr value, Context z3)
+    private InputCondition ModelInputVariableToCondition(Model m, FuncDecl varDecl, Expr value, Context z3)
     {
         string name = varDecl.Name.ToString();
         if (name.StartsWith("symcall:"))
@@ -198,7 +198,7 @@ public class SymexPath
                     {
                         KeyCode keyCode = (KeyCode)Enum.ToObject(typeof(KeyCode), ((SymexBitVecConstantValue)arg.value).value);
                         uint intVal = uint.Parse(value.ToString());
-                        return new KeyDownInputFact(keyCode, intVal != 0);
+                        return new KeyDownInputCondition(keyCode, intVal != 0);
                     } else
                     {
                         throw new ResolutionException("cannot identify key code from " + arg.value);
@@ -213,7 +213,7 @@ public class SymexPath
                         var one = z3.MkFP(1.0, (FPSort)value.Sort);
                         var negOne = z3.MkFP(-1.0, (FPSort)value.Sort);
                         float axisValue = (float)m.Double(z3.MkITE(z3.MkFPGt((FPExpr)value, zero), one, z3.MkITE(z3.MkFPLt((FPExpr)value, zero), negOne, zero)));
-                        return new AxisInputFact(axisName, axisValue);
+                        return new AxisInputCondition(axisName, axisValue);
                     } else
                     {
                         throw new ResolutionException("cannot identify axis name from " + arg.value);
@@ -227,22 +227,22 @@ public class SymexPath
         throw new ResolutionException("unrecognized input variable '" + name + "'");
     }
 
-    private void ModelToFacts(Model m, Context z3, out ISet<InputFact> inputFacts)
+    private void ModelToInputConditions(Model m, Context z3, out ISet<InputCondition> inputConditions)
     {
-        inputFacts = new HashSet<InputFact>();
+        inputConditions = new HashSet<InputCondition>();
         foreach (var p in m.Consts)
         {
             var decl = p.Key;
             var value = p.Value;
             if (IsInputVariable(decl))
             {
-                InputFact fact = ModelInputVariableToFact(m, decl, value, z3);
-                inputFacts.Add(fact);
+                InputCondition cond = ModelInputVariableToCondition(m, decl, value, z3);
+                inputConditions.Add(cond);
             }
         }
     }
     
-    public bool CheckFeasible(MonoBehaviour instance, Context z3, out ISet<InputFact> inputFacts)
+    public bool CheckSatisfiable(MonoBehaviour instance, Context z3, out ISet<InputCondition> pathCondition)
     {
         using (Solver solver = z3.MkSolver())
         {
@@ -267,17 +267,17 @@ public class SymexPath
             {
                 try
                 {
-                    ModelToFacts(solver.Model, z3, out inputFacts);
+                    ModelToInputConditions(solver.Model, z3, out pathCondition);
                     return true;
                 } catch (ResolutionException e)
                 {
-                    inputFacts = null;
+                    pathCondition = null;
                     Debug.LogWarning("Failed to resolve input variables (ignoring path): " + e.Message);
                     return false;
                 }
             } else
             {
-                inputFacts = null;
+                pathCondition = null;
                 return false;
             }
         }

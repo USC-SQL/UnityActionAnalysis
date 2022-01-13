@@ -11,18 +11,20 @@ using Microsoft.Data.Sqlite;
 public class SymexCrawler : MonoBehaviour
 {
     private SymexDatabase db;
-
+    private InputSimulator sim;
     void Start()
     {
         string dbFile = @"C:\Users\sasha-usc\Misc\UnitySymexCrawler\UnitySymexCrawler\bin\Debug\netcoreapp3.1\symex.db";
         db = new SymexDatabase("Data Source=" + dbFile);
+        sim = new InputSimulator();
+        StartCoroutine("CrawlLoop");
     }
 
-    void Update()
+    private List<Action> ComputeActions()
     {
         var gameObjects = FindObjectsOfType(typeof(GameObject));
 
-        List<ISet<InputFact>> actionConditions = new List<ISet<InputFact>>();
+        List<Action> actions = new List<Action>();
 
         foreach (var o in gameObjects)
         {
@@ -34,23 +36,23 @@ public class SymexCrawler : MonoBehaviour
             foreach (MonoBehaviour component in gameObject.GetComponents<MonoBehaviour>())
             {
                 Type componentType = component.GetType();
-                foreach (MethodInfo m in componentType.GetMethods(BindingFlags.Public 
-                    | BindingFlags.NonPublic 
-                    | BindingFlags.Instance 
-                    | BindingFlags.Static 
+                foreach (MethodInfo m in componentType.GetMethods(BindingFlags.Public
+                    | BindingFlags.NonPublic
+                    | BindingFlags.Instance
+                    | BindingFlags.Static
                     | BindingFlags.DeclaredOnly))
                 {
                     if ((m.Name == "Update" || m.Name == "FixedUpdate" || m.Name == "LateUpdate") && m.GetParameters().Length == 0)
                     {
                         if (db.IsSymexMethod(m))
                         {
-                            using (var z3 = new Context(new Dictionary<string, string>() {{ "model", "true" }}))
+                            using (var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } }))
                             {
                                 foreach (SymexPath p in db.GetSymexPaths(m))
                                 {
-                                    if (p.CheckFeasible(component, z3, out var inputFacts))
+                                    if (p.CheckSatisfiable(component, z3, out var pathCondition))
                                     {
-                                        actionConditions.Add(inputFacts);
+                                        actions.Add(new Action(pathCondition));
                                     }
                                 }
                             }
@@ -60,7 +62,22 @@ public class SymexCrawler : MonoBehaviour
             }
         }
 
-        Debug.Log(string.Join("\n", actionConditions.Select(cond => string.Join(" && ", cond))));
+        return actions;
+    }
+
+    public IEnumerator CrawlLoop()
+    {
+        for (; ;)
+        {
+            var actions = ComputeActions();
+            var possibleActions = actions.Where(action => action.CanPerform()).ToList();
+            Debug.Log("possible: [" + string.Join(", ", possibleActions) + "]");
+            int actionIndex = (int)UnityEngine.Random.Range(0.0f, possibleActions.Count - 0.001f);
+            var selected = possibleActions[actionIndex];
+            Debug.Log("selected: " + selected);
+            selected.Perform(sim);
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 
     void OnDestroy()

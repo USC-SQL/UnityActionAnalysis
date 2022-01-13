@@ -473,6 +473,18 @@ namespace UnitySymexCrawler.Operations
                         }
                     }
                     break;
+                case OpCode.IsInst:
+                    {
+                        IsInst isinst = (IsInst)inst;
+                        Variable valueVar = Variable.Reference();
+                        Enqueue(s, new MakeTempVar(valueVar, inst));
+                        EnqueueEvaluate(s, isinst.Argument, valueVar);
+                        if (resultVar != null)
+                        {
+                            Enqueue(s, new IsOp(valueVar, isinst.Type, resultVar, inst));
+                        }
+                    }
+                    break;
                 default:
                     throw new Exception("unrecognized instruction: " + inst);
             }

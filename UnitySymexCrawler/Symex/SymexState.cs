@@ -386,7 +386,14 @@ namespace UnitySymexCrawler
             if (expr.Sort is IntSort)
             {
                 Reference r = Reference.FromExpr(expr);
-                if (r.address.heap && r.address.components.Count == 0)
+                if (r.address == null)
+                {
+                    return new
+                    {
+                        type = TYPE_OBJECT,
+                        value = (object)null
+                    };
+                } else if (r.address.heap && r.address.components.Count == 0)
                 {
                     Dictionary<string, Expr> obj = objects[r.address.root];
                     if (obj.TryGetValue("_string", out Expr strExpr) && strExpr.Sort == z3.StringSort && strExpr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_INTERNAL)

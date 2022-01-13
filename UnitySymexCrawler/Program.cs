@@ -18,7 +18,15 @@ namespace UnitySymexCrawler
     {
         public override bool IsMethodSymbolic(IMethod method)
         {
-            return !method.HasBody || method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
+            if (!method.HasBody)
+            {
+                return true;
+            }
+            if (method.IsAccessor)
+            {
+                return false;
+            }
+            return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
         }
 
         private static bool IsInputAPI(IMethod method)

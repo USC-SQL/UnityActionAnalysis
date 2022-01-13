@@ -465,7 +465,7 @@ namespace UnitySymexCrawler
             FuncDecl[] accessors = dsort.Accessors[0];
             List<Expr> elems = new List<Expr>();
             int index = 0;
-            foreach (IField dtField in declaringType.GetFields())
+            foreach (IField dtField in declaringType.GetFields(f => !f.IsStatic))
             {
                 if (dtField.FullName == field.FullName)
                 {

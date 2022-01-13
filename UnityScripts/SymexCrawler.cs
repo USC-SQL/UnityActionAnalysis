@@ -76,7 +76,7 @@ public class SymexCrawler : MonoBehaviour
             var selected = possibleActions[actionIndex];
             Debug.Log("selected: " + selected);
             selected.Perform(sim);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.25f);
         }
     }
 

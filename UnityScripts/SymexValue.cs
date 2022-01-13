@@ -30,13 +30,20 @@ public abstract class SymexValue
                 return new SymexStringConstantValue(o["value"].ToObject<string>());
             case TYPE_OBJECT:
                 {
-                    Dictionary<string, SymexValue> value = new Dictionary<string, SymexValue>();
-                    JObject obj = (JObject)o["value"];
-                    foreach (var p in obj)
+                    var jsonValue = o["value"];
+                    if (jsonValue is JObject)
                     {
-                        value.Add(p.Key, ParseInternal((JObject)p.Value, z3));
+                        Dictionary<string, SymexValue> value = new Dictionary<string, SymexValue>();
+                        JObject obj = (JObject)jsonValue;
+                        foreach (var p in obj)
+                        {
+                            value.Add(p.Key, ParseInternal((JObject)p.Value, z3));
+                        }
+                        return new SymexObjectValue(value);
+                    } else
+                    {
+                        return new SymexObjectValue(null);
                     }
-                    return new SymexObjectValue(value);
                 }
             case TYPE_BVCONST:
                 return new SymexBitVecConstantValue(o["value"].ToObject<ulong>());

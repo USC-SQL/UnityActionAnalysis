@@ -34,6 +34,7 @@ namespace UnitySymexCrawler
         public Queue<Operation> opQueue;
         public List<BoolExpr> pathCondition;
         public ExecutionStatus execStatus;
+        public object customData;
 
         public int frameID;
 
@@ -53,6 +54,7 @@ namespace UnitySymexCrawler
             opQueue = new Queue<Operation>();
             pathCondition = new List<BoolExpr>();
             execStatus = ExecutionStatus.ACTIVE;
+            customData = SymexMachine.Instance.Config.NewStateCustomData();
 
             frameID = 0;
             frameCounter = 1;
@@ -82,6 +84,7 @@ namespace UnitySymexCrawler
             opQueue = new Queue<Operation>(o.opQueue);
             pathCondition = new List<BoolExpr>(o.pathCondition);
             execStatus = o.execStatus;
+            customData = SymexMachine.Instance.Config.CloneStateCustomData(o.customData);
 
             frameID = o.frameID;
             frameCounter = o.frameCounter;
@@ -438,7 +441,7 @@ namespace UnitySymexCrawler
             } 
             else
             {
-                using (Solver s = z3.MkSolver())
+                /*using (Solver s = z3.MkSolver())
                 {
                     s.Assert(z3.MkEq(expr, z3.MkConst("p", expr.Sort)));
                     return new
@@ -446,7 +449,13 @@ namespace UnitySymexCrawler
                         type = TYPE_Z3EXPR,
                         value = s.ToString()
                     };
-                }
+                }*/
+
+                return new
+                {
+                    type = TYPE_Z3EXPR
+                    // TODO add value (above method using Solver seems to be very slow)
+                };
             }
         }
 

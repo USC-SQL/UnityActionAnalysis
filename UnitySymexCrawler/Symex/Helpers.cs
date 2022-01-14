@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using ICSharpCode.Decompiler.TypeSystem;
+using ICSharpCode.Decompiler.IL;
 using Microsoft.Z3;
 
 namespace UnitySymexCrawler
@@ -30,6 +31,15 @@ namespace UnitySymexCrawler
                 throw new Exception("failed to find accessor for field " + field.FullName);
             }
             return fieldAccessor;
+        }
+
+        public static ILFunction GetInstructionFunction(ILInstruction inst)
+        {
+            while (!(inst is ILFunction))
+            {
+                inst = inst.Parent;
+            }
+            return (ILFunction)inst;
         }
 
         public static Expr MakeDefaultValue(IType type)

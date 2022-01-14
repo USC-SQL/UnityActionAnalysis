@@ -48,7 +48,8 @@ public abstract class SymexValue
             case TYPE_BVCONST:
                 return new SymexBitVecConstantValue(o["value"].ToObject<ulong>());
             case TYPE_Z3EXPR:
-                return new SymexZ3ExprValue(z3.ParseSMTLIB2String(o["value"].ToObject<string>())[0].Arg(0));
+                //return new SymexZ3ExprValue(z3.ParseSMTLIB2String(o["value"].ToObject<string>())[0].Arg(0));
+                return new SymexZ3ExprValue(null);
             default:
                 throw new ArgumentException("unexpected type " + type);
         }

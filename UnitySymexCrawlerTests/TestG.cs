@@ -40,11 +40,12 @@ namespace UnitySymexCrawler.Tests
                     var rec1y = z3.MkConst("symcall:0:instancefield:position:instancefield:y", z3.MkFPSortSingle());
                     var rec2x = z3.MkConst("symcall:1:instancefield:position:instancefield:x", z3.MkFPSortSingle());
                     var rec2y = z3.MkConst("symcall:1:instancefield:position:instancefield:y", z3.MkFPSortSingle());
-                    var rec3x = z3.MkConst("staticfield:TestCases.TestG.GlobalState.thirdRecord:instancefield:position:instancefield:x", z3.MkFPSortSingle());
-                    var rec3y = z3.MkConst("staticfield:TestCases.TestG.GlobalState.thirdRecord:instancefield:position:instancefield:y", z3.MkFPSortSingle());
+                    var rec3x = z3.MkConst("staticfield:TestCases.TestG.GlobalState,TestCases.thirdRecord:instancefield:position:instancefield:x", z3.MkFPSortSingle());
+                    var rec3y = z3.MkConst("staticfield:TestCases.TestG.GlobalState,TestCases.thirdRecord:instancefield:position:instancefield:y", z3.MkFPSortSingle());
 
                     Assert.IsTrue(helper.ExistsState((s, m) =>
                     {
+                        Console.WriteLine(m);
                         if (TestHelpers.ModelContainsVariables(m, rec1id, rec2id, rec1x, rec1y, rec2x, rec2y, rec3x, rec3y))
                         {
                             var r1id = ulong.Parse(m.Evaluate(rec1id).ToString());

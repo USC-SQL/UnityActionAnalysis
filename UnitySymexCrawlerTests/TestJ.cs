@@ -89,7 +89,7 @@ namespace UnitySymexCrawler.Tests
                         {
                             if (TestHelpers.ModelContainsVariables(m, symcall0, symcall1))
                             {
-                                string axis0 = (string)s.SerializeExpr(s.symbolicMethodCalls[0].args[0]);
+                                string axis0 = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(s.SerializeExpr(s.symbolicMethodCalls[0].args[0]))).GetProperty("value").GetString();
                                 Expr symcallHorizontal, symcallVertical;
                                 if (axis0 == "Horizontal")
                                 {

@@ -14,17 +14,34 @@ using Microsoft.Z3;
 
 namespace UnitySymexCrawler
 {
+    class ConfigData
+    {
+        public Dictionary<(string, string), int> inputVarIds;
+        
+        public ConfigData() {
+            inputVarIds = new Dictionary<(string, string), int>();
+        }
+
+        public ConfigData(ConfigData o)
+        {
+            inputVarIds = new Dictionary<(string, string), int>(o.inputVarIds);
+        }
+    }
+
     public class UnityConfiguration : Configuration
     {
         public override bool IsMethodSymbolic(IMethod method)
         {
-            if (!method.HasBody)
+            if (method.Name == "IsPossibleMovement" || method.Name == "set_currentPosition"  || method.Name == "set_currentRotation"
+                || method.Name == "DeletePossibleLines" || method.Name == "IsGameOver"
+                || method.ReflectionName == "TetrisEngine.Playfield.Step" || method.ReflectionName == "TetriminoView.Draw"
+                || method.Name == "get_mCurrentTetrimino" || method.Name == "get_PreviousRotation" || method.Name == "get_NextRotation")
             {
                 return true;
             }
-            if (method.IsAccessor)
+            if (!method.HasBody)
             {
-                return false;
+                return true;
             }
             return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
         }
@@ -34,21 +51,36 @@ namespace UnitySymexCrawler
             return method.DeclaringType.FullName == "UnityEngine.Input" && method.Parameters.Count == 1;
         }
 
+        public override object NewStateCustomData()
+        {
+            return new ConfigData();
+        }
+
+        public override object CloneStateCustomData(object data)
+        {
+            return new ConfigData((ConfigData)data);
+        }
+
         public override int SymbolicMethodResultVarId(IMethod method, List<Expr> arguments, SymexState state)
         {
             if (IsInputAPI(method))
             {
+                ConfigData cdata = (ConfigData)state.customData;
                 string arg = JsonSerializer.Serialize(state.SerializeExpr(arguments[0]));
-                foreach (var p in state.symbolicMethodCalls)
+                var p = (method.ReflectionName, arg);
+                if (cdata.inputVarIds.TryGetValue(p, out int varId))
                 {
-                    SymbolicMethodCall smc = p.Value;
-                    if (IsInputAPI(smc.method) && JsonSerializer.Serialize(state.SerializeExpr(smc.args[0])) == arg)
-                    {
-                        return p.Key;
-                    }
+                    return varId;
+                } else
+                {
+                    int result = base.SymbolicMethodResultVarId(method, arguments, state);
+                    cdata.inputVarIds.Add(p, result);
+                    return result;
                 }
+            } else
+            {
+                return base.SymbolicMethodResultVarId(method, arguments, state);
             }
-            return base.SymbolicMethodResultVarId(method, arguments, state);
         }
     }
 
@@ -59,7 +91,7 @@ namespace UnitySymexCrawler
             SymexMachine.SetUpGlobals();
 
             var assemblyFileName =
-                @"C:\Users\sasha-usc\Misc\UnitySymexCrawler\Assembly-CSharp.dll";
+                @"C:\Users\sasha-usc\Misc\UnitySymexCrawler\Subjects\Pacman\Assembly-CSharp.dll";
             var peFile = new PEFile(assemblyFileName,
                 new FileStream(assemblyFileName, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);
@@ -70,8 +102,11 @@ namespace UnitySymexCrawler
                 MetadataReaderOptions.None);
             assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.17f1\Editor\Data\Managed\UnityEngine");
             assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\InputSimulator.1.0.4\lib\net20");
             assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
             assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Library\ScriptAssemblies");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\External\Demigiant\DOTween");
             var settings = new DecompilerSettings();
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);
             var ua = new UnityAnalysis(decompiler);
@@ -99,7 +134,9 @@ namespace UnitySymexCrawler
                     {
                         Console.WriteLine("Processing " + method.FullName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")");
                         SymexMachine m = new SymexMachine(decompiler, method, new UnityConfiguration());
+                        Console.WriteLine("\tRunning symbolic execution");
                         m.Run();
+                        Console.WriteLine("\tWriting path information to database");
                         db.AddPaths(method, m);
                         m.Dispose();
                     }

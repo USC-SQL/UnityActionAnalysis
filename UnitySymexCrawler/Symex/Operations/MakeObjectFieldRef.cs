@@ -25,6 +25,11 @@ namespace UnitySymexCrawler.Operations
         {
             Debug.Assert(refVar.IsReferenceType());
             Reference r = Reference.FromExpr(state.MemoryRead(refVar.address, null));
+            if (r.address == null)
+            {
+                new Abort(Instruction).Perform(state); // null pointer exception
+                return;
+            }
             MemoryAddress address = r.address.WithComponent(new MemoryAddressField(field));
             Reference res = new Reference(field.Type, address);
             state.MemoryRead(res.address, res.type); 

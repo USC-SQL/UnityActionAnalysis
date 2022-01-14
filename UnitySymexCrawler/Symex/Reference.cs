@@ -39,17 +39,17 @@ namespace UnitySymexCrawler
                 return SymexMachine.Instance.RefStorage.Find(storageId);
             } else
             {
-                throw new ArgumentException("expected constant integer");
+                throw new ArgumentException("expected constant integer, got " + expr);
             }
         }
 
         public bool Equals([AllowNull] Reference other)
         {
-            if (!type.Equals(other.type))
+            if (address == null && other.address == null)
             {
-                return false;
+                return true;
             }
-
+            
             if ((address == null && other.address != null) || (address != null && other.address == null))
             {
                 return false;

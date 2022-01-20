@@ -22,7 +22,7 @@ namespace UnitySymexCrawler.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate(type.FullName);
+            MemoryAddress address = state.HeapAllocate(type, type.FullName);
             MemoryAddress elemsAddress = address.WithComponent(new MemoryAddressArrayElements());
             MemoryAddress lenAddress = address.WithComponent(new MemoryAddressArrayLength());
             Expr defaultElemValue = Helpers.MakeDefaultValue(type.ElementType);

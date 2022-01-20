@@ -91,7 +91,7 @@ namespace UnitySymexCrawler
             SymexMachine.SetUpGlobals();
 
             var assemblyFileName =
-                @"C:\Users\sasha-usc\Misc\UnitySymexCrawler\Subjects\Pacman\Assembly-CSharp.dll";
+                @"C:\Users\sasha-usc\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll";
             var peFile = new PEFile(assemblyFileName,
                 new FileStream(assemblyFileName, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);
@@ -101,12 +101,15 @@ namespace UnitySymexCrawler
                 PEStreamOptions.PrefetchEntireImage,
                 MetadataReaderOptions.None);
             assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.17f1\Editor\Data\Managed\UnityEngine");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\InputSimulator.1.0.4\lib\net20");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
-            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Library\ScriptAssemblies");
-            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\External\Demigiant\DOTween");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\InputSimulator.1.0.4\lib\net20");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
+            //assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Documents\AutoExplore\SymexExperiments\Pacman\Assets\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Library\ScriptAssemblies");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\External\Demigiant\DOTween");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\sasha-usc\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
             var settings = new DecompilerSettings();
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);
             var ua = new UnityAnalysis(decompiler);

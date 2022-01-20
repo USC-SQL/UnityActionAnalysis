@@ -18,7 +18,7 @@ namespace UnitySymexCrawler.Operations
 
         public override void Perform(SymexState state)
         {
-            MemoryAddress address = state.HeapAllocate(type.FullName);
+            MemoryAddress address = state.HeapAllocate(type, type.FullName);
             foreach (IField field in Helpers.GetInstanceFields(type))
             {
                 MemoryAddress fieldAddress = address.WithComponent(new MemoryAddressField(field));

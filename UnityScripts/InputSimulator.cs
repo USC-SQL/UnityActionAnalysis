@@ -3,40 +3,50 @@ using UnityEngine;
 using WindowsInput.Native;
 using WindowsInputSimulator = WindowsInput.InputSimulator;
 
-public class InputSimulator
+namespace UnitySymexCrawler
 {
-    private WindowsInputSimulator sim = new WindowsInputSimulator();
-
-    private VirtualKeyCode ConvertUnityKeyCode(KeyCode keyCode)
+    public class InputSimulator
     {
-        switch (keyCode)
+        private WindowsInputSimulator sim = new WindowsInputSimulator();
+
+        private VirtualKeyCode ConvertUnityKeyCode(KeyCode keyCode)
         {
-            case KeyCode.LeftArrow:
+            if (keyCode == KeyCode.LeftArrow)
+            {
                 return VirtualKeyCode.LEFT;
-            case KeyCode.RightArrow:
+            } else if (keyCode == KeyCode.RightArrow)
+            {
                 return VirtualKeyCode.RIGHT;
-            case KeyCode.UpArrow:
+            } else if (keyCode == KeyCode.UpArrow)
+            {
                 return VirtualKeyCode.UP;
-            case KeyCode.DownArrow:
+            } else if (keyCode == KeyCode.DownArrow)
+            {
                 return VirtualKeyCode.DOWN;
-            case KeyCode.Escape:
+            } else if (keyCode == KeyCode.Escape)
+            {
                 return VirtualKeyCode.ESCAPE;
-            default:
+            } else if (keyCode >= KeyCode.A && keyCode <= KeyCode.Z)
+            {
+                return (VirtualKeyCode)((int)keyCode - 32);
+            } else
+            {
                 throw new Exception("unrecognized key code: " + keyCode);
+            }
         }
-    }
 
-    public void SimulateKeyDown(KeyCode keyCode)
-    {
-        var winKeyCode = ConvertUnityKeyCode(keyCode);
-        Debug.Log("SimulateKeyDown: " + winKeyCode);
-        sim.Keyboard.KeyDown(winKeyCode);
-    }
+        public void SimulateKeyDown(KeyCode keyCode)
+        {
+            var winKeyCode = ConvertUnityKeyCode(keyCode);
+            Debug.Log("SimulateKeyDown: " + winKeyCode);
+            sim.Keyboard.KeyDown(winKeyCode);
+        }
 
-    public void SimulateKeyUp(KeyCode keyCode)
-    {
-        var winKeyCode = ConvertUnityKeyCode(keyCode);
-        Debug.Log("SimulateKeyUp: " + winKeyCode);
-        sim.Keyboard.KeyUp(winKeyCode);
+        public void SimulateKeyUp(KeyCode keyCode)
+        {
+            var winKeyCode = ConvertUnityKeyCode(keyCode);
+            Debug.Log("SimulateKeyUp: " + winKeyCode);
+            sim.Keyboard.KeyUp(winKeyCode);
+        }
     }
 }

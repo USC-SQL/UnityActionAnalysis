@@ -104,7 +104,7 @@ namespace UnitySymexCrawler
             ITypeDefinition monoBehaviour = FindMonoBehaviourType();
             foreach (ITypeDefinition type in csd.TypeSystem.MainModule.TypeDefinitions)
             {
-                if (type.IsDerivedFrom(monoBehaviour))
+                if (type.Namespace != "UnitySymexCrawler" && type.IsDerivedFrom(monoBehaviour))
                 {
                     foreach (IMethod method in type.Methods)
                     {

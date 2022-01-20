@@ -47,7 +47,7 @@ namespace UnitySymexCrawler
 
         public Sort TypeToSort(IType type)
         {
-            string typeFullName = type.FullName;
+            string typeFullName = Helpers.GetAssemblyQualifiedName(type);
             Sort result;
             if (pool.TryGetValue(typeFullName, out result))
             {

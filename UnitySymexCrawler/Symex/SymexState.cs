@@ -25,10 +25,31 @@ namespace UnitySymexCrawler
         HALTED
     }
 
+    public class HeapObject
+    {
+        public Dictionary<string, Expr> value;
+        public IType type;
+        public string symbolName;
+
+        public HeapObject(IType type, string symbolName = null)
+        {
+            value = new Dictionary<string, Expr>();
+            this.type = type;
+            this.symbolName = symbolName;
+        }
+
+        public HeapObject(HeapObject o)
+        {
+            value = new Dictionary<string, Expr>(o.value);
+            type = o.type;
+            symbolName = o.symbolName;
+        }
+    }
+
     public class SymexState 
     {
         public Dictionary<string, Expr> mem;
-        public Dictionary<string, Dictionary<string, Expr>> objects;
+        public Dictionary<string, HeapObject> objects;
         public Dictionary<int, SymbolicMethodCall> symbolicMethodCalls;
         public Stack<FrameStackElement> frameStack;
         public Queue<Operation> opQueue;
@@ -48,7 +69,7 @@ namespace UnitySymexCrawler
         public SymexState(Context z3)
         {
             mem = new Dictionary<string, Expr>();
-            objects = new Dictionary<string, Dictionary<string, Expr>>();
+            objects = new Dictionary<string, HeapObject>();
             symbolicMethodCalls = new Dictionary<int, SymbolicMethodCall>();
             frameStack = new Stack<FrameStackElement>();
             opQueue = new Queue<Operation>();
@@ -68,10 +89,10 @@ namespace UnitySymexCrawler
         public SymexState(SymexState o)
         {
             mem = new Dictionary<string, Expr>(o.mem);
-            objects = new Dictionary<string, Dictionary<string, Expr>>();
+            objects = new Dictionary<string, HeapObject>();
             foreach (var p in o.objects)
             {
-                objects[p.Key] = new Dictionary<string, Expr>(p.Value);
+                objects[p.Key] = new HeapObject(p.Value);
             }
             symbolicMethodCalls = new Dictionary<int, SymbolicMethodCall>(o.symbolicMethodCalls);
 
@@ -106,11 +127,11 @@ namespace UnitySymexCrawler
                     var f = (MemoryAddressField)c;
                     if (address.components.Count == 1)
                     {
-                        obj[f.field.Name] = value;
+                        obj.value[f.field.Name] = value;
                     }
                     else
                     {
-                        obj[f.field.Name] = MemoryTransform(obj[f.field.Name], address.components, 1, value);
+                        obj.value[f.field.Name] = MemoryTransform(obj.value[f.field.Name], address.components, 1, value);
                     }
                 }
                 else if (c is MemoryAddressArrayElements)
@@ -119,7 +140,7 @@ namespace UnitySymexCrawler
                     {
                         throw new ArgumentException("can only have one component in address with MemoryAddressArrayElements");
                     }
-                    obj["_elems"] = value;
+                    obj.value["_elems"] = value;
                 }
                 else if (c is MemoryAddressArrayLength)
                 {
@@ -127,34 +148,34 @@ namespace UnitySymexCrawler
                     {
                         throw new ArgumentException("can only have one component in address with MemoryAddressArrayLength");
                     }
-                    obj["_length"] = value;
+                    obj.value["_length"] = value;
                 } else if (c is MemoryAddressString)
                 {
                     if (address.components.Count > 1)
                     {
                         throw new ArgumentException("can only have one component in address with MemoryAddressString");
                     }
-                    obj["_string"] = value;
+                    obj.value["_string"] = value;
                 } else if (c is MemoryAddressMemberToken)
                 {
                     if (address.components.Count > 1)
                     {
                         throw new ArgumentException("can only have one component in address with MemoryAddressMemberToken");
                     }
-                    obj["_memberToken"] = value;
+                    obj.value["_memberToken"] = value;
                 }
                 else
                 {
                     var ae = (MemoryAddressArrayElement)c;
                     if (address.components.Count == 1)
                     {
-                        obj["_elems"] = z3.MkStore((ArrayExpr)obj["_elems"], ae.index, value);
+                        obj.value["_elems"] = z3.MkStore((ArrayExpr)obj.value["_elems"], ae.index, value);
                     }
                     else
                     {
-                        var elem = z3.MkSelect((ArrayExpr)obj["_elems"], ae.index).Simplify();
+                        var elem = z3.MkSelect((ArrayExpr)obj.value["_elems"], ae.index).Simplify();
                         elem = MemoryTransform(elem, address.components, 1, value);
-                        obj["_elems"] = z3.MkStore((ArrayExpr)obj["_elems"], ae.index, elem);
+                        obj.value["_elems"] = z3.MkStore((ArrayExpr)obj.value["_elems"], ae.index, elem);
                     }
                 }
             }
@@ -180,24 +201,24 @@ namespace UnitySymexCrawler
                 if (c is MemoryAddressField)
                 {
                     MemoryAddressField f = (MemoryAddressField)c;
-                    if (!obj.ContainsKey(f.field.Name))
+                    if (!obj.value.ContainsKey(f.field.Name))
                     {
-                        obj[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + ":instancefield:" + f.field.Name);
+                        obj.value[f.field.Name] = MakeSymbolicValue(f.field.Type, address.root + ":instancefield:" + f.field.Name);
                     }
-                    value = obj[f.field.Name];
+                    value = obj.value[f.field.Name];
                 } else if (c is MemoryAddressString)
                 {
                     Expr str;
-                    if (!obj.TryGetValue("_string", out str))
+                    if (!obj.value.TryGetValue("_string", out str))
                     {
                         str = z3.MkConst(address.root + ":string", z3.StringSort);
-                        obj["_string"] = str;
+                        obj.value["_string"] = str;
                     }
                     value = str;
                 } else if (c is MemoryAddressMemberToken)
                 {
                     Expr m;
-                    if (!obj.TryGetValue("_memberToken", out m))
+                    if (!obj.value.TryGetValue("_memberToken", out m))
                     {
                         throw new NotSupportedException("attempted to read uninitialized member token");
                     }
@@ -208,16 +229,16 @@ namespace UnitySymexCrawler
                     Expr elems;
                     Expr length;
 
-                    if (!obj.TryGetValue("_elems", out elems))
+                    if (!obj.value.TryGetValue("_elems", out elems))
                     {
                         elems = z3.MkConst(address.root + ":elems",
                             z3.MkArraySort(z3.MkBitVecSort(32), SymexMachine.Instance.SortPool.TypeToSort(elementType)));
-                        obj["_elems"] = elems;
+                        obj.value["_elems"] = elems;
                     }
-                    if (!obj.TryGetValue("_length", out length))
+                    if (!obj.value.TryGetValue("_length", out length))
                     {
                         length = z3.MkConst(address.root + ":length", z3.MkBitVecSort(32));
-                        obj["_length"] = length;
+                        obj.value["_length"] = length;
                     }
 
                     if (c is MemoryAddressArrayElements)
@@ -277,12 +298,12 @@ namespace UnitySymexCrawler
         {
             if (type.Kind == TypeKind.Class || type.Kind == TypeKind.Interface)
             {
-                MemoryAddress address = HeapAllocate(name);
+                MemoryAddress address = HeapAllocate(type, name, true);
                 Reference r = new Reference(type, address);
                 return r.ToExpr();
             } else if (type.Kind == TypeKind.Array)
             {
-                MemoryAddress address = HeapAllocate(name);
+                MemoryAddress address = HeapAllocate(type, name, true);
                 MemoryAddress elemsAddress = address.WithComponent(new MemoryAddressArrayElements());
                 MemoryAddress lenAddress = address.WithComponent(new MemoryAddressArrayLength());
                 ArrayType arrType = (ArrayType)type;
@@ -316,7 +337,7 @@ namespace UnitySymexCrawler
             }
         }
 
-        public MemoryAddress HeapAllocate(string name)
+        public MemoryAddress HeapAllocate(IType type, string name, bool symbol = false)
         {
             int heapId;
             if (!heapCounters.TryGetValue(name, out heapId))
@@ -324,7 +345,7 @@ namespace UnitySymexCrawler
                 heapId = 0;
             }
             MemoryAddress address = new MemoryAddress(true, name + (heapId > 0 ? ":heapid:" + heapId : ""));
-            objects[address.root] = new Dictionary<string, Expr>();
+            objects[address.root] = new HeapObject(type, symbol ? name : null);
             heapCounters[name] = heapId + 1;
             return address;
         }
@@ -382,7 +403,9 @@ namespace UnitySymexCrawler
         public const int TYPE_STRCONST = 1;
         public const int TYPE_OBJECT = 2;
         public const int TYPE_BVCONST = 3;
-        public const int TYPE_Z3EXPR = 4;
+        public const int TYPE_VARIABLE = 4;
+        public const int TYPE_STRUCT = 5;
+        public const int TYPE_UNKNOWN = 6;
 
         public object SerializeExpr(Expr expr)
         {
@@ -398,8 +421,8 @@ namespace UnitySymexCrawler
                     };
                 } else if (r.address.heap && r.address.components.Count == 0)
                 {
-                    Dictionary<string, Expr> obj = objects[r.address.root];
-                    if (obj.TryGetValue("_string", out Expr strExpr) && strExpr.Sort == z3.StringSort && strExpr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_INTERNAL)
+                    HeapObject obj = objects[r.address.root];
+                    if (obj.value.TryGetValue("_string", out Expr strExpr) && strExpr.Sort == z3.StringSort && strExpr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_INTERNAL)
                     {
                         var str = strExpr.ToString();
                         return new
@@ -410,20 +433,28 @@ namespace UnitySymexCrawler
                     } else
                     {
                         Dictionary<string, object> result = new Dictionary<string, object>();
-                        result["_address"] = new
-                        {
-                            type = TYPE_STRCONST,
-                            value = r.address.ToString()
-                        };
-                        foreach (var p in obj)
+                        foreach (var p in obj.value)
                         {
                             result[p.Key] = SerializeExpr(p.Value);
                         }
-                        return new
+                        if (obj.symbolName != null)
                         {
-                            type = TYPE_OBJECT,
-                            value = result
-                        };
+                            return new
+                            {
+                                type = TYPE_OBJECT,
+                                objectType = Helpers.GetAssemblyQualifiedName(obj.type),
+                                symbolName = obj.symbolName,
+                                value = result
+                            };
+                        } else
+                        {
+                            return new
+                            {
+                                type = TYPE_OBJECT,
+                                objectType = Helpers.GetAssemblyQualifiedName(obj.type),
+                                value = result
+                            };
+                        }
                     }
                 }
                 else
@@ -439,22 +470,33 @@ namespace UnitySymexCrawler
                     value = ulong.Parse(expr.ToString())
                 };
             } 
-            else
+            else if (expr.IsConst && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
             {
-                /*using (Solver s = z3.MkSolver())
-                {
-                    s.Assert(z3.MkEq(expr, z3.MkConst("p", expr.Sort)));
-                    return new
-                    {
-                        type = TYPE_Z3EXPR,
-                        value = s.ToString()
-                    };
-                }*/
-
                 return new
                 {
-                    type = TYPE_Z3EXPR
-                    // TODO add value (above method using Solver seems to be very slow)
+                    type = TYPE_VARIABLE,
+                    name = expr.FuncDecl.Name.ToString()
+                };
+            } else if (expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_DT_CONSTRUCTOR)
+            {
+                Dictionary<string, object> value = new Dictionary<string, object>();
+                var sort = (DatatypeSort)expr.Sort;
+                var accessors = sort.Accessors[0];
+                for (uint i = 0; i < accessors.Length; ++i)
+                {
+                    value.Add(accessors[i].Name.ToString(), SerializeExpr(expr.Arg(i)));
+                }
+                return new
+                {
+                    type = TYPE_STRUCT,
+                    structType = expr.FuncDecl.Name.ToString(),
+                    value = value
+                };
+            } else
+            {
+                return new
+                {
+                    type = TYPE_UNKNOWN
                 };
             }
         }

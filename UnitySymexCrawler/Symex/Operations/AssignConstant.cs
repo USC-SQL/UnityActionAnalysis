@@ -92,10 +92,10 @@ namespace UnitySymexCrawler.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate("string");
+            IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.String);
+            MemoryAddress address = state.HeapAllocate(type, "string");
             MemoryAddress stringAddress = address.WithComponent(new MemoryAddressString());
             state.MemoryWrite(stringAddress, z3.MkString(value));
-            IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.String);
             Reference r = new Reference(type, address);
             state.MemoryWrite(destVar.address, r.ToExpr());
         }
@@ -115,10 +115,10 @@ namespace UnitySymexCrawler.Operations
         public override void Perform(SymexState state)
         {
             Context z3 = SymexMachine.Instance.Z3;
-            MemoryAddress address = state.HeapAllocate("membertoken");
+            IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Object);
+            MemoryAddress address = state.HeapAllocate(type, "membertoken");
             MemoryAddress memberAddress = address.WithComponent(new MemoryAddressMemberToken());
             state.MemoryWrite(memberAddress, z3.MkString("membertoken:" + member.FullName));
-            IType type = SymexMachine.Instance.CSD.TypeSystem.FindType(KnownTypeCode.Object);
             Reference r = new Reference(type, address);
             state.MemoryWrite(destVar.address, r.ToExpr());
         }

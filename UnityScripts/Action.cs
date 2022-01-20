@@ -4,37 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Action
+namespace UnitySymexCrawler
 {
-    public readonly ISet<InputCondition> condition;
-
-    public Action(ISet<InputCondition> condition)
+    public class Action
     {
-        this.condition = condition;
-    }
+        public readonly ISet<InputCondition> condition;
 
-    public bool CanPerform()
-    {
-        foreach (InputCondition cond in condition)
+        public Action(ISet<InputCondition> condition)
         {
-            if (!cond.CanPerformInput())
+            this.condition = condition;
+        }
+
+        public bool CanPerform()
+        {
+            foreach (InputCondition cond in condition)
             {
-                return false;
+                if (!cond.CanPerformInput())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void Perform(InputSimulator sim)
+        {
+            foreach (InputCondition cond in condition)
+            {
+                cond.PerformInput(sim);
             }
         }
-        return true;
-    }
 
-    public void Perform(InputSimulator sim)
-    {
-        foreach (InputCondition cond in condition)
+        public override string ToString()
         {
-            cond.PerformInput(sim);
+            return string.Join(" && ", condition);
         }
-    }
-
-    public override string ToString()
-    {
-        return string.Join(" && ", condition);
     }
 }

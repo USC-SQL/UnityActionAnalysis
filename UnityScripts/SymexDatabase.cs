@@ -8,145 +8,154 @@ using UnityEngine.SceneManagement;
 using Microsoft.Z3;
 using Microsoft.Data.Sqlite;
 
-public class SymexDatabase : IDisposable
+namespace UnitySymexCrawler
 {
-    private SqliteConnection connection;
-
-    private HashSet<string> symexMethods;
-
-    public SymexDatabase(string dbFile)
+    public class SymexDatabase : IDisposable
     {
-        connection = new SqliteConnection(dbFile);
-        connection.Open();
-        ReadDB();
-    }
+        private SqliteConnection connection;
 
-    private string GetMethodSignature(int methodId)
-    {
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = "select signature from methods where id = $methodId";
-        selectCommand.Parameters.AddWithValue("$methodId", methodId);
-        using (var reader = selectCommand.ExecuteReader())
+        private HashSet<string> symexMethods;
+
+        public SymexDatabase(string dbFile)
         {
-            if (reader.Read())
-            {
-                return reader.GetString(0);
-            } else
-            {
-                return null;
-            }
+            connection = new SqliteConnection(dbFile);
+            connection.Open();
+            ReadDB();
         }
-    }
 
-    private void ReadDB()
-    {
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = "select distinct method from paths";
-
-        List<int> methodIds = new List<int>();
-        using (var reader = selectCommand.ExecuteReader())
+        private string GetMethodSignature(int methodId)
         {
-            while (reader.Read())
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = "select signature from methods where id = $methodId";
+            selectCommand.Parameters.AddWithValue("$methodId", methodId);
+            using (var reader = selectCommand.ExecuteReader())
             {
-                methodIds.Add(reader.GetInt32(0));
+                if (reader.Read())
+                {
+                    return reader.GetString(0);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        symexMethods = new HashSet<string>(methodIds.Select(id => GetMethodSignature(id)));
-    }
-
-    private static string GetMethodSignature(MethodInfo m)
-    {
-        string args = string.Join(";", m.GetParameters().Select(p => p.ParameterType.FullName));
-        var assembly = m.DeclaringType.Assembly;
-        return m.DeclaringType.FullName + (assembly != null ? "," + assembly.GetName().Name : "") + ":" + m.Name + "(" + args + ")";
-    }
-
-    public bool IsSymexMethod(MethodInfo m)
-    {
-        return symexMethods.Contains(GetMethodSignature(m));
-    }
-
-    private int GetMethodId(MethodInfo m)
-    {
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = "select id from methods where signature = $signature";
-        selectCommand.Parameters.AddWithValue("$signature", GetMethodSignature(m));
-        return Convert.ToInt32(selectCommand.ExecuteScalar());
-    }
-
-    public MethodInfo GetMethodFromSignature(string signature)
-    {
-        int paren = signature.IndexOf("(");
-        string name = signature.Substring(0, paren);
-        string[] paramTypeNames = signature.Substring(paren + 1, signature.IndexOf(")") - paren - 1).Split(';');
-        string[] parts = name.Split(':');
-        string declaringTypeName = parts[0];
-        string methodName = parts[1];
-        Type[] paramTypes = new Type[paramTypeNames.Length];
-        for (int i = 0, n = paramTypeNames.Length; i < n; ++i)
+        private void ReadDB()
         {
-            Type paramType = Type.GetType(paramTypeNames[i]);
-            paramTypes[i] = paramType;
-        }
-        Type declaringType = Type.GetType(declaringTypeName);
-        return declaringType.GetMethod(methodName, paramTypes);
-    }
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = "select distinct method from paths";
 
-    public List<SymexPath> GetSymexPaths(MethodInfo m)
-    {
-        int methodId = GetMethodId(m);
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = "select id, condition from paths where method = $methodId";
-        selectCommand.Parameters.AddWithValue("$methodId", methodId);
-
-        List<SymexPath> paths = new List<SymexPath>();
-        using (var reader = selectCommand.ExecuteReader())
-        {
-            while (reader.Read())
+            List<int> methodIds = new List<int>();
+            using (var reader = selectCommand.ExecuteReader())
             {
-                paths.Add(new SymexPath(reader.GetInt32(0), reader.GetString(1), this));
+                while (reader.Read())
+                {
+                    methodIds.Add(reader.GetInt32(0));
+                }
+            }
+
+            symexMethods = new HashSet<string>(methodIds.Select(id => GetMethodSignature(id)));
+        }
+
+        private static string GetMethodSignature(MethodInfo m)
+        {
+            string args = string.Join(";", m.GetParameters().Select(p => p.ParameterType.FullName));
+            var assembly = m.DeclaringType.Assembly;
+            return m.DeclaringType.FullName + (assembly != null ? "," + assembly.GetName().Name : "") + ":" + m.Name + "(" + args + ")";
+        }
+
+        public bool IsSymexMethod(MethodInfo m)
+        {
+            return symexMethods.Contains(GetMethodSignature(m));
+        }
+
+        private int GetMethodId(MethodInfo m)
+        {
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = "select id from methods where signature = $signature";
+            selectCommand.Parameters.AddWithValue("$signature", GetMethodSignature(m));
+            return Convert.ToInt32(selectCommand.ExecuteScalar());
+        }
+
+        public MethodInfo GetMethodFromSignature(string signature)
+        {
+            int paren = signature.IndexOf("(");
+            string name = signature.Substring(0, paren);
+            string[] paramTypeNames = signature.Substring(paren + 1, signature.IndexOf(")") - paren - 1).Split(';');
+            if (paramTypeNames.Length == 1 && paramTypeNames[0].Length == 0)
+            {
+                paramTypeNames = new string[0];
+            }
+            string[] parts = name.Split(':');
+            string declaringTypeName = parts[0];
+            string methodName = parts[1];
+            Type[] paramTypes = new Type[paramTypeNames.Length];
+            for (int i = 0, n = paramTypeNames.Length; i < n; ++i)
+            {
+                Type paramType = Type.GetType(paramTypeNames[i]);
+                paramTypes[i] = paramType;
+            }
+            Type declaringType = Type.GetType(declaringTypeName);
+            return declaringType.GetMethod(methodName, paramTypes);
+        }
+
+        public List<SymexPath> GetSymexPaths(MethodInfo m)
+        {
+            int methodId = GetMethodId(m);
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = "select id, condition from paths where method = $methodId";
+            selectCommand.Parameters.AddWithValue("$methodId", methodId);
+
+            List<SymexPath> paths = new List<SymexPath>();
+            using (var reader = selectCommand.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    paths.Add(new SymexPath(reader.GetInt32(0), reader.GetString(1), this));
+                }
+            }
+
+            return paths;
+        }
+
+        public SymbolicMethodCall GetSymbolicMethodCall(int symcallId, SymexPath path)
+        {
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = "select method from symbolicmethodcalls where symcallid = $symcallId and pathid = $pathId";
+            selectCommand.Parameters.AddWithValue("$symcallId", symcallId);
+            selectCommand.Parameters.AddWithValue("$pathId", path.pathId);
+            int methodId = Convert.ToInt32(selectCommand.ExecuteScalar());
+            string signature = GetMethodSignature(methodId);
+            return new SymbolicMethodCall(symcallId, path, GetMethodFromSignature(signature));
+        }
+
+        public SymbolicMethodCallArgument GetSymbolicMethodCallArgument(int argIndex, SymbolicMethodCall smc)
+        {
+            var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText =
+                "select value from smcarguments where symcallid = $symcallId and pathid = $pathid and argindex = $argIndex";
+            selectCommand.Parameters.AddWithValue("$symcallId", smc.symcallId);
+            selectCommand.Parameters.AddWithValue("$pathid", smc.path.pathId);
+            selectCommand.Parameters.AddWithValue("$argIndex", argIndex);
+            using (var reader = selectCommand.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    string value = reader.GetString(0);
+                    return new SymbolicMethodCallArgument(
+                        SymexValue.Parse(value), argIndex, smc.symcallId, smc.path.pathId);
+                }
+                else
+                {
+                    throw new ArgumentException("no such symbolic method call");
+                }
             }
         }
 
-        return paths;
-    }
-
-    public SymbolicMethodCall GetSymbolicMethodCall(int symcallId, SymexPath path)
-    {
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = "select method from symbolicmethodcalls where symcallid = $symcallId and pathid = $pathId";
-        selectCommand.Parameters.AddWithValue("$symcallId", symcallId);
-        selectCommand.Parameters.AddWithValue("$pathId", path.pathId);
-        int methodId = Convert.ToInt32(selectCommand.ExecuteScalar());
-        string signature = GetMethodSignature(methodId);
-        return new SymbolicMethodCall(symcallId, path, GetMethodFromSignature(signature));
-    }
-
-    public SymbolicMethodCallArgument GetSymbolicMethodCallArgument(int argIndex, SymbolicMethodCall smc, Context z3)
-    {
-        var selectCommand = connection.CreateCommand();
-        selectCommand.CommandText = 
-            "select value from smcarguments where symcallid = $symcallId and pathid = $pathid and argindex = $argIndex";
-        selectCommand.Parameters.AddWithValue("$symcallId", smc.symcallId);
-        selectCommand.Parameters.AddWithValue("$pathid", smc.path.pathId);
-        selectCommand.Parameters.AddWithValue("$argIndex", argIndex);
-        using (var reader = selectCommand.ExecuteReader())
+        public void Dispose()
         {
-            if (reader.Read())
-            {
-                string value = reader.GetString(0);
-                return new SymbolicMethodCallArgument(
-                    SymexValue.Parse(value, z3), argIndex, smc.symcallId, smc.path.pathId);
-            } else
-            {
-                throw new ArgumentException("no such symbolic method call");
-            }
+            connection.Dispose();
         }
-    }
-
-    public void Dispose()
-    {
-        connection.Dispose();
     }
 }

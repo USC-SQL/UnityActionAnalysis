@@ -24,14 +24,20 @@ namespace UnitySymexCrawler.Operations
         {
             Debug.Assert(refVar.IsReferenceType());
             Expr refExpr = state.MemoryRead(refVar.address, null);
-            Reference r = Reference.FromExpr(refExpr);
-            BitVecExpr index = (BitVecExpr)state.MemoryRead(indexVar.address, indexVar.type);
-            Debug.Assert(r.address.components.Count == 0);
-            MemoryAddress address = r.address.WithComponent(new MemoryAddressArrayElement(index));
-            ArrayType arrType = (ArrayType)r.type;
-            Reference res = new Reference(arrType.ElementType, address);
-            state.MemoryRead(res.address, res.type); 
-            state.MemoryWrite(resultVar.address, res.ToExpr());
+            if (refExpr.FuncDecl.DeclKind != Z3_decl_kind.Z3_OP_ANUM)
+            {
+                throw new NotSupportedException("multi-dimensional arrays not supported");
+            } else
+            {
+                Reference r = Reference.FromExpr(refExpr);
+                BitVecExpr index = (BitVecExpr)state.MemoryRead(indexVar.address, indexVar.type);
+                Debug.Assert(r.address.components.Count == 0);
+                MemoryAddress address = r.address.WithComponent(new MemoryAddressArrayElement(index));
+                ArrayType arrType = (ArrayType)r.type;
+                Reference res = new Reference(arrType.ElementType, address);
+                state.MemoryRead(res.address, res.type);
+                state.MemoryWrite(resultVar.address, res.ToExpr());
+            }
         }
     }
 }

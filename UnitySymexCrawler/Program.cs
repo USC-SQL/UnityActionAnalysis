@@ -65,7 +65,11 @@ namespace UnitySymexCrawler
                     foreach (IMethod method in targets)
                     {
                         Console.WriteLine("Processing " + method.FullName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")");
-                        SymexMachine m = new SymexMachine(decompiler, method, new UnityConfiguration());
+                        MethodPool methodPool = new MethodPool();
+                        Console.WriteLine("\tAnalyzing branches");
+                        InputBranchAnalysis iba = new InputBranchAnalysis(method, methodPool);
+                        var ibaResult = iba.Perform();
+                        SymexMachine m = new SymexMachine(decompiler, method, methodPool, new UnityConfiguration(ibaResult));
                         Console.WriteLine("\tRunning symbolic execution");
                         m.Run();
                         Console.WriteLine("\tWriting path information to database");

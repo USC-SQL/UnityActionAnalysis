@@ -433,7 +433,12 @@ namespace UnitySymexCrawler
             return changed;
         }
 
-        public Dictionary<IMethod, MethodAnalysisResult> Perform()
+        public class Result
+        {
+            public Dictionary<IMethod, MethodAnalysisResult> methodResults;
+        }
+
+        public Result Perform()
         {
             ISet<IMethod> methods = new HashSet<IMethod>(FindMethods(entryPoint)); // methods reachable from entry point
             Dictionary<IMethod, MethodAnalysisState> methodStates = new Dictionary<IMethod, MethodAnalysisState>();
@@ -521,7 +526,8 @@ namespace UnitySymexCrawler
                 }
             }
 
-            Dictionary<IMethod, MethodAnalysisResult> result = new Dictionary<IMethod, MethodAnalysisResult>();
+            Result result = new Result();
+            result.methodResults = new Dictionary<IMethod, MethodAnalysisResult>();
             foreach (var p in methodStates)
             {
                 var s = p.Value;
@@ -535,7 +541,7 @@ namespace UnitySymexCrawler
                         res.leadsToInputDepBranchPoint.Add(ap.Key);
                     }
                 }
-                result.Add(p.Key, res);
+                result.methodResults.Add(p.Key, res);
             }
             return result;
         }

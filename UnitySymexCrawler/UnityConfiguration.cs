@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using ICSharpCode.Decompiler.TypeSystem;
+using ICSharpCode.Decompiler.IL;
 using Microsoft.Z3;
+using UnitySymexCrawler.Operations;
 
 namespace UnitySymexCrawler
 {
@@ -24,20 +26,51 @@ namespace UnitySymexCrawler
 
     public class UnityConfiguration : Configuration
     {
+        private InputBranchAnalysis.Result ibaResult;
+
+        public UnityConfiguration(InputBranchAnalysis.Result ibaResult)
+        {
+            this.ibaResult = ibaResult;
+        }
+
+        public override bool ShouldSkipBranchCase(BranchCase branchCase, ILInstruction branchInst, SymexState state)
+        {
+            IMethod method = branchCase.IP.GetCurrentMethod();
+            InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
+            if (res.inputDepBranchPoints.Contains(branchInst))
+            {
+                return false;
+            }
+            if (state.frameStack.Count > 0)
+            {
+                foreach (FrameStackElement fse in state.frameStack)
+                {
+                    var callInst = fse.opQueue.Peek().Instruction;
+                    var m = Helpers.GetInstructionFunction(callInst).Method;
+                    var mRes = ibaResult.methodResults[m];
+                    if (mRes.leadsToInputDepBranchPoint.Contains(callInst))
+                    {
+                        return false;
+                    }
+                }
+            }
+            ILInstruction target = branchCase.IP.GetInstruction();
+            return !res.leadsToInputDepBranchPoint.Contains(target);
+        }
+
         public override bool IsMethodSymbolic(IMethod method)
         {
-            if (method.Name == "IsPossibleMovement" || method.Name == "set_currentPosition" || method.Name == "set_currentRotation"
-                || method.Name == "DeletePossibleLines" || method.Name == "IsGameOver"
-                || method.ReflectionName == "TetrisEngine.Playfield.Step" || method.ReflectionName == "TetriminoView.Draw"
-                || method.Name == "get_mCurrentTetrimino" || method.Name == "get_PreviousRotation" || method.Name == "get_NextRotation")
-            {
-                return true;
-            }
             if (!method.HasBody || IsInputAPI(method))
             {
                 return true;
             }
-            return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
+            if (method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule)
+            {
+                return true;
+            }
+            ILInstruction entryPoint = SymexMachine.Instance.MethodPool.MethodEntryPoint(method).GetInstruction();
+            InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
+            return !res.leadsToInputDepBranchPoint.Contains(entryPoint);
         }
 
         public static bool IsInputAPI(IMethod method)

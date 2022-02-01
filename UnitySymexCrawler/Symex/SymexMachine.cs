@@ -31,7 +31,7 @@ namespace UnitySymexCrawler
         private List<SymexState> statesToAdd;
         private Context z3;
 
-        public SymexMachine(CSharpDecompiler csd, IMethod entrypoint, Configuration config)
+        public SymexMachine(CSharpDecompiler csd, IMethod entrypoint, MethodPool methodPool, Configuration config)
         {
             if (!didSetUpGlobals)
             {
@@ -45,7 +45,7 @@ namespace UnitySymexCrawler
 
             this.csd = csd;
             Config = config;
-            MethodPool = new MethodPool();
+            MethodPool = methodPool;
             states = new List<SymexState>();
             statesToAdd = new List<SymexState>();
 

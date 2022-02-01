@@ -12,7 +12,7 @@ namespace UnitySymexCrawler.Tests
         public void TestAnalysis()
         {
             InputBranchAnalysis iba = IBATestHelpers.CreateInputBranchAnalysis("TestCases.InputBranchAnalysis.TestB.ProgramB", "Update");
-            Dictionary<IMethod, InputBranchAnalysis.MethodAnalysisResult> results = iba.Perform();
+            Dictionary<IMethod, InputBranchAnalysis.MethodAnalysisResult> results = iba.Perform().methodResults;
             
             Assert.IsTrue(results.Count == 1);
             Assert.IsTrue(results.Keys.Any(m => m.Name == "Update"));

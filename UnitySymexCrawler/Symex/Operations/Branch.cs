@@ -52,6 +52,10 @@ namespace UnitySymexCrawler.Operations
             }
             foreach (BranchCase branchCase in branchCases)
             {
+                if (SymexMachine.Instance.Config.ShouldSkipBranchCase(branchCase, Instruction, state))
+                {
+                    continue;
+                }
                 s.Push();
                 BitVecExpr bvCond = (BitVecExpr)state.MemoryRead(branchCase.condVar.address, branchCase.condVar.type);
                 BoolExpr cond = z3.MkNot(z3.MkEq(bvCond, z3.MkBV(0, bvCond.SortSize)));
@@ -76,11 +80,14 @@ namespace UnitySymexCrawler.Operations
                 state.pathCondition.Add(lastSatCase.condition);
                 Fetch fetchOp = new Fetch(lastSatCase.branchCase.IP, Instruction);
                 fetchOp.Perform(state);
-            } else
+            } else if (satCases.Count > 0) 
             {
                 state.pathCondition.Add(satCases[0].condition);
                 Fetch fetchOp = new Fetch(satCases[0].branchCase.IP, Instruction);
                 fetchOp.Perform(state);
+            } else
+            {
+                state.execStatus = ExecutionStatus.QUIT;
             }
         }
     }

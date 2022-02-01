@@ -32,7 +32,7 @@ namespace UnitySymexCrawler.Tests
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);
             IType program = decompiler.TypeSystem.MainModule.Compilation.FindType(new FullTypeName(entryPointClassFullName));
             IMethod main = program.GetMethods().Where(m => m.Name == entryPointMethodName).First();
-            var machine = new SymexMachine(decompiler, main, config);
+            var machine = new SymexMachine(decompiler, main, new MethodPool(), config);
             return machine;
         }
 

@@ -22,7 +22,8 @@ namespace UnitySymexCrawler
     {
         ACTIVE,
         ABORTED,
-        HALTED
+        HALTED,
+        QUIT
     }
 
     public class HeapObject

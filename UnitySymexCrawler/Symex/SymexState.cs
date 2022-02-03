@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using ICSharpCode.Decompiler.TypeSystem;
 using ICSharpCode.Decompiler.IL;
@@ -406,7 +407,8 @@ namespace UnitySymexCrawler
         public const int TYPE_BVCONST = 3;
         public const int TYPE_VARIABLE = 4;
         public const int TYPE_STRUCT = 5;
-        public const int TYPE_UNKNOWN = 6;
+        public const int TYPE_METHODCALL = 6;
+        public const int TYPE_UNKNOWN = 7;
 
         public object SerializeExpr(Expr expr)
         {
@@ -473,11 +475,37 @@ namespace UnitySymexCrawler
             } 
             else if (expr.IsConst && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
             {
-                return new
+                string name = expr.FuncDecl.Name.ToString();
+                if (name.StartsWith("symcall:"))
                 {
-                    type = TYPE_VARIABLE,
-                    name = expr.FuncDecl.Name.ToString()
-                };
+                    int accessorSepIndex = name.IndexOf(':', 8);
+                    int symcallId;
+                    string accessor;
+                    if (accessorSepIndex >= 0)
+                    {
+                        symcallId = int.Parse(name.Substring(8, accessorSepIndex - 8));
+                        accessor = name.Substring(accessorSepIndex + 1);
+                    } else
+                    {
+                        symcallId = int.Parse(name.Substring(8));
+                        accessor = null;
+                    }
+                    var smc = symbolicMethodCalls[symcallId];
+                    return new
+                    {
+                        type = TYPE_METHODCALL,
+                        method = Helpers.GetMethodSignature(smc.method),
+                        arguments = smc.args.Select(arg => SerializeExpr(arg)).ToList(),
+                        accessor = accessor
+                    };
+                } else
+                {
+                    return new
+                    {
+                        type = TYPE_VARIABLE,
+                        name = expr.FuncDecl.Name.ToString()
+                    };
+                }
             } else if (expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_DT_CONSTRUCTOR)
             {
                 Dictionary<string, object> value = new Dictionary<string, object>();

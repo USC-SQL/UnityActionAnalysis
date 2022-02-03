@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using ICSharpCode.Decompiler.TypeSystem;
 using ICSharpCode.Decompiler.IL;
@@ -142,6 +143,11 @@ namespace UnitySymexCrawler
             return type.ReflectionName + suffix;
         }
 
+        public static string GetMethodSignature(IMethod method)
+        {
+            return GetAssemblyQualifiedName(method.DeclaringType) + ":"
+                + method.Name + "(" + string.Join(";", method.Parameters.Select(param => Helpers.GetAssemblyQualifiedName(param.Type))) + ")";
+        }
 
         public static void DebugLog(string message)
         {

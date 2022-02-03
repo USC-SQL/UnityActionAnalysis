@@ -30,15 +30,9 @@ namespace UnitySymexCrawler
             initCommand.ExecuteNonQuery();
         }
 
-        private static string MethodSignature(IMethod method)
-        {
-            return Helpers.GetAssemblyQualifiedName(method.DeclaringType) + ":" 
-                + method.Name + "(" + string.Join(";", method.Parameters.Select(param => Helpers.GetAssemblyQualifiedName(param.Type))) + ")";
-        }
-
         private int GetMethodId(IMethod method)
         {
-            string signature = MethodSignature(method);
+            string signature = Helpers.GetMethodSignature(method);
             var selectCommand = connection.CreateCommand();
             selectCommand.CommandText = "select id from methods where signature = $signature";
             selectCommand.Parameters.AddWithValue("$signature", signature);

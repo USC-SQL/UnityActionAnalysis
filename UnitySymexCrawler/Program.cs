@@ -24,7 +24,6 @@ namespace UnitySymexCrawler
 
             /* TETRIS */
             var assemblyFileName = @"C:\Users\sasha-usc\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll";
-            
 
             var peFile = new PEFile(assemblyFileName,
                 new FileStream(assemblyFileName, FileMode.Open, FileAccess.Read),
@@ -56,8 +55,7 @@ namespace UnitySymexCrawler
             List<IMethod> targets = new List<IMethod>();
             foreach (IMethod method in ua.FindMonoBehaviourMethods(m => (m.Name == "Update" || m.Name == "FixedUpdate" || m.Name == "LateUpdate") && m.Parameters.Count == 0))
             {
-                bool diia = ua.DoesInvokeInputAPI(method);
-                if (diia)
+                if (ua.DoesInvokeInputAPI(method))
                 {
                     targets.Add(method);
                 }
@@ -68,41 +66,23 @@ namespace UnitySymexCrawler
             {
                 File.Delete(databaseFile);
             }
-            using (var db = new DatabaseUtil(databaseFile))
+
+            using var db = new DatabaseUtil(databaseFile);
+            using var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
+            foreach (IMethod method in targets)
             {
-                using (var z3 = new Context(new Dictionary<string, string>() {{"model", "true"}}))
-                {
-                    foreach (IMethod method in targets)
-                    {
-                        Console.WriteLine("Processing " + method.FullName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")");
-                        MethodPool methodPool = new MethodPool();
-                        Console.WriteLine("\tAnalyzing branches");
-                        InputBranchAnalysis iba = new InputBranchAnalysis(method, methodPool);
-                        var ibaResult = iba.Perform();
-                        SymexMachine m = new SymexMachine(decompiler, method, methodPool, new UnityConfiguration(ibaResult));
-                        Console.WriteLine("\tRunning symbolic execution");
-                        m.Run();
+                Console.WriteLine("Processing " + method.FullName + "(" + string.Join(",", method.Parameters.Select(param => param.Type.FullName)) + ")");
+                MethodPool methodPool = new MethodPool();
+                Console.WriteLine("\tAnalyzing branches");
+                InputBranchAnalysis iba = new InputBranchAnalysis(method, methodPool);
+                var ibaResult = iba.Perform();
+                SymexMachine m = new SymexMachine(decompiler, method, methodPool, new UnityConfiguration(ibaResult));
+                Console.WriteLine("\tRunning symbolic execution");
+                m.Run();
+                Console.WriteLine("\tWriting path information to database");
+                db.AddPaths(method, m);
 
-                        foreach (SymexState s in m.States)
-                        {
-                            foreach (var p in s.mem)
-                            {
-                                if (p.Key.StartsWith("staticfield:") || p.Key.StartsWith("frame:0:this"))
-                                {
-                                    var opt = new System.Text.Json.JsonSerializerOptions();
-                                    opt.WriteIndented = true;
-                                    Console.WriteLine(p.Key + ": " + System.Text.Json.JsonSerializer.Serialize(s.SerializeExpr(p.Value), opt));
-                                }
-                            }
-
-                            Console.WriteLine("---");
-                        }
-
-                        Console.WriteLine("\tWriting path information to database");
-                        db.AddPaths(method, m);
-                        m.Dispose();
-                    }
-                }
+                m.Dispose();
             }
         }
     }

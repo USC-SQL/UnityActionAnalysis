@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using ICSharpCode.Decompiler.TypeSystem;
@@ -90,25 +91,19 @@ namespace UnitySymexCrawler
 
         public override int SymbolicMethodResultVarId(IMethod method, List<Expr> arguments, SymexState state)
         {
-            if (IsInputAPI(method))
+            ConfigData cdata = (ConfigData)state.customData;
+            string args =
+                string.Join(";", arguments.Select(arg => JsonSerializer.Serialize(state.SerializeExpr(arg))));
+            var p = (method.ReflectionName, args);
+            if (cdata.inputVarIds.TryGetValue(p, out int varId))
             {
-                ConfigData cdata = (ConfigData)state.customData;
-                string arg = JsonSerializer.Serialize(state.SerializeExpr(arguments[0]));
-                var p = (method.ReflectionName, arg);
-                if (cdata.inputVarIds.TryGetValue(p, out int varId))
-                {
-                    return varId;
-                }
-                else
-                {
-                    int result = base.SymbolicMethodResultVarId(method, arguments, state);
-                    cdata.inputVarIds.Add(p, result);
-                    return result;
-                }
+                return varId;
             }
             else
             {
-                return base.SymbolicMethodResultVarId(method, arguments, state);
+                int result = base.SymbolicMethodResultVarId(method, arguments, state);
+                cdata.inputVarIds.Add(p, result);
+                return result;
             }
         }
     }

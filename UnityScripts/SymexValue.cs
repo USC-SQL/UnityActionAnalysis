@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Microsoft.Z3;
@@ -13,7 +14,8 @@ namespace UnitySymexCrawler
         BitVecConstant = 3,
         Variable = 4,
         Struct = 5,
-        Unknown = 6
+        UnevaluatedMethodCall = 6,
+        Unknown = 7
     }
 
     public abstract class SymexValue
@@ -25,7 +27,8 @@ namespace UnitySymexCrawler
         public const int TYPE_BVCONST = 3;
         public const int TYPE_VARIABLE = 4;
         public const int TYPE_STRUCT = 5;
-        public const int TYPE_UNKNOWN = 6;
+        public const int TYPE_METHODCALL = 6;
+        public const int TYPE_UNKNOWN = 7;
 
         private static SymexValue ParseInternal(JObject o)
         {
@@ -78,6 +81,18 @@ namespace UnitySymexCrawler
                         string structTypeName = o["structType"].ToObject<string>();
                         Type structType = Type.GetType(structTypeName);
                         return new SymexStructValue(value, structType);
+                    }
+                case TYPE_METHODCALL:
+                    {
+                        var method = SymexHelpers.GetMethodFromSignature(o["method"].ToObject<string>());
+                        List<SymexValue> args = new List<SymexValue>();
+                        JObject obj = (JObject)o["arguments"];
+                        foreach (var p in obj)
+                        {
+                            UnityEngine.Debug.Log("p.Key = " + p.Key);
+                            args.Add(ParseInternal((JObject)p.Value));
+                        }
+                        return new SymexUnevaluatedMethodCallValue(method, args);
                     }
                 case TYPE_UNKNOWN:
                     return new SymexUnknownValue();
@@ -195,6 +210,29 @@ namespace UnitySymexCrawler
         public override string ToString()
         {
             return structType.FullName + " {" + string.Join(",", value.Select(p => p.Key + ": " + p.Value)) + "}";
+        }
+    }
+
+    public class SymexUnevaluatedMethodCallValue : SymexValue
+    {
+        public readonly MethodInfo method;
+        public readonly List<SymexValue> arguments;
+
+        public SymexUnevaluatedMethodCallValue(MethodInfo method, List<SymexValue> arguments)
+        {
+            this.method = method;
+            this.arguments = arguments;
+        }
+
+        public override SymexValueType GetValueType()
+        {
+            return SymexValueType.UnevaluatedMethodCall;
+        }
+
+        public override string ToString()
+        {
+            return method.Name + "(" +
+                string.Join(", ", arguments.Select(arg => arg.ToString())) + ")";
         }
     }
 

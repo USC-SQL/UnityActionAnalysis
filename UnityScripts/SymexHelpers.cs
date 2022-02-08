@@ -6,6 +6,27 @@ namespace UnitySymexCrawler
 {
     public static class SymexHelpers
     {
+        public static MethodInfo GetMethodFromSignature(string signature)
+        {
+            int paren = signature.IndexOf("(");
+            string name = signature.Substring(0, paren);
+            string[] paramTypeNames = signature.Substring(paren + 1, signature.IndexOf(")") - paren - 1).Split(';');
+            if (paramTypeNames.Length == 1 && paramTypeNames[0].Length == 0)
+            {
+                paramTypeNames = new string[0];
+            }
+            string[] parts = name.Split(':');
+            string declaringTypeName = parts[0];
+            string methodName = parts[1];
+            Type[] paramTypes = new Type[paramTypeNames.Length];
+            for (int i = 0, n = paramTypeNames.Length; i < n; ++i)
+            {
+                Type paramType = Type.GetType(paramTypeNames[i]);
+                paramTypes[i] = paramType;
+            }
+            Type declaringType = Type.GetType(declaringTypeName);
+            return declaringType.GetMethod(methodName, paramTypes);
+        }
 
         private static bool IsSigned(Type type)
         {

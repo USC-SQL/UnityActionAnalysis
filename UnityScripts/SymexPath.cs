@@ -84,6 +84,11 @@ namespace UnitySymexCrawler
                     return ((SymexBitVecConstantValue)value).value;
                 case SymexValueType.Object:
                     throw new ResolutionException("object resolution not yet implemented");
+                case SymexValueType.Variable:
+                    {
+                        SymexVariableValue vval = (SymexVariableValue)value;
+                        return ResolveVariable(vval.varName, instance);
+                    }
                 case SymexValueType.Struct:
                     {
                         SymexStructValue sval = (SymexStructValue)value;
@@ -99,10 +104,27 @@ namespace UnitySymexCrawler
                         }
                         return result;
                     }
-                case SymexValueType.Variable:
+                case SymexValueType.UnevaluatedMethodCall:
                     {
-                        SymexVariableValue vval = (SymexVariableValue)value;
-                        return ResolveVariable(vval.varName, instance);
+                        SymexUnevaluatedMethodCallValue mval = (SymexUnevaluatedMethodCallValue)value;
+                        if (mval.method.IsStatic)
+                        {
+                            object[] args = new object[mval.arguments.Count];
+                            for (int i = 0, n = mval.arguments.Count; i < n; ++i)
+                            {
+                                args[i] = ResolveValue(mval.arguments[i], instance);
+                            }
+                            return mval.method.Invoke(null, args);
+                        } else
+                        {
+                            object thisVal = ResolveValue(mval.arguments[0], instance);
+                            object[] args = new object[mval.arguments.Count - 1];
+                            for (int i = 1, n = mval.arguments.Count; i < n; ++i)
+                            {
+                                args[i - 1] = ResolveValue(mval.arguments[i], instance);
+                            }
+                            return mval.method.Invoke(thisVal, args);
+                        }
                     }
                 default:
                     throw new Exception("unrecognized value type " + value.GetValueType());
@@ -246,47 +268,109 @@ namespace UnitySymexCrawler
             }
         }
 
+        public static int timeSpentMakingSolver = 0;
+        public static int timeSpentParsing = 0;
+        public static int timeSpentFindingVars = 0;
+        public static int timeSpentResolving = 0;
+        public static int timeSpentSatSolving = 0;
+        public static int timeSpentMakingInputConds = 0;
+        public static int totalTimeSpent = 0;
+
+        public static void ResetTimers()
+        {
+            timeSpentMakingSolver = 0;
+            timeSpentParsing = 0;
+            timeSpentFindingVars = 0;
+            timeSpentResolving = 0;
+            timeSpentSatSolving = 0;
+            timeSpentMakingInputConds = 0;
+            totalTimeSpent = 0;
+        }
+
+        public static void PrintTimers()
+        {
+            string message = "Time spent: total " + totalTimeSpent + "ms\n";
+            message += "\t making solver = " + timeSpentMakingSolver + "ms (" +
+                Math.Round(timeSpentMakingSolver * 100.0 / totalTimeSpent) + "%)\n";
+            message += "\t parsing smtlib string = " + timeSpentParsing + "ms (" +
+                Math.Round(timeSpentParsing * 100.0 / totalTimeSpent) + "%)\n";
+            message += "\t finding vars = " + timeSpentFindingVars + "ms (" +
+                Math.Round(timeSpentFindingVars * 100.0 / totalTimeSpent) + "%)\n";
+            message += "\t resolving vars = " + timeSpentResolving + "ms (" +
+                Math.Round(timeSpentResolving * 100.0 / totalTimeSpent) + "%)\n";
+            message += "\t sat solving = " + timeSpentSatSolving + "ms (" +
+                Math.Round(timeSpentSatSolving * 100.0 / totalTimeSpent) + "%)\n";
+            message += "\t making input conds = " + timeSpentMakingInputConds + "ms (" +
+                Math.Round(timeSpentMakingInputConds * 100.0 / totalTimeSpent) + "%)\n";
+            Debug.Log(message);
+        }
+
         public bool CheckSatisfiable(MonoBehaviour instance, Context z3, out ISet<InputCondition> pathCondition)
         {
-            using (Solver solver = z3.MkSolver())
+            var totalStart = DateTime.Now;
+            try
             {
-                solver.Assert(z3.ParseSMTLIB2String(condition));
-                List<FuncDecl> variables = FindFreeVariables(solver.Assertions);
-                foreach (FuncDecl variable in variables)
+                var start = DateTime.Now;
+                using (Solver solver = z3.MkSolver())
                 {
-                    if (!IsInputVariable(variable))
+                    timeSpentMakingSolver += (int)(DateTime.Now - start).TotalMilliseconds;
+                    
+                    start = DateTime.Now;
+                    solver.Assert(z3.ParseSMTLIB2String(condition));
+                    timeSpentParsing += (int)(DateTime.Now - start).TotalMilliseconds;
+
+                    start = DateTime.Now;
+                    List<FuncDecl> variables = FindFreeVariables(solver.Assertions);
+                    timeSpentFindingVars += (int)(DateTime.Now - start).TotalMilliseconds;
+
+                    start = DateTime.Now;
+                    foreach (FuncDecl variable in variables)
                     {
+                        if (!IsInputVariable(variable))
+                        {
+                            try
+                            {
+                                object value = ResolveVariable(variable.Name.ToString(), instance);
+                                var assertion = z3.MkEq(z3.MkConst(variable.Name, variable.Range), SymexHelpers.ToZ3Expr(value, variable.Range, z3));
+                                solver.Assert(assertion);
+                            }
+                            catch (ResolutionException e)
+                            {
+                                //Debug.LogWarning("Failed to resolve non-input variable " + variable + ": " + e.Message);
+                            }
+                        }
+                    }
+                    timeSpentResolving += (int)(DateTime.Now - start).TotalMilliseconds;
+
+                    start = DateTime.Now;
+                    if (solver.Check() == Status.SATISFIABLE)
+                    {
+                        timeSpentSatSolving += (int)(DateTime.Now - start).TotalMilliseconds;
+                        start = DateTime.Now;
                         try
                         {
-                            object value = ResolveVariable(variable.Name.ToString(), instance);
-                            var assertion = z3.MkEq(z3.MkConst(variable.Name, variable.Range), SymexHelpers.ToZ3Expr(value, variable.Range, z3));
-                            solver.Assert(assertion);
+                            ModelToInputConditions(solver.Model, instance, z3, out pathCondition);
+                            timeSpentMakingInputConds += (int)(DateTime.Now - start).TotalMilliseconds;
+                            return true;
                         }
                         catch (ResolutionException e)
                         {
-                            //Debug.LogWarning("Failed to resolve non-input variable " + variable + ": " + e.Message);
+                            timeSpentMakingInputConds += (int)(DateTime.Now - start).TotalMilliseconds;
+                            pathCondition = null;
+                            // Debug.LogWarning("Failed to resolve input variables (ignoring path): " + e.Message);
+                            return false;
                         }
                     }
-                }
-                if (solver.Check() == Status.SATISFIABLE)
-                {
-                    try
+                    else
                     {
-                        ModelToInputConditions(solver.Model, instance, z3, out pathCondition);
-                        return true;
-                    }
-                    catch (ResolutionException e)
-                    {
+                        timeSpentSatSolving += (int)(DateTime.Now - start).TotalMilliseconds;
                         pathCondition = null;
-                        // Debug.LogWarning("Failed to resolve input variables (ignoring path): " + e.Message);
                         return false;
                     }
                 }
-                else
-                {
-                    pathCondition = null;
-                    return false;
-                }
+            } finally
+            {
+                totalTimeSpent += (int)(DateTime.Now - totalStart).TotalMilliseconds;
             }
         }
     }

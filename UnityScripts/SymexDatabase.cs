@@ -77,29 +77,6 @@ namespace UnitySymexCrawler
             selectCommand.Parameters.AddWithValue("$signature", GetMethodSignature(m));
             return Convert.ToInt32(selectCommand.ExecuteScalar());
         }
-
-        public MethodInfo GetMethodFromSignature(string signature)
-        {
-            int paren = signature.IndexOf("(");
-            string name = signature.Substring(0, paren);
-            string[] paramTypeNames = signature.Substring(paren + 1, signature.IndexOf(")") - paren - 1).Split(';');
-            if (paramTypeNames.Length == 1 && paramTypeNames[0].Length == 0)
-            {
-                paramTypeNames = new string[0];
-            }
-            string[] parts = name.Split(':');
-            string declaringTypeName = parts[0];
-            string methodName = parts[1];
-            Type[] paramTypes = new Type[paramTypeNames.Length];
-            for (int i = 0, n = paramTypeNames.Length; i < n; ++i)
-            {
-                Type paramType = Type.GetType(paramTypeNames[i]);
-                paramTypes[i] = paramType;
-            }
-            Type declaringType = Type.GetType(declaringTypeName);
-            return declaringType.GetMethod(methodName, paramTypes);
-        }
-
         public List<SymexPath> GetSymexPaths(MethodInfo m)
         {
             int methodId = GetMethodId(m);
@@ -127,7 +104,7 @@ namespace UnitySymexCrawler
             selectCommand.Parameters.AddWithValue("$pathId", path.pathId);
             int methodId = Convert.ToInt32(selectCommand.ExecuteScalar());
             string signature = GetMethodSignature(methodId);
-            return new SymbolicMethodCall(symcallId, path, GetMethodFromSignature(signature));
+            return new SymbolicMethodCall(symcallId, path, SymexHelpers.GetMethodFromSignature(signature));
         }
 
         public SymbolicMethodCallArgument GetSymbolicMethodCallArgument(int argIndex, SymbolicMethodCall smc)

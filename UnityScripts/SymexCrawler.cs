@@ -30,6 +30,8 @@ namespace UnitySymexCrawler
             var gameObjects = FindObjectsOfType(typeof(GameObject));
 
             List<Action> actions = new List<Action>();
+            
+            SymexPath.ResetTimers();
 
             foreach (var o in gameObjects)
             {
@@ -53,7 +55,9 @@ namespace UnitySymexCrawler
                             {
                                 using (var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } }))
                                 {
-                                    foreach (SymexPath p in db.GetSymexPaths(m))
+                                    var paths = db.GetSymexPaths(m);
+                                    Debug.Log(paths.Count + " paths");
+                                    foreach (SymexPath p in paths)
                                     {
                                         if (p.CheckSatisfiable(component, z3, out var pathCondition))
                                         {
@@ -67,6 +71,8 @@ namespace UnitySymexCrawler
                 }
             }
 
+            SymexPath.PrintTimers();
+
             return actions;
         }
 
@@ -75,6 +81,7 @@ namespace UnitySymexCrawler
             yield return new WaitForSeconds(0.25f);
             for (; ; )
             {
+                var start = DateTime.Now;
                 var actions = ComputeActions();
                 var possibleActions = actions.Where(action => action.CanPerform()).ToList();
                 Debug.Log("possible: [" + string.Join(", ", possibleActions) + "]");
@@ -85,6 +92,8 @@ namespace UnitySymexCrawler
                     Debug.Log("selected: " + selected);
                     selected.Perform(sim);
                 }
+                var end = DateTime.Now;
+                Debug.Log("crawl iteration took " + (end - start).TotalMilliseconds + "ms");
                 yield return new WaitForSeconds(0.25f);
             }
         }

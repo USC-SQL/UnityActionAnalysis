@@ -27,7 +27,8 @@ namespace UnitySymexCrawler
                 paramTypes[i] = paramType;
             }
             Type declaringType = Type.GetType(declaringTypeName);
-            return declaringType.GetMethod(methodName, paramTypes);
+            return declaringType.GetMethod(methodName, 
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, paramTypes, null);
         }
 
         private static bool IsSigned(Type type)

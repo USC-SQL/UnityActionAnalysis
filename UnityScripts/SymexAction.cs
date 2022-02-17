@@ -19,6 +19,7 @@ namespace UnitySymexCrawler
 
         public void Perform(InputSimulator sim)
         {
+            var start = DateTime.Now;
             if (path.SolveForInputs(instance, out ISet<InputCondition> inputConditions))
             {
                 foreach (InputCondition cond in contextConditions)
@@ -30,6 +31,8 @@ namespace UnitySymexCrawler
                 {
                     cond.PerformInput(sim);
                 }
+
+                Debug.Log("Performed action in " + (DateTime.Now - start).TotalMilliseconds + "ms: " + string.Join(" && ", inputConditions));
             }
         }
     }

@@ -44,14 +44,14 @@ namespace UnitySymexCrawler
         public void SimulateKeyDown(KeyCode keyCode)
         {
             var winKeyCode = ConvertUnityKeyCode(keyCode);
-            Debug.Log("SimulateKeyDown: " + winKeyCode);
+            // Debug.Log("SimulateKeyDown: " + winKeyCode);
             sim.Keyboard.KeyDown(winKeyCode);
         }
 
         public void SimulateKeyUp(KeyCode keyCode)
         {
             var winKeyCode = ConvertUnityKeyCode(keyCode);
-            Debug.Log("SimulateKeyUp: " + winKeyCode);
+            // Debug.Log("SimulateKeyUp: " + winKeyCode);
             sim.Keyboard.KeyUp(winKeyCode);
         }
     }

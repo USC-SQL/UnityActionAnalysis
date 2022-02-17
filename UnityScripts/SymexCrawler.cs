@@ -98,9 +98,11 @@ namespace UnitySymexCrawler
             StartCoroutine("CrawlLoop");
         }
 
-        private List<SymexAction> ComputePossibleActions()
+        private List<SymexAction> ComputeAvailableActions()
         {
+            var start = DateTime.Now;
             List<SymexAction> actions = new List<SymexAction>();
+            int maxNumActions = 0;
             var gameObjects = FindObjectsOfType(typeof(GameObject));
             foreach (var o in gameObjects)
             {
@@ -123,43 +125,44 @@ namespace UnitySymexCrawler
                         {
                             continue;
                         }
-                        List<InputCondition> contextConditions;
+                        ISet<InputCondition> contextConditions;
                         if ((m.Name == "Update" || m.Name == "FixedUpdate" || m.Name == "LateUpdate") && m.GetParameters().Length == 0)
                         {
-                            contextConditions = new List<InputCondition>();
+                            contextConditions = new HashSet<InputCondition>();
                         } else
                         {
                             Debug.LogWarning("unexpected method " + m);
                             continue;
                         }
-                        ISet<InputCondition> contextConds = new HashSet<InputCondition>();
+
                         foreach (SymexPath p in sm.paths)
                         {
                             if (p.CheckFeasible(component))
                             {
-                                actions.Add(new SymexAction(p, component, contextConds));
+                                actions.Add(new SymexAction(p, component, contextConditions));
                             }
                         }
+                        maxNumActions += sm.paths.Count;
                     }
                 }
             }
+            Debug.Log(actions.Count + "/" + maxNumActions + " actions available (computed in " + (DateTime.Now - start).TotalMilliseconds + "ms)");
             return actions;
         }
 
         public IEnumerator CrawlLoop()
         {
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSeconds(0.05f);
             for (; ;)
             {
-                var actions = ComputePossibleActions();
-                Debug.Log(actions.Count + " possible actions");
+                var actions = ComputeAvailableActions();
                 if (actions.Count > 0)
                 {
                     int actionIndex = UnityEngine.Random.Range(0, actions.Count);
                     var selected = actions[actionIndex];
                     selected.Perform(inputSim);
                 }
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.05f);
             }
         }
 

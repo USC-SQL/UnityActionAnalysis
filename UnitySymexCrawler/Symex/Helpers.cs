@@ -149,6 +149,32 @@ namespace UnitySymexCrawler
                 + method.Name + "(" + string.Join(";", method.Parameters.Select(param => Helpers.GetAssemblyQualifiedName(param.Type))) + ")";
         }
 
+        private static void FindFreeVariablesSearch(Expr expr, HashSet<Symbol> seen, List<FuncDecl> result)
+        {
+            if (expr.IsConst && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
+            {
+                if (seen.Add(expr.FuncDecl.Name))
+                {
+                    result.Add(expr.FuncDecl);
+                }
+            }
+            else
+            {
+                for (uint i = 0, n = expr.NumArgs; i < n; ++i)
+                {
+                    FindFreeVariablesSearch(expr.Arg(i), seen, result);
+                }
+            }
+        }
+
+        public static List<FuncDecl> FindFreeVariables(Expr expr)
+        {
+            List<FuncDecl> result = new List<FuncDecl>();
+            HashSet<Symbol> seen = new HashSet<Symbol>();
+            FindFreeVariablesSearch(expr, seen, result);
+            return result;
+        }
+
         public static void DebugLog(string message)
         {
             using (StreamWriter sw = File.AppendText(@"C:\Users\sasha-usc\Misc\debug.log"))

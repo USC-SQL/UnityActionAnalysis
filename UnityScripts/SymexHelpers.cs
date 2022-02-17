@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Reflection;
+using System.Collections.Generic;
+using UnityEngine;
 using Microsoft.Z3;
 
 namespace UnitySymexCrawler
@@ -120,5 +122,33 @@ namespace UnitySymexCrawler
             }
         }
 
+        private static void FindFreeVariablesSearch(Expr expr, HashSet<Symbol> seen, List<FuncDecl> result)
+        {
+            if (expr.IsConst && expr.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
+            {
+                if (seen.Add(expr.FuncDecl.Name))
+                {
+                    result.Add(expr.FuncDecl);
+                }
+            }
+            else
+            {
+                for (uint i = 0, n = expr.NumArgs; i < n; ++i)
+                {
+                    FindFreeVariablesSearch(expr.Arg(i), seen, result);
+                }
+            }
+        }
+
+        public static List<FuncDecl> FindFreeVariables(IEnumerable<Expr> exprs)
+        {
+            List<FuncDecl> result = new List<FuncDecl>();
+            HashSet<Symbol> seen = new HashSet<Symbol>();
+            foreach (Expr expr in exprs)
+            {
+                FindFreeVariablesSearch(expr, seen, result);
+            }
+            return result;
+        }
     }
 }

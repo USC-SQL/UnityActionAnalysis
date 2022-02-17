@@ -14,22 +14,28 @@ namespace UnitySymexCrawler
             if (keyCode == KeyCode.LeftArrow)
             {
                 return VirtualKeyCode.LEFT;
-            } else if (keyCode == KeyCode.RightArrow)
+            }
+            else if (keyCode == KeyCode.RightArrow)
             {
                 return VirtualKeyCode.RIGHT;
-            } else if (keyCode == KeyCode.UpArrow)
+            }
+            else if (keyCode == KeyCode.UpArrow)
             {
                 return VirtualKeyCode.UP;
-            } else if (keyCode == KeyCode.DownArrow)
+            }
+            else if (keyCode == KeyCode.DownArrow)
             {
                 return VirtualKeyCode.DOWN;
-            } else if (keyCode == KeyCode.Escape)
+            }
+            else if (keyCode == KeyCode.Escape)
             {
                 return VirtualKeyCode.ESCAPE;
-            } else if (keyCode >= KeyCode.A && keyCode <= KeyCode.Z)
+            }
+            else if (keyCode >= KeyCode.A && keyCode <= KeyCode.Z)
             {
                 return (VirtualKeyCode)((int)keyCode - 32);
-            } else
+            }
+            else
             {
                 throw new Exception("unrecognized key code: " + keyCode);
             }

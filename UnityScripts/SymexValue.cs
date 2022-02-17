@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using Microsoft.Z3;
 
 namespace UnitySymexCrawler
 {
@@ -52,7 +51,8 @@ namespace UnitySymexCrawler
                             if (o.ContainsKey("symbolName"))
                             {
                                 return new SymexObjectValue(value, objectType, o["symbolName"].ToObject<string>());
-                            } else
+                            }
+                            else
                             {
                                 return new SymexObjectValue(value, objectType);
                             }
@@ -86,11 +86,10 @@ namespace UnitySymexCrawler
                     {
                         var method = SymexHelpers.GetMethodFromSignature(o["method"].ToObject<string>());
                         List<SymexValue> args = new List<SymexValue>();
-                        JObject obj = (JObject)o["arguments"];
-                        foreach (var p in obj)
+                        JArray arr = (JArray)o["arguments"];
+                        foreach (var elem in arr)
                         {
-                            UnityEngine.Debug.Log("p.Key = " + p.Key);
-                            args.Add(ParseInternal((JObject)p.Value));
+                            args.Add(ParseInternal((JObject)elem));
                         }
                         return new SymexUnevaluatedMethodCallValue(method, args);
                     }

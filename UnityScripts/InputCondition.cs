@@ -6,8 +6,6 @@ namespace UnitySymexCrawler
 {
     public abstract class InputCondition
     {
-        public abstract bool CanPerformInput();
-
         public abstract void PerformInput(InputSimulator sim);
     }
 
@@ -25,11 +23,6 @@ namespace UnitySymexCrawler
         public override string ToString()
         {
             return "Input.GetAxis(\"" + axisName + "\") == " + value;
-        }
-
-        public override bool CanPerformInput()
-        {
-            return true;
         }
 
         public override void PerformInput(InputSimulator sim)
@@ -106,12 +99,6 @@ namespace UnitySymexCrawler
         {
             return "Input.GetKey(" + keyCode + ") == " + isDown;
         }
-
-        public override bool CanPerformInput()
-        {
-            return true;
-        }
-
         public override void PerformInput(InputSimulator sim)
         {
             if (isDown)
@@ -139,18 +126,6 @@ namespace UnitySymexCrawler
         public override string ToString()
         {
             return "Input.GetKeyDown(" + keyCode + ") == " + isDown;
-        }
-
-        public override bool CanPerformInput()
-        {
-            if (isDown)
-            {
-                return !Input.GetKey(keyCode);
-            }
-            else
-            {
-                return true;
-            }
         }
 
         public override void PerformInput(InputSimulator sim)

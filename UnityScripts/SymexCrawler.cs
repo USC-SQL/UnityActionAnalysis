@@ -14,6 +14,7 @@ namespace UnitySymexCrawler
     public class SymexCrawler : MonoBehaviour
     {
         public string SymexDatabase;
+        public float Interval = 0.1f;
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
         private PreconditionFuncs pfuncs;
@@ -154,7 +155,7 @@ namespace UnitySymexCrawler
 
         public IEnumerator CrawlLoop()
         {
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(Interval);
             for (; ;)
             {
                 var actions = ComputeAvailableActions();
@@ -164,7 +165,7 @@ namespace UnitySymexCrawler
                     var selected = actions[actionIndex];
                     selected.Perform(inputSim);
                 }
-                yield return new WaitForSeconds(0.05f);
+                yield return new WaitForSeconds(Interval);
             }
         }
 

@@ -122,15 +122,26 @@ namespace UnitySymexCrawler
                 Symcall sc = symcalls[symcallId];
                 if (sc.method.DeclaringType.FullName == "UnityEngine.Input")
                 {
-                    if (sc.method.Name == "GetKey" || sc.method.Name == "GetKeyDown")
+                    if (sc.method.Name == "GetKey" || sc.method.Name == "GetKeyDown" || sc.method.Name == "GetKeyUp")
                     {
                         var arg = inputArgs[symcallId][0];
                         if (arg == null)
                         {
                             throw new ResolutionException("key code unavailable");
                         }
-                        int keyCodeVal = (int)Convert.ChangeType(arg(evalContext), typeof(int));
-                        KeyCode keyCode = (KeyCode)Enum.ToObject(typeof(KeyCode), keyCodeVal);
+
+                        KeyCode keyCode;
+                        object obj = arg(evalContext);
+                        if (obj is string)
+                        {
+                            Event evt = Event.KeyboardEvent((string)obj);
+                            keyCode = evt.keyCode;
+                        } else
+                        {
+                            int keyCodeVal = (int)Convert.ChangeType(obj, typeof(int));
+                            keyCode = (KeyCode)Enum.ToObject(typeof(KeyCode), keyCodeVal);
+                        }
+                        
                         uint intVal = uint.Parse(value.ToString());
                         switch (sc.method.Name)
                         {
@@ -138,9 +149,11 @@ namespace UnitySymexCrawler
                                 return new KeyInputCondition(keyCode, intVal != 0);
                             case "GetKeyDown":
                                 return new KeyDownInputCondition(keyCode, intVal != 0);
+                            case "GetKeyUp":
+                                return new KeyUpInputCondition(keyCode, intVal != 0);
                         }
                     }
-                    else if (sc.method.Name == "GetAxis")
+                    else if (sc.method.Name == "GetAxis" || sc.method.Name == "GetAxisRaw")
                     {
                         var arg = inputArgs[symcallId][0];
                         if (arg == null)
@@ -158,6 +171,32 @@ namespace UnitySymexCrawler
                         var negOne = z3.MkFP(-1.0, (FPSort)value.Sort);
                         float axisValue = (float)m.Double(z3.MkITE(z3.MkFPGt((FPExpr)value, zero), one, z3.MkITE(z3.MkFPLt((FPExpr)value, zero), negOne, zero)));
                         return new AxisInputCondition(axisName, axisValue);
+                    } else if (sc.method.Name == "GetButton" || sc.method.Name == "GetButtonDown" || sc.method.Name == "GetButtonUp")
+                    {
+                        var arg = inputArgs[symcallId][0];
+                        if (arg == null)
+                        {
+                            throw new ResolutionException("button name unavailable");
+                        }
+                        var result = arg(evalContext);
+                        if (!(result is string))
+                        {
+                            throw new ResolutionException("unexpected result from evaluating button argument: " + result);
+                        }
+                        string buttonName = (string)result;
+                        uint intVal = uint.Parse(value.ToString());
+                        switch (sc.method.Name)
+                        {
+                            case "GetButton":
+                                return new ButtonInputCondition(buttonName, intVal > 0);
+                            case "GetButtonDown":
+                                return new ButtonDownInputCondition(buttonName, intVal > 0);
+                            case "GetButtonUp":
+                                return new ButtonUpInputCondition(buttonName, intVal > 0);
+                        }
+                    } else
+                    {
+                        throw new ResolutionException("unsupported input API " + sc.method.DeclaringType.FullName + "." + sc.method.Name);
                     }
                 }
                 else

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace UnitySymexCrawler
 {
     public abstract class InputCondition
     {
-        public abstract void PerformInput(InputSimulator sim);
+        public abstract IEnumerator PerformInput(InputSimulator sim);
     }
 
     public class AxisInputCondition : InputCondition
@@ -25,7 +26,7 @@ namespace UnitySymexCrawler
             return "Input.GetAxis(\"" + axisName + "\") == " + value;
         }
 
-        public override void PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim)
         {
             List<KeyCode> keyCodesUp = new List<KeyCode>();
             KeyCode? keyCodeDown = null;
@@ -67,7 +68,7 @@ namespace UnitySymexCrawler
                     break;
                 default:
                     Debug.LogWarning("failed to perform input, did not recognize axisName " + axisName);
-                    return;
+                    yield break;
             }
 
             foreach (var keyCode in keyCodesUp)
@@ -81,6 +82,8 @@ namespace UnitySymexCrawler
             {
                 sim.SimulateKeyDown(keyCodeDown.Value);
             }
+
+            yield break;
         }
     }
 
@@ -99,7 +102,7 @@ namespace UnitySymexCrawler
         {
             return "Input.GetKey(" + keyCode + ") == " + isDown;
         }
-        public override void PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim)
         {
             if (isDown)
             {
@@ -109,6 +112,7 @@ namespace UnitySymexCrawler
             {
                 sim.SimulateKeyUp(keyCode);
             }
+            yield break;
         }
     }
 
@@ -128,16 +132,22 @@ namespace UnitySymexCrawler
             return "Input.GetKeyDown(" + keyCode + ") == " + isDown;
         }
 
-        public override void PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim)
         {
             if (isDown)
             {
+                if (Input.GetKey(keyCode))
+                {
+                    sim.SimulateKeyUp(keyCode);
+                    yield return new WaitForFixedUpdate();
+                }
                 sim.SimulateKeyDown(keyCode);
             }
             else if (Input.GetKey(keyCode))
             {
                 sim.SimulateKeyUp(keyCode);
             }
+            yield break;
         }
     }
 }

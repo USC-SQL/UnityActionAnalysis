@@ -204,7 +204,27 @@ namespace UnitySymexCrawler
                 case Z3_decl_kind.Z3_OP_NOT:
                     {
                         var val = Compile(expr.Arg(0), p);
-                        return ctx => !(bool)val(ctx);
+                        return ctx => !CompileHelpers.ToBool(val(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_AND:
+                    {
+                        if (expr.NumArgs > 2)
+                        {
+                            throw new ResolutionException("more than 2 args not supported in and expression");
+                        }
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToBool(val1(ctx)) && CompileHelpers.ToBool(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_OR:
+                    {
+                        if (expr.NumArgs > 2)
+                        {
+                            throw new ResolutionException("more than 2 args not supported in or expression");
+                        }
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToBool(val1(ctx)) || CompileHelpers.ToBool(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_EQ:
                     {
@@ -233,7 +253,7 @@ namespace UnitySymexCrawler
                         var falseVal = Compile(expr.Arg(2), p);
                         return ctx =>
                         {
-                            if ((bool)cond(ctx))
+                            if (CompileHelpers.ToBool(cond(ctx)))
                             {
                                 return trueVal(ctx);
                             } else
@@ -255,6 +275,12 @@ namespace UnitySymexCrawler
                             var val2 = Compile(expr.Arg(1), p);
                             return ctx => CompileHelpers.ToDouble(val1(ctx)) > CompileHelpers.ToDouble(val2(ctx));
                         }
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_GE:
+                    {
+                        var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), p);
+                        var val2 = Compile(expr.Arg(expr.NumArgs == 3 ? 2u : 1u), p);
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) >= CompileHelpers.ToDouble(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_LT:
                     {
@@ -311,6 +337,77 @@ namespace UnitySymexCrawler
                         var val2 = Compile(expr.Arg(2), p);
                         return ctx => CompileHelpers.ToDouble(val1(ctx)) * CompileHelpers.ToDouble(val2(ctx));
                     }
+                case Z3_decl_kind.Z3_OP_BUREM:
+                case Z3_decl_kind.Z3_OP_BSREM:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) % CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_REM:
+                    {
+                        var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), p);
+                        var val2 = Compile(expr.Arg(expr.NumArgs == 3 ? 2u : 1u), p);
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) % CompileHelpers.ToDouble(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_BAND:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) & CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_BOR:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) | CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_BXOR:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) ^ CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_BSHL:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.Shl(CompileHelpers.ToUlong(val1(ctx)), CompileHelpers.ToUlong(val2(ctx)));
+                    }
+                case Z3_decl_kind.Z3_OP_BASHR:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.Shr(CompileHelpers.ToUlong(val1(ctx)), CompileHelpers.ToUlong(val2(ctx)));
+                    }
+                case Z3_decl_kind.Z3_OP_ULT:
+                case Z3_decl_kind.Z3_OP_SLT:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) < CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_LE:
+                case Z3_decl_kind.Z3_OP_ULEQ:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) <= CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_UGT:
+                case Z3_decl_kind.Z3_OP_SGT:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) > CompileHelpers.ToUlong(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_GE:
+                case Z3_decl_kind.Z3_OP_UGEQ:
+                    {
+                        var val1 = Compile(expr.Arg(0), p);
+                        var val2 = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) >= CompileHelpers.ToUlong(val2(ctx));
+                    }
                 case Z3_decl_kind.Z3_OP_BUDIV:
                 case Z3_decl_kind.Z3_OP_BSDIV:
                     {
@@ -323,6 +420,28 @@ namespace UnitySymexCrawler
                         var val1 = Compile(expr.Arg(1), p);
                         var val2 = Compile(expr.Arg(2), p);
                         return ctx => CompileHelpers.ToDouble(val1(ctx)) / CompileHelpers.ToDouble(val2(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_CONCAT:
+                    {
+                        // concat only used to extend a value with 0s, so ignore the first argument
+                        var val = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_EXTRACT:
+                    {
+                        var val = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val(ctx));
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_TO_FP:
+                case Z3_decl_kind.Z3_OP_FPA_TO_FP_UNSIGNED:
+                    {
+                        return Compile(expr.Arg(1), p);
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_TO_SBV:
+                case Z3_decl_kind.Z3_OP_FPA_TO_UBV:
+                    {
+                        var val = Compile(expr.Arg(1), p);
+                        return ctx => CompileHelpers.ToUlong(val(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_BNUM:
                     {

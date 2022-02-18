@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace UnitySymexCrawler
             this.contextConditions = contextConditions;
         }
 
-        public void Perform(InputSimulator sim)
+        public IEnumerator Perform(InputSimulator sim, MonoBehaviour context)
         {
             var start = DateTime.Now;
             if (path.SolveForInputs(instance, out ISet<InputCondition> inputConditions))
@@ -27,13 +28,19 @@ namespace UnitySymexCrawler
                     inputConditions.Add(cond);
                 }
 
+                List<Coroutine> coroutines = new List<Coroutine>();
                 foreach (InputCondition cond in inputConditions)
                 {
-                    cond.PerformInput(sim);
+                    coroutines.Add(context.StartCoroutine(cond.PerformInput(sim)));
+                }
+                foreach (Coroutine coro in coroutines)
+                {
+                    yield return coro;
                 }
 
                 Debug.Log("Performed action in " + (DateTime.Now - start).TotalMilliseconds + "ms: " + string.Join(" && ", inputConditions));
             }
+            yield break;
         }
     }
 }

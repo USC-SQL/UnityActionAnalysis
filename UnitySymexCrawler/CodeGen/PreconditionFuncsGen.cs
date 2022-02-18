@@ -204,6 +204,24 @@ namespace UnitySymexCrawler
                         return new CodeBinaryOperatorExpression(
                             Compile(expr.Arg(0), m, s), CodeBinaryOperatorType.IdentityEquality, new CodePrimitiveExpression(false));
                     }
+                case Z3_decl_kind.Z3_OP_AND:
+                    {
+                        if (expr.NumArgs > 2)
+                        {
+                            throw new ResolutionException("more than 2 args not supported in and expression");
+                        }
+                        return new CodeBinaryOperatorExpression(
+                            Compile(expr.Arg(0), m, s), CodeBinaryOperatorType.BooleanAnd, Compile(expr.Arg(1), m, s));
+                    }
+                case Z3_decl_kind.Z3_OP_OR:
+                    {
+                        if (expr.NumArgs > 2)
+                        {
+                            throw new ResolutionException("more than 2 args not supported in or expression");
+                        }
+                        return new CodeBinaryOperatorExpression(
+                            Compile(expr.Arg(0), m, s), CodeBinaryOperatorType.BooleanOr, Compile(expr.Arg(1), m, s));
+                    }
                 case Z3_decl_kind.Z3_OP_EQ:
                     {
                         return new CodeMethodInvokeExpression(
@@ -235,6 +253,15 @@ namespace UnitySymexCrawler
                             CodeBinaryOperatorType.GreaterThan,
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
                     }
+                case Z3_decl_kind.Z3_OP_FPA_GE:
+                    {
+                        var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), m, s);
+                        var val2 = Compile(expr.Arg(expr.NumArgs == 3 ? 2u : 1u), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val1),
+                            CodeBinaryOperatorType.GreaterThanOrEqual,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
+                    }
                 case Z3_decl_kind.Z3_OP_FPA_LT:
                     {
                         var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), m, s);
@@ -244,10 +271,83 @@ namespace UnitySymexCrawler
                             CodeBinaryOperatorType.LessThan,
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
                     }
+                case Z3_decl_kind.Z3_OP_FPA_LE:
+                    {
+                        var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), m, s);
+                        var val2 = Compile(expr.Arg(expr.NumArgs == 3 ? 2u : 1u), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val1),
+                            CodeBinaryOperatorType.LessThanOrEqual,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
+                    }
                 case Z3_decl_kind.Z3_OP_FPA_IS_NAN:
                     {
                         var val1 = Compile(expr.Arg(0), m, s);
                         return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(double)), "IsNaN", val1);
+                    }
+                case Z3_decl_kind.Z3_OP_BUREM:
+                case Z3_decl_kind.Z3_OP_BSREM:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.Modulus,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_REM:
+                    {
+                        var val1 = Compile(expr.Arg(expr.NumArgs == 3 ? 1u : 0u), m, s);
+                        var val2 = Compile(expr.Arg(expr.NumArgs == 3 ? 2u : 1u), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val1),
+                            CodeBinaryOperatorType.Modulus,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_BAND:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.BitwiseAnd,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_BOR:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.BitwiseOr,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_BXOR:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(
+                            new CodeTypeReferenceExpression("CompileHelpers"), "Xor",
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_BSHL:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(
+                            new CodeTypeReferenceExpression("CompileHelpers"), "Shl",
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_BASHR:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(
+                            new CodeTypeReferenceExpression("CompileHelpers"), "Shr",
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                                new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
                     }
                 case Z3_decl_kind.Z3_OP_BADD:
                     {
@@ -256,6 +356,46 @@ namespace UnitySymexCrawler
                         return new CodeBinaryOperatorExpression(
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
                             CodeBinaryOperatorType.Add,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_ULT:
+                case Z3_decl_kind.Z3_OP_SLT:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.LessThan,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_ULEQ:
+                case Z3_decl_kind.Z3_OP_LE:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.LessThanOrEqual,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_UGT:
+                case Z3_decl_kind.Z3_OP_GT:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.GreaterThan,
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_UGEQ:
+                case Z3_decl_kind.Z3_OP_GE:
+                    {
+                        var val1 = Compile(expr.Arg(0), m, s);
+                        var val2 = Compile(expr.Arg(1), m, s);
+                        return new CodeBinaryOperatorExpression(
+                            new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val1),
+                            CodeBinaryOperatorType.GreaterThanOrEqual,
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val2));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_ADD:
@@ -321,6 +461,28 @@ namespace UnitySymexCrawler
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val1),
                             CodeBinaryOperatorType.Divide,
                             new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToDouble", val2));
+                    }
+                case Z3_decl_kind.Z3_OP_CONCAT:
+                    {
+                        // concat only used to extend a value with 0s, so ignore the first argument
+                        var val = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val);
+                    }
+                case Z3_decl_kind.Z3_OP_EXTRACT:
+                    {
+                        var val = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val);
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_TO_FP:
+                case Z3_decl_kind.Z3_OP_FPA_TO_FP_UNSIGNED:
+                    {
+                        return Compile(expr.Arg(1), m, s);
+                    }
+                case Z3_decl_kind.Z3_OP_FPA_TO_SBV:
+                case Z3_decl_kind.Z3_OP_FPA_TO_UBV:
+                    {
+                        var val = Compile(expr.Arg(1), m, s);
+                        return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ToUlong", val);
                     }
                 case Z3_decl_kind.Z3_OP_BNUM:
                     {

@@ -45,7 +45,22 @@ namespace UnitySymexCrawler
 
         public static object IfThenElse(object cond, object trueVal, object falseVal)
         {
-            return ToBool(cond) ? trueVal : falseVal; // no ternary operator available in CodeDOM, so we need this helper method
+            return ToBool(cond) ? trueVal : falseVal;
+        }
+
+        public static ulong Xor(ulong a, ulong b)
+        {
+            return a ^ b;
+        }
+
+        public static ulong Shl(ulong a, ulong b)
+        {
+            return a << (int)b;
+        }
+
+        public static ulong Shr(ulong a, ulong b)
+        {
+            return a >> (int)b;
         }
     }
 }

@@ -163,7 +163,7 @@ namespace UnitySymexCrawler
                 {
                     int actionIndex = UnityEngine.Random.Range(0, actions.Count);
                     var selected = actions[actionIndex];
-                    selected.Perform(inputSim);
+                    yield return StartCoroutine(selected.Perform(inputSim, this));
                 }
                 yield return new WaitForSeconds(Interval);
             }

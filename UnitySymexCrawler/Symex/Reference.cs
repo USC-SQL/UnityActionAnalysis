@@ -43,7 +43,7 @@ namespace UnitySymexCrawler
             }
         }
 
-        public bool Equals([AllowNull] Reference other)
+        public bool Equals(Reference other)
         {
             if (address == null && other.address == null)
             {

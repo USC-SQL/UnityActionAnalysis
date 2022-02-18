@@ -16,6 +16,7 @@ namespace UnitySymexCrawler
         public string SymexDatabase;
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
+        private PreconditionFuncs pfuncs;
         private Dictionary<int, MethodInfo> methodsById;
         private Context z3;
         private InputSimulator inputSim;
@@ -44,6 +45,7 @@ namespace UnitySymexCrawler
             }
 
             symexMethods = new Dictionary<MethodInfo, SymexMethod>();
+            pfuncs = new PreconditionFuncs();
 
             var selectPathsCommand = connection.CreateCommand();
             selectPathsCommand.CommandText = "select id, method, condition from paths";
@@ -91,7 +93,7 @@ namespace UnitySymexCrawler
                     symcalls.Add(symcallId, symcall);
                 }
 
-                SymexPath p = new SymexPath(parsedPathCond, symcalls, m, z3);
+                SymexPath p = new SymexPath(pathId, parsedPathCond, symcalls, m, z3);
                 m.paths.Add(p);
             }
 
@@ -137,7 +139,7 @@ namespace UnitySymexCrawler
 
                         foreach (SymexPath p in sm.paths)
                         {
-                            if (p.CheckFeasible(component))
+                            if (p.CheckFeasible(component, pfuncs))
                             {
                                 actions.Add(new SymexAction(p, component, contextConditions));
                             }

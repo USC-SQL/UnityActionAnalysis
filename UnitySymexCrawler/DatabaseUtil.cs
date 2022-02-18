@@ -76,13 +76,13 @@ namespace UnitySymexCrawler
             }
         }
 
-        private void AddPath(SymexState state, int methodId)
+        private void AddPath(SymexState state, int pathId, int methodId)
         {
             var insertCommand = connection.CreateCommand();
-            insertCommand.CommandText = @"insert into paths (method, condition) values ($methodId, $condition); select last_insert_rowid();";
+            insertCommand.CommandText = @"insert into paths (id, method, condition) values ($pathId, $methodId, $condition)";
+            insertCommand.Parameters.AddWithValue("$pathId", pathId);
             insertCommand.Parameters.AddWithValue("$methodId", methodId);
             insertCommand.Parameters.AddWithValue("$condition", state.PathConditionString());
-            int pathId = Convert.ToInt32(insertCommand.ExecuteScalar());
             foreach (var p in state.symbolicMethodCalls)
             {
                 AddSymbolicMethodCall(p.Key, pathId, p.Value, state);
@@ -94,9 +94,11 @@ namespace UnitySymexCrawler
             using (var transaction = connection.BeginTransaction())
             {
                 int methodId = GetMethodId(method);
+                int pathId = 1;
                 foreach (SymexState state in machine.States)
                 {
-                    AddPath(state, methodId);
+                    AddPath(state, pathId, methodId);
+                    ++pathId;
                 }
                 transaction.Commit();
             }

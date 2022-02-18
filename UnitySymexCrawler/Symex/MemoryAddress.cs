@@ -143,7 +143,7 @@ namespace UnitySymexCrawler
             return new MemoryAddress(heap, root, newComponents);
         }
 
-        public bool Equals([AllowNull] MemoryAddress other)
+        public bool Equals(MemoryAddress other)
         {
             if (root != other.root)
             {

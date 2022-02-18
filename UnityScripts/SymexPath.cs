@@ -11,24 +11,22 @@ namespace UnitySymexCrawler
 {
     public class SymexPath
     {
+        private int pathId;
         private BoolExpr[] condition;
         public readonly Dictionary<int, Symcall> symcalls;
-        private Func<ExprContext, bool> preconditionFunc;
         private Dictionary<FuncDecl, Func<ExprContext, object>> nonInputVars;
         public readonly Dictionary<int, List<Func<ExprContext, object>>> inputArgs;
         private Context z3;
         
         public SymexMethod Method { get; private set; }
 
-        public SymexPath(BoolExpr[] condition, Dictionary<int, Symcall> symcalls, SymexMethod m, Context z3)
+        public SymexPath(int pathId, BoolExpr[] condition, Dictionary<int, Symcall> symcalls, SymexMethod m, Context z3)
         {
+            this.pathId = pathId;
             this.condition = condition;
             this.symcalls = symcalls;
 
             Method = m;
-
-            List<BoolExpr> preconds = new List<BoolExpr>(condition.Where(cond => !ContainsInputVariable(cond)));
-            preconditionFunc = CompilePrecondition(preconds);
 
             inputArgs = new Dictionary<int, List<Func<ExprContext, object>>>();
 
@@ -76,36 +74,6 @@ namespace UnitySymexCrawler
             this.z3 = z3;
         }
 
-        private Func<ExprContext, bool> CompilePrecondition(List<BoolExpr> preconds)
-        {
-            List<Func<ExprContext, object>> conds = new List<Func<ExprContext, object>>();
-            foreach (BoolExpr expr in preconds)
-            {
-                try
-                {
-                    var cond = ExprCompile.Compile(expr, this);
-                    conds.Add(cond);
-                } catch (ResolutionException e)
-                {
-#if LOG_RESOLUTION_WARNINGS
-                    Debug.LogWarning("failed to compile condition '" + expr + "' due to: " + e.Message);
-#endif
-                    // skip this condition (over-approximate)
-                }
-            }
-            return ctx =>
-            {
-                foreach (var cond in conds)
-                {
-                    if (!(bool)cond(ctx))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            };
-        }
-
         public bool IsInputVariable(FuncDecl variable, out int symcallId)
         {
             string name = variable.Name.ToString();
@@ -115,10 +83,7 @@ namespace UnitySymexCrawler
                 Symcall sc = symcalls[symcallId];
                 if (sc.method.DeclaringType.FullName == "UnityEngine.Input")
                 {
-                    if (sc.method.Name == "GetKeyDown" || sc.method.Name == "GetAxis")
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             symcallId = -1;
@@ -143,10 +108,9 @@ namespace UnitySymexCrawler
             return false;
         }
 
-        public bool CheckFeasible(MonoBehaviour instance)
+        public bool CheckFeasible(MonoBehaviour instance, PreconditionFuncs pfuncs)
         {
-            ExprContext ctx = new ExprContext(instance);
-            return preconditionFunc(ctx);
+            return pfuncs.preconditionFuncs[Method.method][pathId - 1](instance);
         }
 
         private InputCondition ModelInputVariableToCondition(Model m, FuncDecl varDecl, Expr value, ExprContext evalContext, Context z3)

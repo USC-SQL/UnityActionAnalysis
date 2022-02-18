@@ -15,6 +15,7 @@
     <PackageReference Include="ICSharpCode.Decompiler" Version="7.1.0.6543" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.1" />
     <PackageReference Include="Microsoft.Z3.x64" Version="4.8.10" />
+    <PackageReference Include="System.CodeDom" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

@@ -197,28 +197,6 @@ namespace UnitySymexCrawler
             }
         }
 
-        private static object ChangeType(object val, Type type)
-        {
-            if (type.IsEnum)
-            {
-                var enumUnderlying = type.GetEnumUnderlyingType();
-                return Enum.ToObject(type, Convert.ChangeType(val, enumUnderlying));
-            } else
-            {
-                return Convert.ChangeType(val, type);
-            }
-        }
-
-        private static double ToDouble(object val)
-        {
-            return (double)Convert.ChangeType(val, typeof(double));
-        }
-
-        private static ulong ToUlong(object val)
-        {
-            return (ulong)Convert.ChangeType(val, typeof(ulong));
-        }
-
         public static Func<ExprContext, object> Compile(Expr expr, SymexPath p)
         {
             switch (expr.FuncDecl.DeclKind)
@@ -232,13 +210,7 @@ namespace UnitySymexCrawler
                     {
                         var val1 = Compile(expr.Arg(0), p);
                         var val2 = Compile(expr.Arg(1), p);
-                        return ctx =>
-                        {
-                            object x1 = val1(ctx);
-                            object x2 = val2(ctx);
-                            object x2c = ChangeType(x2, x1.GetType());
-                            return x1.Equals(x2c);
-                        };
+                        return ctx => CompileHelpers.Equals(val1(ctx), val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_EQ:
                     {
@@ -246,12 +218,12 @@ namespace UnitySymexCrawler
                         {
                             var val1 = Compile(expr.Arg(1), p);
                             var val2 = Compile(expr.Arg(2), p);
-                            return ctx => ToDouble(val1(ctx)) == ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) == CompileHelpers.ToDouble(val2(ctx));
                         } else
                         {
                             var val1 = Compile(expr.Arg(0), p);
                             var val2 = Compile(expr.Arg(1), p);
-                            return ctx => ToDouble(val1(ctx)) == ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) == CompileHelpers.ToDouble(val2(ctx));
                         }
                     }
                 case Z3_decl_kind.Z3_OP_ITE:
@@ -276,12 +248,12 @@ namespace UnitySymexCrawler
                         {
                             var val1 = Compile(expr.Arg(1), p);
                             var val2 = Compile(expr.Arg(2), p);
-                            return ctx => ToDouble(val1(ctx)) > ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) > CompileHelpers.ToDouble(val2(ctx));
                         } else
                         {
                             var val1 = Compile(expr.Arg(0), p);
                             var val2 = Compile(expr.Arg(1), p);
-                            return ctx => ToDouble(val1(ctx)) > ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) > CompileHelpers.ToDouble(val2(ctx));
                         }
                     }
                 case Z3_decl_kind.Z3_OP_FPA_LT:
@@ -290,67 +262,67 @@ namespace UnitySymexCrawler
                         {
                             var val1 = Compile(expr.Arg(1), p);
                             var val2 = Compile(expr.Arg(2), p);
-                            return ctx => ToDouble(val1(ctx)) < ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) < CompileHelpers.ToDouble(val2(ctx));
                         } else
                         {
                             var val1 = Compile(expr.Arg(0), p);
                             var val2 = Compile(expr.Arg(1), p);
-                            return ctx => ToDouble(val1(ctx)) < ToDouble(val2(ctx));
+                            return ctx => CompileHelpers.ToDouble(val1(ctx)) < CompileHelpers.ToDouble(val2(ctx));
                         }
                     }
                 case Z3_decl_kind.Z3_OP_FPA_IS_NAN:
                     {
                         var val1 = Compile(expr.Arg(0), p);
-                        return ctx => double.IsNaN(ToDouble(val1(ctx)));
+                        return ctx => double.IsNaN(CompileHelpers.ToDouble(val1(ctx)));
                     }
                 case Z3_decl_kind.Z3_OP_BADD:
                     {
                         var val1 = Compile(expr.Arg(0), p);
                         var val2 = Compile(expr.Arg(1), p);
-                        return ctx => ToUlong(val1(ctx)) + ToUlong(val2(ctx));
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) + CompileHelpers.ToUlong(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_ADD:
                     {
                         var val1 = Compile(expr.Arg(1), p);
                         var val2 = Compile(expr.Arg(2), p);
-                        return ctx => ToDouble(val1(ctx)) + ToDouble(val2(ctx));
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) + CompileHelpers.ToDouble(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_BSUB:
                     {
                         var val1 = Compile(expr.Arg(0), p);
                         var val2 = Compile(expr.Arg(1), p);
-                        return ctx => ToUlong(val1(ctx)) - ToUlong(val2(ctx));
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) - CompileHelpers.ToUlong(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_SUB:
                     {
                         var val1 = Compile(expr.Arg(1), p);
                         var val2 = Compile(expr.Arg(2), p);
-                        return ctx => ToDouble(val1(ctx)) - ToDouble(val2(ctx));
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) - CompileHelpers.ToDouble(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_BMUL:
                     {
                         var val1 = Compile(expr.Arg(0), p);
                         var val2 = Compile(expr.Arg(1), p);
-                        return ctx => ToUlong(val1(ctx)) * ToUlong(val2(ctx));
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) * CompileHelpers.ToUlong(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_MUL:
                     {
                         var val1 = Compile(expr.Arg(1), p);
                         var val2 = Compile(expr.Arg(2), p);
-                        return ctx => ToDouble(val1(ctx)) * ToDouble(val2(ctx));
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) * CompileHelpers.ToDouble(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_BUDIV:
                 case Z3_decl_kind.Z3_OP_BSDIV:
                     {
                         var val1 = Compile(expr.Arg(0), p);
                         var val2 = Compile(expr.Arg(1), p);
-                        return ctx => ToUlong(val1(ctx)) / ToUlong(val2(ctx));
+                        return ctx => CompileHelpers.ToUlong(val1(ctx)) / CompileHelpers.ToUlong(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_FPA_DIV:
                     {
                         var val1 = Compile(expr.Arg(1), p);
                         var val2 = Compile(expr.Arg(2), p);
-                        return ctx => ToDouble(val1(ctx)) / ToDouble(val2(ctx));
+                        return ctx => CompileHelpers.ToDouble(val1(ctx)) / CompileHelpers.ToDouble(val2(ctx));
                     }
                 case Z3_decl_kind.Z3_OP_BNUM:
                     {

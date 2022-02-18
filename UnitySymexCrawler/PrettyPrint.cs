@@ -142,7 +142,7 @@ namespace UnitySymexCrawler
             }
         }
 
-        public void WritePrettyPathCondition(SymexState st, StreamWriter sw)
+        public void WritePrettyPathCondition(SymexState st, TextWriter sw)
         {
             for (int i = 0, n = st.pathCondition.Count; i < n; ++i)
             {
@@ -157,10 +157,13 @@ namespace UnitySymexCrawler
 
         public void WritePaths(StreamWriter sw)
         {
+            int pathId = 1;
             foreach (SymexState s in machine.States)
             {
+                sw.WriteLine("--- Path " + pathId + " ---\n");
                 WritePrettyPathCondition(s, sw);
                 sw.WriteLine("\n--------------------\n");
+                ++pathId;
             }
         }
     }

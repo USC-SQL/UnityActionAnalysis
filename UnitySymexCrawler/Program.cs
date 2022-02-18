@@ -20,10 +20,10 @@ namespace UnitySymexCrawler
             SymexMachine.SetUpGlobals();
 
             /* PACMAN */
-            var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll";
+            // var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll";
 
             /* TETRIS */
-            // var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll";
+            var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll";
 
             var peFile = new PEFile(assemblyFileName,
                 new FileStream(assemblyFileName, FileMode.Open, FileAccess.Read),
@@ -36,19 +36,19 @@ namespace UnitySymexCrawler
             assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine");
             
             /* PACMAN */
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
+            /*assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");*/
             
             /* TETRIS */
-            /*assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies");
+            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\External\Demigiant\DOTween");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
             assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");*/
+            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");
 
             var settings = new DecompilerSettings();
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);
@@ -72,11 +72,13 @@ namespace UnitySymexCrawler
             using var db = new DatabaseUtil(databaseFile);
             using var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
 
-            string logFile = "log.txt";
-            if (File.Exists(logFile))
+            string pfuncsFile = "PreconditionFuncs.cs";
+            if (File.Exists(pfuncsFile))
             {
-                File.Delete(logFile);
+                File.Delete(pfuncsFile);
             }
+
+            PreconditionFuncsGen pfg = new PreconditionFuncsGen();
 
             using var prettyLog = new StreamWriter(File.OpenWrite("log.txt"));
             foreach (IMethod method in targets)
@@ -91,13 +93,15 @@ namespace UnitySymexCrawler
                 m.Run();
                 Console.WriteLine("\tWriting path information to database");
                 db.AddPaths(method, m);
-
-                /*PrettyPrint pp = new PrettyPrint(m, z3);
-                prettyLog.WriteLine("\n\n@@ " + method.FullName + " @@\n\n");
-                pp.WritePaths(prettyLog);*/
-
+                Console.WriteLine("\tGenerating code");
+                pfg.ProcessMethod(method, m);
                 m.Dispose();
             }
+
+            pfg.Finish();
+
+            using var pfuncsOut = new StreamWriter(File.OpenWrite(pfuncsFile));
+            pfg.Write(pfuncsOut);
         }
     }
 }

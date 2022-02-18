@@ -13,17 +13,49 @@ using Microsoft.Z3;
 
 namespace UnitySymexCrawler
 {
+    public struct GameConfiguration
+    {
+        public string assemblyFileName;
+        public List<string> assemblySearchDirectories;
+
+        public GameConfiguration(string assemblyFileName, List<string> assemblySearchDirs)
+        {
+            this.assemblyFileName = assemblyFileName;
+            assemblySearchDirectories = assemblySearchDirs;
+        }
+    }
+
     public class Program
     {
+        public static readonly GameConfiguration TETRIS_GAME_CONFIG =
+            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                new List<string>()
+                {
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies",
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\External\Demigiant\DOTween",
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20",
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4",
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0",
+                    @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime"
+                });
+
+        public static readonly GameConfiguration PACMAN_GAME_CONFIG =
+            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                new List<string>() {
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies",
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20",
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4",
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0",
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime"
+                });
+
         public static void Main(string[] args)
         {
+            GameConfiguration gameConfig = TETRIS_GAME_CONFIG;
+
             SymexMachine.SetUpGlobals();
 
-            /* PACMAN */
-            // var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll";
-
-            /* TETRIS */
-            var assemblyFileName = @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll";
+            var assemblyFileName = gameConfig.assemblyFileName;
 
             var peFile = new PEFile(assemblyFileName,
                 new FileStream(assemblyFileName, FileMode.Open, FileAccess.Read),
@@ -33,22 +65,12 @@ namespace UnitySymexCrawler
                 peFile.DetectRuntimePack(),
                 PEStreamOptions.PrefetchEntireImage,
                 MetadataReaderOptions.None);
+
             assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine");
-            
-            /* PACMAN */
-            /*assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");*/
-            
-            /* TETRIS */
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\External\Demigiant\DOTween");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0");
-            assemblyResolver.AddSearchDirectory(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime");
+            foreach (string searchDir in gameConfig.assemblySearchDirectories)
+            {
+                assemblyResolver.AddSearchDirectory(searchDir);
+            }
 
             var settings = new DecompilerSettings();
             var decompiler = new CSharpDecompiler(peFile, assemblyResolver, settings);

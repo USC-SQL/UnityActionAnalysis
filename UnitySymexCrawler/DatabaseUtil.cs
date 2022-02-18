@@ -26,7 +26,7 @@ namespace UnitySymexCrawler
                 "create table methods (id integer primary key, signature text);\n" +
                 "create table smcarguments (argindex integer, value text, symcallid integer, pathid integer);\n" +
                 "create table symbolicmethodcalls (symcallid integer, method integer, pathid integer);\n" +
-                "create table paths (id integer primary key, method integer, condition text);\n";
+                "create table paths (id integer, method integer, condition text);\n"; // (method, id) should be unique, but id need not be
             initCommand.ExecuteNonQuery();
         }
 

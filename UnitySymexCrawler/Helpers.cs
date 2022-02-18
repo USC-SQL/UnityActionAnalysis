@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.TypeSystem;
 using ICSharpCode.Decompiler.IL;
 using Microsoft.Z3;
@@ -181,6 +182,120 @@ namespace UnitySymexCrawler
             {
                 sw.WriteLine(message);
             }
+        }
+
+        public static IType FindType(CSharpDecompiler csd, string typeName)
+        {
+            return csd.TypeSystem.FindType(new FullTypeName(typeName.Substring(0, typeName.LastIndexOf(","))));
+        }
+
+        public static bool IsInputVariable(FuncDecl variable, SymexState s, out int symcallId)
+        {
+            string name = variable.Name.ToString();
+            if (name.StartsWith("symcall:"))
+            {
+                symcallId = int.Parse(name.Substring(8));
+                var smc = s.symbolicMethodCalls[symcallId];
+                if (smc.method.DeclaringType.FullName == "UnityEngine.Input")
+                {
+                    return true;
+                }
+            }
+            symcallId = -1;
+            return false;
+        }
+
+        public static bool ContainsInputVariable(Expr e, SymexState s)
+        {
+            if (e.IsConst && e.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED && IsInputVariable(e.FuncDecl, s, out _))
+            {
+                return true;
+            }
+            else
+            {
+                for (uint i = 0, n = e.NumArgs; i < n; ++i)
+                {
+                    if (ContainsInputVariable(e.Arg(i), s))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static ISet<BoolExpr> GetInputConditions(SymexState s)
+        {
+            ISet<BoolExpr> result = new HashSet<BoolExpr>();
+            Dictionary<BoolExpr, List<FuncDecl>> condFreeVars = new Dictionary<BoolExpr, List<FuncDecl>>();
+            foreach (BoolExpr cond in s.pathCondition)
+            {
+                condFreeVars.Add(cond, Helpers.FindFreeVariables(cond));
+            }
+            ISet<Symbol> relevantVars = new HashSet<Symbol>();
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                foreach (BoolExpr cond in s.pathCondition)
+                {
+                    if (!result.Contains(cond))
+                    {
+                        bool include = false;
+                        List<FuncDecl> vars = condFreeVars[cond];
+                        foreach (FuncDecl v in vars)
+                        {
+                            if (relevantVars.Contains(v.Name) || IsInputVariable(v, s, out _))
+                            {
+                                include = true;
+                                break;
+                            }
+                        }
+                        if (include)
+                        {
+                            result.Add(cond);
+                            foreach (FuncDecl v in vars)
+                            {
+                                relevantVars.Add(v.Name);
+                            }
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private static void RelevantSymcallSearch(Expr e, SymexState s, ISet<int> result)
+        {
+            if (e.FuncDecl.DeclKind == Z3_decl_kind.Z3_OP_UNINTERPRETED)
+            {
+                string name = e.FuncDecl.Name.ToString();
+                if (name.StartsWith("symcall:"))
+                {
+                    int symcallId = int.Parse(name.Substring(8));
+                    result.Add(symcallId);
+                    var smc = s.symbolicMethodCalls[symcallId];
+                    foreach (Expr arg in smc.args)
+                    {
+                        RelevantSymcallSearch(arg, s, result);
+                    }
+                }
+            }
+            for (uint i = 0, n = e.NumArgs; i < n; ++i)
+            {
+                RelevantSymcallSearch(e.Arg(i), s, result);
+            }
+        }
+
+        public static ISet<int> GetRelevantSymcalls(IEnumerable<Expr> conditions, SymexState s)
+        {
+            ISet<int> result = new HashSet<int>();
+            foreach (Expr cond in conditions)
+            {
+                RelevantSymcallSearch(cond, s, result);
+            }
+            return result;
         }
     }
 }

@@ -78,14 +78,32 @@ namespace UnitySymexCrawler
 
         private void AddPath(SymexState state, int pathId, int methodId)
         {
+            string inputConditionString;
+            ISet<BoolExpr> inputCondition = Helpers.GetInputConditions(state);
+
+            var z3 = SymexMachine.Instance.Z3;
+            using (Solver s = z3.MkSolver())
+            {
+                foreach (BoolExpr cond in inputCondition)
+                {
+                    s.Assert(cond);
+                }
+                Helpers.AssertAssumptions(s, z3);
+                inputConditionString = s.ToString();
+            }
+
             var insertCommand = connection.CreateCommand();
             insertCommand.CommandText = @"insert into paths (id, method, condition) values ($pathId, $methodId, $condition)";
             insertCommand.Parameters.AddWithValue("$pathId", pathId);
             insertCommand.Parameters.AddWithValue("$methodId", methodId);
-            insertCommand.Parameters.AddWithValue("$condition", state.PathConditionString());
-            foreach (var p in state.symbolicMethodCalls)
+            insertCommand.Parameters.AddWithValue("$condition", inputConditionString);
+            insertCommand.ExecuteNonQuery();
+
+            ISet<int> relevantSymcalls = Helpers.GetRelevantSymcalls(inputCondition, state);
+            foreach (int symcallId in relevantSymcalls)
             {
-                AddSymbolicMethodCall(p.Key, pathId, p.Value, state);
+                var smc = state.symbolicMethodCalls[symcallId];
+                AddSymbolicMethodCall(symcallId, pathId, smc, state);
             }
         }
 

@@ -151,7 +151,7 @@ namespace UnitySymexCrawler
                     int dotIndex = field.LastIndexOf('.');
                     string typeName = field.Substring(0, dotIndex);
                     string fieldName = field.Substring(dotIndex + 1);
-                    IType type = CodeGenHelpers.FindType(SymexMachine.Instance.CSD, typeName);
+                    IType type = Helpers.FindType(SymexMachine.Instance.CSD, typeName);
                     IField f = type.GetFields(f => f.Name == fieldName).First();
                     fieldAccesses.Add(f);
                     idx = 2;
@@ -392,7 +392,7 @@ namespace UnitySymexCrawler
                 List<CodeExpression> predicates = new List<CodeExpression>();
                 foreach (BoolExpr cond in s.pathCondition)
                 {
-                    if (CodeGenHelpers.ContainsInputVariable(cond, s))
+                    if (Helpers.ContainsInputVariable(cond, s))
                     {
                         continue;
                     }

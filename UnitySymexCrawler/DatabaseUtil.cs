@@ -26,7 +26,7 @@ namespace UnitySymexCrawler
                 "create table methods (id integer primary key, signature text);\n" +
                 "create table smcarguments (argindex integer, value text, symcallid integer, pathid integer);\n" +
                 "create table symbolicmethodcalls (symcallid integer, method integer, pathid integer);\n" +
-                "create table paths (id integer, method integer, condition text);\n"; // (method, id) should be unique, but id need not be
+                "create table paths (id integer primary key, pathindex integer, method integer, condition text);\n";
             initCommand.ExecuteNonQuery();
         }
 
@@ -76,7 +76,7 @@ namespace UnitySymexCrawler
             }
         }
 
-        private void AddPath(SymexState state, int pathId, int methodId)
+        private int AddPath(SymexState state, int pathIndex, int methodId)
         {
             string inputConditionString;
             ISet<BoolExpr> inputCondition = Helpers.GetInputConditions(state);
@@ -93,11 +93,11 @@ namespace UnitySymexCrawler
             }
 
             var insertCommand = connection.CreateCommand();
-            insertCommand.CommandText = @"insert into paths (id, method, condition) values ($pathId, $methodId, $condition)";
-            insertCommand.Parameters.AddWithValue("$pathId", pathId);
+            insertCommand.CommandText = @"insert into paths (pathindex, method, condition) values ($pathIndex, $methodId, $condition); select last_insert_rowid()";
+            insertCommand.Parameters.AddWithValue("$pathIndex", pathIndex);
             insertCommand.Parameters.AddWithValue("$methodId", methodId);
             insertCommand.Parameters.AddWithValue("$condition", inputConditionString);
-            insertCommand.ExecuteNonQuery();
+            int pathId = Convert.ToInt32(insertCommand.ExecuteScalar());
 
             ISet<int> relevantSymcalls = Helpers.GetRelevantSymcalls(inputCondition, state);
             foreach (int symcallId in relevantSymcalls)
@@ -105,6 +105,8 @@ namespace UnitySymexCrawler
                 var smc = state.symbolicMethodCalls[symcallId];
                 AddSymbolicMethodCall(symcallId, pathId, smc, state);
             }
+
+            return pathId;
         }
 
         public void AddPaths(IMethod method, SymexMachine machine)
@@ -112,11 +114,11 @@ namespace UnitySymexCrawler
             using (var transaction = connection.BeginTransaction())
             {
                 int methodId = GetMethodId(method);
-                int pathId = 1;
+                int pathIndex = 1;
                 foreach (SymexState state in machine.States)
                 {
-                    AddPath(state, pathId, methodId);
-                    ++pathId;
+                    AddPath(state, pathIndex, methodId);
+                    ++pathIndex;
                 }
                 transaction.Commit();
             }

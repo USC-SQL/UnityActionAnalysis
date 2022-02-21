@@ -15,11 +15,13 @@ namespace UnitySymexCrawler
 {
     public struct GameConfiguration
     {
+        public string databaseFileName;
         public string assemblyFileName;
         public List<string> assemblySearchDirectories;
 
-        public GameConfiguration(string assemblyFileName, List<string> assemblySearchDirs)
+        public GameConfiguration(string databaseFileName, string assemblyFileName, List<string> assemblySearchDirs)
         {
+            this.databaseFileName = databaseFileName;
             this.assemblyFileName = assemblyFileName;
             assemblySearchDirectories = assemblySearchDirs;
         }
@@ -28,7 +30,9 @@ namespace UnitySymexCrawler
     public class Program
     {
         public static readonly GameConfiguration TETRIS_GAME_CONFIG =
-            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll",
+            new GameConfiguration(
+                "symex.tetris.db",
+                @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 new List<string>()
                 {
                     @"C:\Users\Sasha Volokh\Misc\UnityTetris\Library\ScriptAssemblies",
@@ -40,36 +44,41 @@ namespace UnitySymexCrawler
                 });
 
         public static readonly GameConfiguration PACMAN_GAME_CONFIG =
-            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll",
+            new GameConfiguration(
+                "symex.pacman.db",
+                @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 new List<string>() {
-                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies",
-                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20",
-                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4",
-                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Assets\Scripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0",
-                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime"
+                    @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\ScriptAssemblies"
                 });
 
         public static readonly GameConfiguration ASTEROIDS_GAME_CONFIG =
-            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\Unity-3D-Asteroids\Library\ScriptAssemblies\Assembly-CSharp.dll",
+            new GameConfiguration(
+                "symex.asteroids.db",
+                @"C:\Users\Sasha Volokh\Misc\Unity-3D-Asteroids\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 new List<string>()
                 {
                 });
 
         public static readonly GameConfiguration SMW_GAME_CONFIG =
-            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\science-mario\Library\ScriptAssemblies\Assembly-CSharp.dll",
+            new GameConfiguration(
+                "symex.smw.db",
+                @"C:\Users\Sasha Volokh\Misc\science-mario\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 new List<string>()
                 {
-
                 });
 
-        public static readonly List<string> UNITY_LIB_SEARCH_DIRECTORIES = new List<string>()
+        public static readonly List<string> BASE_SEARCH_DIRECTORIES = new List<string>()
         {
-            @"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine"
+            @"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine",
+            @"C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\UnityScripts\SymexCrawler\Packages\InputSimulator.1.0.4\lib\net20",
+            @"C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\UnityScripts\SymexCrawler\Packages\Microsoft.Z3.x64.4.8.10\lib\netstandard1.4",
+            @"C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\UnityScripts\SymexCrawler\Packages\Microsoft.Data.Sqlite.Core.6.0.1\lib\netstandard2.0",
+            @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime"
         };
 
         public static void Main(string[] args)
         {
-            GameConfiguration gameConfig = ASTEROIDS_GAME_CONFIG;
+            GameConfiguration gameConfig = TETRIS_GAME_CONFIG;
 
             SymexMachine.SetUpGlobals();
 
@@ -83,7 +92,7 @@ namespace UnitySymexCrawler
                 peFile.DetectRuntimePack(),
                 PEStreamOptions.PrefetchEntireImage,
                 MetadataReaderOptions.None);
-            foreach (string searchDir in UNITY_LIB_SEARCH_DIRECTORIES)
+            foreach (string searchDir in BASE_SEARCH_DIRECTORIES)
             {
                 assemblyResolver.AddSearchDirectory(searchDir);
             }
@@ -105,7 +114,7 @@ namespace UnitySymexCrawler
                 }
             }
 
-            var databaseFile = "symex.db";
+            var databaseFile = gameConfig.databaseFileName;
             if (File.Exists(databaseFile))
             {
                 File.Delete(databaseFile);

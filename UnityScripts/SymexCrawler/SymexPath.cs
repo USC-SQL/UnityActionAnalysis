@@ -11,7 +11,7 @@ namespace UnitySymexCrawler
 {
     public class SymexPath
     {
-        private int pathId;
+        private int pathIndex;
         private BoolExpr[] condition;
         public readonly Dictionary<int, Symcall> symcalls;
         private Dictionary<FuncDecl, Func<ExprContext, object>> nonInputVars;
@@ -20,9 +20,9 @@ namespace UnitySymexCrawler
         
         public SymexMethod Method { get; private set; }
 
-        public SymexPath(int pathId, BoolExpr[] condition, Dictionary<int, Symcall> symcalls, SymexMethod m, Context z3)
+        public SymexPath(int pathIndex, BoolExpr[] condition, Dictionary<int, Symcall> symcalls, SymexMethod m, Context z3)
         {
-            this.pathId = pathId;
+            this.pathIndex = pathIndex;
             this.condition = condition;
             this.symcalls = symcalls;
 
@@ -110,7 +110,7 @@ namespace UnitySymexCrawler
 
         public bool CheckFeasible(MonoBehaviour instance, PreconditionFuncs pfuncs)
         {
-            return pfuncs.preconditionFuncs[Method.method][pathId - 1](instance);
+            return pfuncs.preconditionFuncs[Method.method][pathIndex - 1](instance);
         }
 
         private InputCondition ModelInputVariableToCondition(Model m, FuncDecl varDecl, Expr value, ExprContext evalContext, Context z3)

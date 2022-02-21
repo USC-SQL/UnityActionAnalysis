@@ -49,13 +49,14 @@ namespace UnitySymexCrawler
             pfuncs = new PreconditionFuncs();
 
             var selectPathsCommand = connection.CreateCommand();
-            selectPathsCommand.CommandText = "select id, method, condition from paths";
+            selectPathsCommand.CommandText = "select id, pathindex, method, condition from paths";
             using var pathsReader = selectPathsCommand.ExecuteReader();
             while (pathsReader.Read())
             {
                 int pathId = pathsReader.GetInt32(0);
-                int methodId = pathsReader.GetInt32(1);
-                string pathCondition = pathsReader.GetString(2);
+                int pathIndex = pathsReader.GetInt32(1);
+                int methodId = pathsReader.GetInt32(2);
+                string pathCondition = pathsReader.GetString(3);
                 BoolExpr[] parsedPathCond = z3.ParseSMTLIB2String(pathCondition);
 
                 MethodInfo method = methodsById[methodId];
@@ -94,7 +95,7 @@ namespace UnitySymexCrawler
                     symcalls.Add(symcallId, symcall);
                 }
 
-                SymexPath p = new SymexPath(pathId, parsedPathCond, symcalls, m, z3);
+                SymexPath p = new SymexPath(pathIndex, parsedPathCond, symcalls, m, z3);
                 m.paths.Add(p);
             }
 

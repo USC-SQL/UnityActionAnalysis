@@ -71,7 +71,7 @@ namespace UnitySymexCrawler
             }
             ILInstruction entryPoint = SymexMachine.Instance.MethodPool.MethodEntryPoint(method).GetInstruction();
             InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
-            return !res.leadsToInputDepBranchPoint.Contains(entryPoint);
+            return !res.mayReturnInput && !res.leadsToInputDepBranchPoint.Contains(entryPoint);
         }
 
         public static bool IsInputAPI(IMethod method)

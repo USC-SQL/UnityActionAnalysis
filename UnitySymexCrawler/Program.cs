@@ -49,9 +49,27 @@ namespace UnitySymexCrawler
                     @"C:\Users\Sasha Volokh\Misc\AutoExplore\SymexExperiments\Pacman\Library\PackageCache\com.unity.nuget.newtonsoft-json@2.0.0\Runtime"
                 });
 
+        public static readonly GameConfiguration ASTEROIDS_GAME_CONFIG =
+            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\Unity-3D-Asteroids\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                new List<string>()
+                {
+                });
+
+        public static readonly GameConfiguration SMW_GAME_CONFIG =
+            new GameConfiguration(@"C:\Users\Sasha Volokh\Misc\science-mario\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                new List<string>()
+                {
+
+                });
+
+        public static readonly List<string> UNITY_LIB_SEARCH_DIRECTORIES = new List<string>()
+        {
+            @"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine"
+        };
+
         public static void Main(string[] args)
         {
-            GameConfiguration gameConfig = TETRIS_GAME_CONFIG;
+            GameConfiguration gameConfig = ASTEROIDS_GAME_CONFIG;
 
             SymexMachine.SetUpGlobals();
 
@@ -65,8 +83,10 @@ namespace UnitySymexCrawler
                 peFile.DetectRuntimePack(),
                 PEStreamOptions.PrefetchEntireImage,
                 MetadataReaderOptions.None);
-
-            assemblyResolver.AddSearchDirectory(@"C:\Program Files\Unity\Hub\Editor\2020.3.28f1\Editor\Data\Managed\UnityEngine");
+            foreach (string searchDir in UNITY_LIB_SEARCH_DIRECTORIES)
+            {
+                assemblyResolver.AddSearchDirectory(searchDir);
+            }
             foreach (string searchDir in gameConfig.assemblySearchDirectories)
             {
                 assemblyResolver.AddSearchDirectory(searchDir);

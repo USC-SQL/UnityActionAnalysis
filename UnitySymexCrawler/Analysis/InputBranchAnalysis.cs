@@ -176,6 +176,7 @@ namespace UnitySymexCrawler
         {
             public ISet<ILInstruction> inputDepBranchPoints;
             public ISet<ILInstruction> leadsToInputDepBranchPoint;
+            public bool mayReturnInput;
         }
 
         private void InitInputFlowAnalysis(MethodAnalysisState ms)
@@ -541,6 +542,7 @@ namespace UnitySymexCrawler
                         res.leadsToInputDepBranchPoint.Add(ap.Key);
                     }
                 }
+                res.mayReturnInput = s.inputFlow.mayReturnInput;
                 result.methodResults.Add(p.Key, res);
             }
             return result;

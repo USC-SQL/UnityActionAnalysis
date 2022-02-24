@@ -50,7 +50,7 @@ namespace UnitySymexCrawler
                 {
                     return true;
                 }
-                else if (!visited.Contains(target) && target.ParentModule == csd.TypeSystem.MainModule)
+                else if (!visited.Contains(target) && target.ParentModule == csd.TypeSystem.MainModule && target.HasBody)
                 {
                     if (DoesInvokeInputAPIInternal(target, visited))
                     {

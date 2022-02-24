@@ -2,28 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 namespace UnitySymexCrawler
 {
     public abstract class InputCondition
     {
-        public abstract IEnumerator PerformInput(InputSimulator sim);
-
-        protected bool GetButtonKeyCode(string buttonName, out KeyCode keyCode)
-        {
-            switch (buttonName)
-            {
-                case "Fire1":
-                    keyCode = KeyCode.LeftControl;
-                    return true;
-                case "Fire2":
-                    keyCode = KeyCode.LeftAlt;
-                    return true;
-                default:
-                    keyCode = 0;
-                    return false;
-            }
-        }
+        public abstract IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings);
     }
 
     public class AxisInputCondition : InputCondition
@@ -42,74 +27,55 @@ namespace UnitySymexCrawler
             return "Input.GetAxis(\"" + axisName + "\") == " + value;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
-            if (GetButtonKeyCode(axisName, out KeyCode buttonCode))
+            List<KeyCode> keyCodesUp = new List<KeyCode>();
+            KeyCode? keyCodeDown = null;
+
+            KeyCode? positiveKey = inputManagerSettings.GetPositiveKey(axisName);
+            KeyCode? negativeKey = inputManagerSettings.GetNegativeKey(axisName);
+
+            if (value > 0.0f)
             {
-                if (value > 0.0f)
+                if (positiveKey.HasValue)
                 {
-                    sim.SimulateKeyDown(buttonCode);
+                    keyCodeDown = positiveKey.Value;
                 }
-                else
+                if (negativeKey.HasValue)
                 {
-                    sim.SimulateKeyUp(buttonCode);
+                    keyCodesUp.Add(negativeKey.Value);
+                }
+            } else if (value < 0.0f)
+            {
+                if (negativeKey.HasValue)
+                {
+                    keyCodeDown = negativeKey.Value;
+                }
+                if (positiveKey.HasValue)
+                {
+                    keyCodesUp.Add(positiveKey.Value);
+                }
+            } else
+            {
+                if (positiveKey.HasValue)
+                {
+                    keyCodesUp.Add(positiveKey.Value);
+                }
+                if (negativeKey.HasValue)
+                {
+                    keyCodesUp.Add(negativeKey.Value);
                 }
             }
-            else
+            foreach (var keyCode in keyCodesUp)
             {
-                List<KeyCode> keyCodesUp = new List<KeyCode>();
-                KeyCode? keyCodeDown = null;
-                switch (axisName)
+                if (Input.GetKey(keyCode))
                 {
-                    case "Horizontal":
-                        if (value > 0.0f)
-                        {
-                            keyCodesUp.Add(KeyCode.LeftArrow);
-                            keyCodeDown = KeyCode.RightArrow;
-                        }
-                        else if (value < 0.0f)
-                        {
-                            keyCodesUp.Add(KeyCode.RightArrow);
-                            keyCodeDown = KeyCode.LeftArrow;
-                        }
-                        else
-                        {
-                            keyCodesUp.Add(KeyCode.RightArrow);
-                            keyCodesUp.Add(KeyCode.LeftArrow);
-                        }
-                        break;
-                    case "Vertical":
-                        if (value > 0.0f)
-                        {
-                            keyCodesUp.Add(KeyCode.DownArrow);
-                            keyCodeDown = KeyCode.UpArrow;
-                        }
-                        else if (value < 0.0f)
-                        {
-                            keyCodesUp.Add(KeyCode.UpArrow);
-                            keyCodeDown = KeyCode.DownArrow;
-                        }
-                        else
-                        {
-                            keyCodesUp.Add(KeyCode.UpArrow);
-                            keyCodesUp.Add(KeyCode.DownArrow);
-                        }
-                        break;
-                    default:
-                        Debug.LogWarning("failed to perform axis input, did not recognize axisName " + axisName);
-                        yield break;
+                    sim.SimulateKeyUp(keyCode);
                 }
-                foreach (var keyCode in keyCodesUp)
-                {
-                    if (Input.GetKey(keyCode))
-                    {
-                        sim.SimulateKeyUp(keyCode);
-                    }
-                }
-                if (keyCodeDown != null && !Input.GetKey(keyCodeDown.Value))
-                {
-                    sim.SimulateKeyDown(keyCodeDown.Value);
-                }
+            }
+            if (keyCodeDown != null && !Input.GetKey(keyCodeDown.Value))
+            {
+                sim.SimulateKeyDown(keyCodeDown.Value);
             }
             yield break;
         }
@@ -131,21 +97,22 @@ namespace UnitySymexCrawler
             return "Input.GetButton(\"" + buttonName + "\") == " + isDown;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
-            if (GetButtonKeyCode(buttonName, out KeyCode keyCode))
+            KeyCode? positiveKey = inputManagerSettings.GetPositiveKey(buttonName);
+            if (positiveKey.HasValue)
             {
+                var keyCode = positiveKey.Value;
                 if (isDown)
                 {
                     sim.SimulateKeyDown(keyCode);
-                }
-                else
+                } else
                 {
                     sim.SimulateKeyUp(keyCode);
                 }
             } else
             {
-                Debug.LogWarning("failed to perform button input, unrecognized button name: " + buttonName);
+                Debug.LogWarning("failed to perform button input, no positive key found for: " + buttonName);
             }
             yield break;
         }
@@ -167,10 +134,12 @@ namespace UnitySymexCrawler
             return "Input.GetButtonDown(\"" + buttonName + "\") == " + isDown;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
-            if (GetButtonKeyCode(buttonName, out KeyCode keyCode))
+            KeyCode? positiveKey = inputManagerSettings.GetPositiveKey(buttonName);
+            if (positiveKey.HasValue)
             {
+                var keyCode = positiveKey.Value;
                 if (isDown)
                 {
                     if (Input.GetKey(keyCode))
@@ -187,7 +156,7 @@ namespace UnitySymexCrawler
             }
             else
             {
-                Debug.LogWarning("failed to perform button input, unrecognized button name: " + buttonName);
+                Debug.LogWarning("failed to perform button input, no positive key found for: " + buttonName);
             }
             yield break;
         }
@@ -209,10 +178,12 @@ namespace UnitySymexCrawler
             return "Input.GetButtonUp(\"" + buttonName + "\") == " + isUp;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
-            if (GetButtonKeyCode(buttonName, out KeyCode keyCode))
+            KeyCode? positiveKey = inputManagerSettings.GetPositiveKey(buttonName);
+            if (positiveKey.HasValue)
             {
+                var keyCode = positiveKey.Value;
                 if (isUp)
                 {
                     if (!Input.GetKey(keyCode))
@@ -229,7 +200,7 @@ namespace UnitySymexCrawler
             }
             else
             {
-                Debug.LogWarning("failed to perform button input, unrecognized button name: " + buttonName);
+                Debug.LogWarning("failed to perform button input, no positive key found for: " + buttonName);
             }
             yield break;
         }
@@ -250,7 +221,7 @@ namespace UnitySymexCrawler
         {
             return "Input.GetKey(" + keyCode + ") == " + isDown;
         }
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
             if (isDown)
             {
@@ -280,7 +251,7 @@ namespace UnitySymexCrawler
             return "Input.GetKeyDown(" + keyCode + ") == " + isDown;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
             if (isDown)
             {
@@ -315,7 +286,7 @@ namespace UnitySymexCrawler
             return "Input.GetKeyUp(" + keyCode + ") == " + isUp;
         }
 
-        public override IEnumerator PerformInput(InputSimulator sim)
+        public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
             if (isUp)
             {

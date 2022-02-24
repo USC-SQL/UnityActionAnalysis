@@ -14,6 +14,7 @@ namespace UnitySymexCrawler
     public class SymexCrawler : MonoBehaviour
     {
         public string SymexDatabase;
+        public string InputManagerSettings;
         public float Interval = 0.1f;
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
@@ -21,9 +22,17 @@ namespace UnitySymexCrawler
         private Dictionary<int, MethodInfo> methodsById;
         private Context z3;
         private InputSimulator inputSim;
+        private InputManagerSettings inputManagerSettings;
 
         private void Start()
         {
+            if (SymexDatabase == null || InputManagerSettings == null)
+            {
+                throw new Exception("Must specify path to Symex Database and InputManager.asset");
+            }
+
+            inputManagerSettings = new InputManagerSettings(InputManagerSettings);
+
             z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
             inputSim = new InputSimulator();
 
@@ -164,7 +173,7 @@ namespace UnitySymexCrawler
                 {
                     int actionIndex = UnityEngine.Random.Range(0, actions.Count);
                     var selected = actions[actionIndex];
-                    yield return StartCoroutine(selected.Perform(inputSim, this));
+                    yield return StartCoroutine(selected.Perform(inputSim, inputManagerSettings, this));
                 }
                 yield return new WaitForSeconds(Interval);
             }

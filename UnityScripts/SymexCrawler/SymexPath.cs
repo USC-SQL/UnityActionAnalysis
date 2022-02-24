@@ -134,8 +134,7 @@ namespace UnitySymexCrawler
                         object obj = arg(evalContext);
                         if (obj is string)
                         {
-                            Event evt = Event.KeyboardEvent((string)obj);
-                            keyCode = evt.keyCode;
+                            keyCode = InputManagerSettings.KeyNameToCode((string)obj).Value;
                         } else
                         {
                             int keyCodeVal = (int)Convert.ChangeType(obj, typeof(int));

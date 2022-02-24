@@ -18,7 +18,7 @@ namespace UnitySymexCrawler
             this.contextConditions = contextConditions;
         }
 
-        public IEnumerator Perform(InputSimulator sim, MonoBehaviour context)
+        public IEnumerator Perform(InputSimulator sim, InputManagerSettings inputManagerSettings, MonoBehaviour context)
         {
             var start = DateTime.Now;
             if (path.SolveForInputs(instance, out ISet<InputCondition> inputConditions))
@@ -31,7 +31,7 @@ namespace UnitySymexCrawler
                 List<Coroutine> coroutines = new List<Coroutine>();
                 foreach (InputCondition cond in inputConditions)
                 {
-                    coroutines.Add(context.StartCoroutine(cond.PerformInput(sim)));
+                    coroutines.Add(context.StartCoroutine(cond.PerformInput(sim, inputManagerSettings)));
                 }
                 foreach (Coroutine coro in coroutines)
                 {

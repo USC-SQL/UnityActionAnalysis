@@ -230,7 +230,10 @@ namespace UnitySymexCrawler
             Dictionary<BoolExpr, List<FuncDecl>> condFreeVars = new Dictionary<BoolExpr, List<FuncDecl>>();
             foreach (BoolExpr cond in s.pathCondition)
             {
-                condFreeVars.Add(cond, Helpers.FindFreeVariables(cond));
+                if (!condFreeVars.ContainsKey(cond)) // key could already be present if there is a duplicate condition in the path condition
+                {
+                    condFreeVars.Add(cond, FindFreeVariables(cond));
+                }
             }
             ISet<Symbol> relevantVars = new HashSet<Symbol>();
             bool changed = true;

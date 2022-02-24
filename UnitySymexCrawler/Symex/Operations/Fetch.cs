@@ -208,7 +208,7 @@ namespace UnitySymexCrawler.Operations
                                 IParameter param = ctor.Parameters[i];
                                 argVars.Add(new Variable(param.Type));
                             }
-                            if (SymexMachine.Instance.Config.IsMethodSymbolic(ctor))
+                            if (SymexMachine.Instance.Config.IsMethodSummarized(ctor))
                             {
                                 Enqueue(s, new MakeTempVar(thisVar, inst));
                                 for (int i = 0, n = ctor.Parameters.Count; i < n; ++i)
@@ -219,7 +219,7 @@ namespace UnitySymexCrawler.Operations
                                 {
                                     EnqueueEvaluate(s, newobj.Arguments[i], argVars[i]);
                                 }
-                                Enqueue(s, new AssignSymbolicConstructorResult(thisVar, ctor, argVars, inst));
+                                Enqueue(s, new AssignSummarizedConstructorResult(thisVar, ctor, argVars, inst));
                                 if (resultVar != null)
                                 {
                                     Enqueue(s, new Assign(resultVar, thisVar, inst));
@@ -252,7 +252,7 @@ namespace UnitySymexCrawler.Operations
                                 argVars.Add(new Variable(param.Type));
                             }
 
-                            if (SymexMachine.Instance.Config.IsMethodSymbolic(ctor))
+                            if (SymexMachine.Instance.Config.IsMethodSummarized(ctor))
                             {
                                 Enqueue(s, new MakeTempVar(objVar, inst));
                                 for (int i = 0, n = ctor.Parameters.Count; i < n; ++i)
@@ -263,7 +263,7 @@ namespace UnitySymexCrawler.Operations
                                 {
                                     EnqueueEvaluate(s, newobj.Arguments[i], argVars[i]);
                                 }
-                                Enqueue(s, new AssignSymbolicConstructorResult(objVar, ctor, argVars, inst));
+                                Enqueue(s, new AssignSummarizedConstructorResult(objVar, ctor, argVars, inst));
                                 if (resultVar != null)
                                 {
                                     Enqueue(s, new Assign(resultVar, objVar, inst));
@@ -336,7 +336,7 @@ namespace UnitySymexCrawler.Operations
                                 IParameter param = method.Parameters[i];
                                 argVars.Add(new Variable(param.Type));
                             }
-                            if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
+                            if (SymexMachine.Instance.Config.IsMethodSummarized(method))
                             {
                                 for (int i = 0, n = method.Parameters.Count; i < n; ++i)
                                 {
@@ -348,7 +348,7 @@ namespace UnitySymexCrawler.Operations
                                 }
                                 if (resultVar != null)
                                 {
-                                    Enqueue(s, new AssignSymbolicStaticMethodResult(resultVar, method, argVars, inst));
+                                    Enqueue(s, new AssignSummarizedStaticMethodResult(resultVar, method, argVars, inst));
                                 }
                             }
                             else
@@ -379,7 +379,7 @@ namespace UnitySymexCrawler.Operations
                                 IParameter param = method.Parameters[i];
                                 argVars.Add(new Variable(param.Type));
                             }
-                            if (SymexMachine.Instance.Config.IsMethodSymbolic(method))
+                            if (SymexMachine.Instance.Config.IsMethodSummarized(method))
                             {
                                 Enqueue(s, new MakeTempVar(thisVar, inst));
                                 for (int i = 0, n = method.Parameters.Count; i < n; ++i)
@@ -393,7 +393,7 @@ namespace UnitySymexCrawler.Operations
                                 }
                                 if (resultVar != null)
                                 {
-                                    Enqueue(s, new AssignSymbolicInstanceMethodResult(resultVar, method, thisVar, argVars, inst));
+                                    Enqueue(s, new AssignSummarizedInstanceMethodResult(resultVar, method, thisVar, argVars, inst));
                                 }
                             }
                             else

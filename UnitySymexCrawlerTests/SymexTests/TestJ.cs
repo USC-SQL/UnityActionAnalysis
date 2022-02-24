@@ -10,13 +10,14 @@ namespace UnitySymexCrawler.Tests
 {
     public class ConfigJ : TestConfig
     {
-        public override bool IsMethodSymbolic(IMethod method)
+        public override bool IsMethodSummarized(IMethod method)
         {
-            return base.IsMethodSymbolic(method) || method.Name == "GetAxis";
+            return base.IsMethodSummarized(method) || method.Name == "GetAxis";
         }
 
-        public override int SymbolicMethodResultVarId(IMethod method, List<Expr> arguments, SymexState state)
+        public override void ApplyMethodSummary(IMethod method, List<Expr> arguments, Variable resultVar, SymexState state)
         {
+            int symId = -1;
             if (method.Name == "GetAxis")
             {
                 string arg = JsonSerializer.Serialize(state.SerializeExpr(arguments[0]));
@@ -25,11 +26,16 @@ namespace UnitySymexCrawler.Tests
                     SymbolicMethodCall smc = p.Value;
                     if (smc.method.Name == "GetAxis" && JsonSerializer.Serialize(state.SerializeExpr(smc.args[0])) == arg)
                     {
-                        return p.Key;
+                        symId = p.Key;
+                        break;
                     }
                 }
             }
-            return base.SymbolicMethodResultVarId(method, arguments, state);
+            if (symId < 0)
+            {
+                symId = state.symcallCounter++;
+            }
+            ApplySymcallMethodSummary(symId, method, arguments, resultVar, state);
         }
     }
 

@@ -5,14 +5,14 @@ using ICSharpCode.Decompiler.IL;
 
 namespace UnitySymexCrawler.Operations
 {
-    public class AssignSymbolicInstanceMethodResult : Operation
+    public class AssignSummarizedInstanceMethodResult : Operation
     {
         private Variable resultVar;
         private IMethod method;
         private Variable thisVar;
         private List<Variable> argVars;
         
-        public AssignSymbolicInstanceMethodResult(Variable resultVar, IMethod method, Variable thisVar, List<Variable> argVars, ILInstruction inst) : base(inst)
+        public AssignSummarizedInstanceMethodResult(Variable resultVar, IMethod method, Variable thisVar, List<Variable> argVars, ILInstruction inst) : base(inst)
         {
             this.resultVar = resultVar;
             this.method = method;
@@ -28,11 +28,7 @@ namespace UnitySymexCrawler.Operations
             {
                 argValues.Add(state.MemoryRead(argVar.address, argVar.type));
             }
-            int symId = SymexMachine.Instance.Config.SymbolicMethodResultVarId(method, argValues, state);
-            string name = "symcall:" + symId;
-            Expr value = state.MakeSymbolicValue(method.ReturnType, name);
-            state.symbolicMethodCalls[symId] = new SymbolicMethodCall(method, argValues);
-            state.MemoryWrite(resultVar.address, value);
+            SymexMachine.Instance.Config.ApplyMethodSummary(method, argValues, resultVar, state);
         }
     }
 }

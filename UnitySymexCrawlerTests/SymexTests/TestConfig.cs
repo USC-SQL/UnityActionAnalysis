@@ -4,7 +4,7 @@ namespace UnitySymexCrawler.Tests
 {
     public class TestConfig : Configuration
     {
-        public override bool IsMethodSymbolic(IMethod method)
+        public override bool IsMethodSummarized(IMethod method)
         {
             return method.ParentModule != SymexMachine.Instance.CSD.TypeSystem.MainModule;
         }

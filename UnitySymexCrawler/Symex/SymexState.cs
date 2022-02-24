@@ -64,7 +64,7 @@ namespace UnitySymexCrawler
         public int frameCounter;
         public int tempVarCounter;
         public Dictionary<string, int> heapCounters;
-        public int symbolicMethodCounter;
+        public int symcallCounter;
 
         private Context z3;
 
@@ -83,7 +83,7 @@ namespace UnitySymexCrawler
             frameCounter = 1;
             tempVarCounter = 0;
             heapCounters = new Dictionary<string, int>();
-            symbolicMethodCounter = 0;
+            symcallCounter = 0;
 
             this.z3 = z3;
         }
@@ -113,7 +113,7 @@ namespace UnitySymexCrawler
             frameCounter = o.frameCounter;
             tempVarCounter = o.tempVarCounter;
             heapCounters = new Dictionary<string, int>(o.heapCounters);
-            symbolicMethodCounter = o.symbolicMethodCounter;
+            symcallCounter = o.symcallCounter;
 
             z3 = o.z3; 
         }
@@ -381,12 +381,11 @@ namespace UnitySymexCrawler
             }
         }
 
-        public void Fork(InstructionPointer IP, BoolExpr conditionToAdd, ILInstruction sourceInstruction)
+        public SymexState Fork()
         {
             SymexState s = new SymexState(this);
-            s.pathCondition.Add(conditionToAdd);
-            s.opQueue.Enqueue(new Operations.Fetch(IP, sourceInstruction));
             SymexMachine.Instance.ScheduleAddState(s);
+            return s;
         }
 
         public string PathConditionString()

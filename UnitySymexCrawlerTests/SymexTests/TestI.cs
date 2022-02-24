@@ -9,9 +9,9 @@ namespace UnitySymexCrawler.Tests
 {
     public class ConfigI : TestConfig
     {
-        public override bool IsMethodSymbolic(IMethod method)
+        public override bool IsMethodSummarized(IMethod method)
         {
-            return base.IsMethodSymbolic(method) || method.FullName == "TestCases.Symex.TestI.Record..ctor";
+            return base.IsMethodSummarized(method) || method.FullName == "TestCases.Symex.TestI.Record..ctor";
         }
     }
 

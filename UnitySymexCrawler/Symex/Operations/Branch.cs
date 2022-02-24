@@ -74,7 +74,9 @@ namespace UnitySymexCrawler.Operations
                 for (int i = 0, n = satCases.Count - 1; i < n; ++i)
                 {
                     SATCase satCase = satCases[i];
-                    state.Fork(satCase.branchCase.IP, satCase.condition, Instruction);
+                    SymexState fork = state.Fork();
+                    fork.pathCondition.Add(satCase.condition);
+                    fork.opQueue.Enqueue(new Fetch(satCase.branchCase.IP, Instruction));
                 }
                 SATCase lastSatCase = satCases[satCases.Count - 1];
                 state.pathCondition.Add(lastSatCase.condition);

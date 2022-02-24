@@ -65,10 +65,22 @@ namespace UnitySymexCrawler.Operations
                 switch (op)
                 {
                     case ComparisonKind.Equality:
-                        result = z3.MkEq(value1, value2);
+                        if (isBV)
+                        {
+                            result = z3.MkEq(value1, value2);
+                        } else
+                        {
+                            result = z3.MkFPEq((FPExpr)value1, (FPExpr)value2);
+                        }
                         break;
                     case ComparisonKind.Inequality:
-                        result = z3.MkNot(z3.MkEq(value1, value2));
+                        if (isBV)
+                        {
+                            result = z3.MkNot(z3.MkEq(value1, value2));
+                        } else
+                        {
+                            result = z3.MkNot(z3.MkFPEq((FPExpr)value1, (FPExpr)value2));
+                        }
                         break;
                     case ComparisonKind.LessThan:
                         if (isBV)

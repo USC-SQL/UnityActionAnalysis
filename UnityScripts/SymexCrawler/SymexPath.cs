@@ -206,9 +206,9 @@ namespace UnitySymexCrawler
             throw new ResolutionException("unrecognized input variable '" + name + "'");
         }
 
-        private void ModelToInputConditions(Model m, ExprContext evalContext, Context z3, out ISet<InputCondition> inputConditions)
+        private void ModelToInputConditions(Model m, ExprContext evalContext, Context z3, out InputConditionSet inputConditions)
         {
-            inputConditions = new HashSet<InputCondition>();
+            inputConditions = new InputConditionSet();
             foreach (var p in m.Consts)
             {
                 var decl = p.Key;
@@ -221,7 +221,7 @@ namespace UnitySymexCrawler
             }
         }
 
-        public bool SolveForInputs(MonoBehaviour instance, out ISet<InputCondition> result)
+        public bool SolveForInputs(MonoBehaviour instance, out InputConditionSet result)
         {
             ExprContext ctx = new ExprContext(instance);
             using var solver = z3.MkSolver();

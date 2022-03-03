@@ -18,29 +18,19 @@ namespace UnitySymexCrawler
             this.contextConditions = contextConditions;
         }
 
-        public IEnumerator Perform(InputSimulator sim, InputManagerSettings inputManagerSettings, MonoBehaviour context)
+        public InputConditionSet TrySolve()
         {
-            var start = DateTime.Now;
-            if (path.SolveForInputs(instance, out ISet<InputCondition> inputConditions))
+            if (path.SolveForInputs(instance, out InputConditionSet inputConditions))
             {
                 foreach (InputCondition cond in contextConditions)
                 {
                     inputConditions.Add(cond);
                 }
-
-                List<Coroutine> coroutines = new List<Coroutine>();
-                foreach (InputCondition cond in inputConditions)
-                {
-                    coroutines.Add(context.StartCoroutine(cond.PerformInput(sim, inputManagerSettings)));
-                }
-                foreach (Coroutine coro in coroutines)
-                {
-                    yield return coro;
-                }
-
-                Debug.Log("Performed action in " + (DateTime.Now - start).TotalMilliseconds + "ms: " + string.Join(" && ", inputConditions));
+                return inputConditions;
+            } else
+            {
+                return null;
             }
-            yield break;
         }
     }
 }

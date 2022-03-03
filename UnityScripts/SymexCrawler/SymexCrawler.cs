@@ -16,6 +16,7 @@ namespace UnitySymexCrawler
         public string SymexDatabase;
         public string InputManagerSettings;
         public float Interval = 0.1f;
+        public List<string> SkipActionsContaining;
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
         private PreconditionFuncs pfuncs;
@@ -163,6 +164,18 @@ namespace UnitySymexCrawler
             return actions;
         }
 
+        private bool ShouldSkipAction(string inputCondStr)
+        {
+            foreach (string s in SkipActionsContaining)
+            {
+                if (inputCondStr.Contains(s))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public IEnumerator CrawlLoop()
         {
             yield return new WaitForSeconds(Interval);
@@ -171,9 +184,22 @@ namespace UnitySymexCrawler
                 var actions = ComputeAvailableActions();
                 if (actions.Count > 0)
                 {
+                    var start = DateTime.Now;
                     int actionIndex = UnityEngine.Random.Range(0, actions.Count);
                     var selected = actions[actionIndex];
-                    yield return StartCoroutine(selected.Perform(inputSim, inputManagerSettings, this));
+                    var inputConds = selected.TrySolve();
+                    if (inputConds != null)
+                    {
+                        string s = string.Join(" && ", inputConds);
+                        if (!ShouldSkipAction(s))
+                        {
+                            yield return StartCoroutine(inputConds.Perform(inputSim, inputManagerSettings, this));
+                            Debug.Log("Performed action in " + (DateTime.Now - start).TotalMilliseconds + "ms: " + s);
+                        } else
+                        {
+                            Debug.Log("Skipped action: " + s);
+                        }
+                    }
                 }
                 yield return new WaitForSeconds(Interval);
             }

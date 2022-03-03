@@ -60,5 +60,12 @@ namespace UnitySymexCrawler
                 new List<string>()
                 {
                 });
+
+        public static readonly GameConfiguration GAME_CONFIG_SPACEMAN =
+            new GameConfiguration("symex.spaceman.db",
+                @"C:\Users\Sasha Volokh\Misc\SpaceMan-Game\SpaceMan Platzi\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                new List<string>()
+                {
+                });
     }
 }

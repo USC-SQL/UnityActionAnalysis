@@ -17,7 +17,7 @@ namespace UnitySymexCrawler
     {
         public static void Main(string[] args)
         {
-            GameConfiguration gameConfig = GameConfigs.GAME_CONFIG_TETRIS;
+            GameConfiguration gameConfig = GameConfigs.GAME_CONFIG_SPACEMAN;
 
             SymexMachine.SetUpGlobals();
 

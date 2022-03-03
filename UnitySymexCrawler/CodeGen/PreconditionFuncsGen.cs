@@ -140,11 +140,13 @@ namespace UnitySymexCrawler
         private CodeExpression ResolveVariable(string varName, IMethod m, SymexState s)
         {
             bool staticField;
+            CodeExpression value;
+            IType valueType;
+            string[] parts = varName.Split(':');
+            int idx;
             if ((staticField = varName.StartsWith("staticfield:")) || varName.StartsWith("frame:0:this:instancefield:"))
             {
-                List<IField> fieldAccesses = new List<IField>();
-                string[] parts = varName.Split(':');
-                int idx;
+                IField f;
                 if (staticField)
                 {
                     string field = parts[1];
@@ -152,47 +154,46 @@ namespace UnitySymexCrawler
                     string typeName = field.Substring(0, dotIndex);
                     string fieldName = field.Substring(dotIndex + 1);
                     IType type = Helpers.FindType(SymexMachine.Instance.CSD, typeName);
-                    IField f = type.GetFields(f => f.Name == fieldName).First();
-                    fieldAccesses.Add(f);
+                    f = type.GetFields(f => f.Name == fieldName).First();
                     idx = 2;
                 } else
                 {
                     string fieldName = parts[4];
                     IType instanceType = m.DeclaringType;
-                    IField f = instanceType.GetFields(f => f.Name == fieldName).First();
-                    fieldAccesses.Add(f);
+                    f = instanceType.GetFields(f => f.Name == fieldName).First();
                     idx = 5;
                 }
-                while (idx < parts.Length)
-                {
-                    var lastField = fieldAccesses[fieldAccesses.Count - 1];
-                    if (parts[idx] == "instancefield")
-                    {
-                        string fieldName = parts[idx + 1];
-                        IType type = lastField.Type;
-                        IField f = type.GetFields(f => f.Name == fieldName).First();
-                        fieldAccesses.Add(f);
-                        idx += 2;
-                    }
-                    else
-                    {
-                        throw new Exception("expected instancefield, got " + parts[idx]);
-                    }
-                }
-                CodeExpression value = new CodeVariableReferenceExpression("instance");
-                foreach (IField f in fieldAccesses)
-                {
-                    value = FieldAccess(value, f);
-                }
-                return value;
+                value = FieldAccess(new CodeVariableReferenceExpression("instance"), f);
+                valueType = f.Type;
             } else if (varName.StartsWith("symcall:"))
             {
-                int symcallId = int.Parse(varName.Substring(8));
-                return ResolveSymcall(s.symbolicMethodCalls[symcallId], m, s);
+                int symcallId = int.Parse(parts[1]);
+                idx = 2;
+                var smc = s.symbolicMethodCalls[symcallId];
+                value = ResolveSymcall(smc, m, s);
+                valueType = smc.method.ReturnType;
             } else
             {
                 throw new ResolutionException("cannot resolve variable " + varName);
             }
+
+            while (idx < parts.Length)
+            {
+                if (parts[idx] == "instancefield")
+                {
+                    string fieldName = parts[idx + 1];
+                    IField f = valueType.GetFields(f => f.Name == fieldName).First();
+                    value = FieldAccess(value, f);
+                    valueType = f.Type;
+                    idx += 2;
+                }
+                else
+                {
+                    throw new Exception("expected instancefield, got " + parts[idx]);
+                }
+            }
+
+            return value;
         }
 
         private CodeExpression Compile(Expr expr, IMethod m, SymexState s)

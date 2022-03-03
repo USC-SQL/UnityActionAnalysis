@@ -133,11 +133,11 @@ namespace UnitySymexCrawler
         public static Func<ExprContext, object> ResolveVariable(string varName, SymexPath p)
         {
             SymexMethod m = p.Method;
+            string[] parts = varName.Split(':');
             bool staticField;
             if ((staticField = varName.StartsWith("staticfield:")) || varName.StartsWith("frame:0:this:instancefield:"))
             {
                 List<FieldInfo> fieldAccesses = new List<FieldInfo>();
-                string[] parts = varName.Split(':');
                 int idx;
                 if (staticField)
                 {
@@ -188,9 +188,40 @@ namespace UnitySymexCrawler
                 };
             } else if (varName.StartsWith("symcall:"))
             {
-                int symcallId = int.Parse(varName.Substring(8));
+                int symcallId = int.Parse(parts[1]);
+                List<FieldInfo> fieldAccesses = new List<FieldInfo>();
                 Symcall sc = p.symcalls[symcallId];
-                return ResolveSymcall(sc, p);
+                Type currType = sc.method.ReturnType;
+                var symcall = ResolveSymcall(sc, p);
+                int idx = 2;
+                while (idx < parts.Length)
+                {
+                    if (parts[idx] == "instancefield")
+                    {
+                        string fieldName = parts[idx + 1];
+                        FieldInfo f = currType.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        fieldAccesses.Add(f);
+                        currType = f.FieldType;
+                        idx += 2;
+                    }
+                    else
+                    {
+                        throw new Exception("expected instancefield, got " + parts[idx]);
+                    }
+                }
+                return ctx =>
+                {
+                    object value = symcall(ctx);
+                    foreach (FieldInfo f in fieldAccesses)
+                    {
+                        if (value == null)
+                        {
+                            throw new ResolutionException("null pointer dereference when evaluating " + varName);
+                        }
+                        value = f.GetValue(value);
+                    }
+                    return value;
+                };
             } else
             {
                 throw new ResolutionException("cannot resolve variable " + varName);

@@ -194,7 +194,14 @@ namespace UnitySymexCrawler
             string name = variable.Name.ToString();
             if (name.StartsWith("symcall:"))
             {
-                symcallId = int.Parse(name.Substring(8));
+                try
+                {
+                    symcallId = int.Parse(name.Substring(8));
+                } catch (FormatException e)
+                {
+                    symcallId = -1;
+                    return false;
+                }
                 var smc = s.symbolicMethodCalls[symcallId];
                 if (smc.method.DeclaringType.FullName == "UnityEngine.Input")
                 {

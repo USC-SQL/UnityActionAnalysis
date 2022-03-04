@@ -120,6 +120,9 @@ namespace UnitySymexCrawler
             KeyCode.Help.ToString()
         };
 
+        // if empty, all keys included
+        public List<string> IncludeKeys = new List<string>();
+        
         private List<KeyCode> keyCodes;
 
         private InputSimulator inputSim;
@@ -129,7 +132,20 @@ namespace UnitySymexCrawler
             inputSim = new InputSimulator();
 
             keyCodes = new List<KeyCode>();
-            foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+            Array allKeyCodes;
+            if (IncludeKeys.Count > 0)
+            {
+                List<KeyCode> kcs = new List<KeyCode>();
+                foreach (string key in IncludeKeys)
+                {
+                    kcs.Add((KeyCode)Enum.Parse(typeof(KeyCode), key));
+                }
+                allKeyCodes = kcs.ToArray();
+            } else
+            {
+                allKeyCodes = Enum.GetValues(typeof(KeyCode));
+            }
+            foreach (KeyCode keyCode in allKeyCodes)
             {
                 if (keyCode >= KeyCode.Mouse0 || ExcludeKeys.Contains(keyCode.ToString()))
                 {

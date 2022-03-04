@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace UnitySymexCrawler
@@ -8,6 +9,8 @@ namespace UnitySymexCrawler
     public class RandomInputCrawler : MonoBehaviour
     {
         public float Interval = 0.1f;
+        public int minNumKeysToPress = 1;
+        public int maxNumKeysToPress = 3;
 
         public List<string> ExcludeKeys = new List<string>() {
             KeyCode.None.ToString(),
@@ -65,8 +68,58 @@ namespace UnitySymexCrawler
             KeyCode.LeftCurlyBracket.ToString(),
             KeyCode.Pipe.ToString(),
             KeyCode.RightCurlyBracket.ToString(),
-            KeyCode.Tilde.ToString()
+            KeyCode.Tilde.ToString(),
+            KeyCode.F1.ToString(),
+            KeyCode.F2.ToString(),
+            KeyCode.F3.ToString(),
+            KeyCode.F4.ToString(),
+            KeyCode.F5.ToString(),
+            KeyCode.F6.ToString(),
+            KeyCode.F7.ToString(),
+            KeyCode.F8.ToString(),
+            KeyCode.F9.ToString(),
+            KeyCode.F10.ToString(),
+            KeyCode.F11.ToString(),
+            KeyCode.F12.ToString(),
+            KeyCode.F13.ToString(),
+            KeyCode.F14.ToString(),
+            KeyCode.F15.ToString(),
+            KeyCode.LeftControl.ToString(),
+            KeyCode.RightControl.ToString(),
+            KeyCode.LeftShift.ToString(),
+            KeyCode.RightShift.ToString(),
+            KeyCode.LeftAlt.ToString(),
+            KeyCode.Keypad0.ToString(),
+            KeyCode.Keypad1.ToString(),
+            KeyCode.Keypad2.ToString(),
+            KeyCode.Keypad3.ToString(),
+            KeyCode.Keypad4.ToString(),
+            KeyCode.Keypad5.ToString(),
+            KeyCode.Keypad6.ToString(),
+            KeyCode.Keypad7.ToString(),
+            KeyCode.Keypad8.ToString(),
+            KeyCode.Keypad9.ToString(),
+            KeyCode.Insert.ToString(),
+            KeyCode.Home.ToString(),
+            KeyCode.End.ToString(),
+            KeyCode.F1.ToString(),
+            KeyCode.F2.ToString(),
+            KeyCode.F3.ToString(),
+            KeyCode.F4.ToString(),
+            KeyCode.F5.ToString(),
+            KeyCode.F6.ToString(),
+            KeyCode.F7.ToString(),
+            KeyCode.F8.ToString(),
+            KeyCode.F9.ToString(),
+            KeyCode.F10.ToString(),
+            KeyCode.F11.ToString(),
+            KeyCode.F12.ToString(),
+            KeyCode.F13.ToString(),
+            KeyCode.F14.ToString(),
+            KeyCode.F15.ToString(),
+            KeyCode.Help.ToString()
         };
+
         private List<KeyCode> keyCodes;
 
         private InputSimulator inputSim;
@@ -94,16 +147,35 @@ namespace UnitySymexCrawler
             yield return new WaitForSeconds(Interval);
             for (; ;)
             {
-                KeyCode keyCode = keyCodes[UnityEngine.Random.Range(0, keyCodes.Count)];
-                if (Input.GetKey(keyCode))
+                List<KeyCode> keyCodesToPress = new List<KeyCode>();
+                int numToPress = UnityEngine.Random.Range(minNumKeysToPress, maxNumKeysToPress + 1);
+                for (int i = 0; i < numToPress; ++i)
                 {
-                    inputSim.SimulateKeyUp(keyCode);
+                    keyCodesToPress.Add(keyCodes[UnityEngine.Random.Range(0, keyCodes.Count)]);
+                }
+                Debug.Log("Pressing " + string.Join(", ", keyCodesToPress.Select(kc => kc.ToString())));
+                bool anyReleased = false;
+                foreach (KeyCode keyCode in keyCodesToPress)
+                {
+                    if (Input.GetKey(keyCode))
+                    {
+                        inputSim.SimulateKeyUp(keyCode);
+                        anyReleased = true;
+                    }
+                }
+                if (anyReleased)
+                {
                     yield return new WaitForFixedUpdate();
                 }
-                inputSim.SimulateKeyDown(keyCode);
+                foreach (KeyCode keyCode in keyCodesToPress)
+                {
+                    inputSim.SimulateKeyDown(keyCode);
+                }
                 yield return new WaitForSeconds(Interval);
-                inputSim.SimulateKeyUp(keyCode);
-                yield return new WaitForFixedUpdate();
+                foreach(KeyCode keyCode in keyCodesToPress)
+                {
+                    inputSim.SimulateKeyUp(keyCode);
+                }
             }
         }
     }

@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
-using System.Reflection;
 using System.IO;
 using System.Threading;
 
@@ -33,6 +31,11 @@ public class StateDumper : MonoBehaviour
     private static bool ShouldStop(string dumpDir)
     {
         return File.Exists(dumpDir + "/stop");
+    }
+
+    private static bool IgnoreGameObject(GameObject go)
+    {
+        return go.name.StartsWith("Unity.RecordedPlayback") || go.name.Equals("StartRecordedPlaybackFromEditor");
     }
 
     public static void ThreadProc()
@@ -87,15 +90,13 @@ public class StateDumper : MonoBehaviour
 
     public object SerializeGameObject(GameObject gameObject)
     {
-        var cs = gameObject.GetComponents<Component>();
-
         List<object> children = new List<object>(gameObject.transform.childCount);
 
         var childCount = gameObject.transform.childCount;
         for (int i = 0; i != childCount; ++i)
         {
             GameObject child = gameObject.transform.GetChild(i).gameObject;
-            if (child.activeInHierarchy)
+            if (child.activeInHierarchy && !IgnoreGameObject(child))
             {
                 children.Add(SerializeGameObject(child));
             }
@@ -130,19 +131,26 @@ public class StateDumper : MonoBehaviour
         foreach (UnityEngine.Object go in allGameObjects)
         {
             var root = ((GameObject)go).transform.root.gameObject;
-            Scene scn = root.scene;
-            HashSet<GameObject> roots;
-            if (!rootGameObjects.TryGetValue(scn, out roots))
+            if (root.activeInHierarchy && !IgnoreGameObject(root))
             {
-                roots = new HashSet<GameObject>();
-                rootGameObjects.Add(scn, roots);
+                Scene scn = root.scene;
+                HashSet<GameObject> roots;
+                if (!rootGameObjects.TryGetValue(scn, out roots))
+                {
+                    roots = new HashSet<GameObject>();
+                    rootGameObjects.Add(scn, roots);
+                }
+                roots.Add(root);
             }
-            roots.Add(root);
         }
 
         List<SceneInfo> scenes = new List<SceneInfo>();
         foreach (KeyValuePair<Scene, HashSet<GameObject>> p in rootGameObjects)
         {
+            if (p.Key.name == "DontDestroyOnLoad")
+            {
+                continue;
+            }
             SceneInfo info = new SceneInfo()
             {
                 scn = p.Key,

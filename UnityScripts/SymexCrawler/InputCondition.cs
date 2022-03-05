@@ -67,14 +67,11 @@ namespace UnitySymexCrawler
             }
             foreach (var keyCode in keyCodesUp)
             {
-                if (Input.GetKey(keyCode))
-                {
-                    sim.SimulateKeyUp(keyCode);
-                }
+                sim.SimulateUp(keyCode);
             }
-            if (keyCodeDown != null && !Input.GetKey(keyCodeDown.Value))
+            if (keyCodeDown != null)
             {
-                sim.SimulateKeyDown(keyCodeDown.Value);
+                sim.SimulateDown(keyCodeDown.Value);
             }
             yield break;
         }
@@ -104,10 +101,10 @@ namespace UnitySymexCrawler
                 var keyCode = positiveKey.Value;
                 if (isDown)
                 {
-                    sim.SimulateKeyDown(keyCode);
+                    sim.SimulateDown(keyCode);
                 } else
                 {
-                    sim.SimulateKeyUp(keyCode);
+                    sim.SimulateUp(keyCode);
                 }
             } else
             {
@@ -141,16 +138,13 @@ namespace UnitySymexCrawler
                 var keyCode = positiveKey.Value;
                 if (isDown)
                 {
-                    if (Input.GetKey(keyCode))
-                    {
-                        sim.SimulateKeyUp(keyCode);
-                        yield return new WaitForFixedUpdate();
-                    }
-                    sim.SimulateKeyDown(keyCode);
+                    sim.SimulateUp(keyCode);
+                    yield return new WaitForFixedUpdate();
+                    sim.SimulateDown(keyCode);
                 }
                 else if (Input.GetKey(keyCode))
                 {
-                    sim.SimulateKeyUp(keyCode);
+                    sim.SimulateUp(keyCode);
                 }
             }
             else
@@ -185,16 +179,13 @@ namespace UnitySymexCrawler
                 var keyCode = positiveKey.Value;
                 if (isUp)
                 {
-                    if (!Input.GetKey(keyCode))
-                    {
-                        sim.SimulateKeyDown(keyCode);
-                        yield return new WaitForFixedUpdate();
-                    }
-                    sim.SimulateKeyUp(keyCode);
+                    sim.SimulateDown(keyCode);
+                    yield return new WaitForFixedUpdate();
+                    sim.SimulateUp(keyCode);
                 }
-                else if (!Input.GetKey(keyCode))
+                else
                 {
-                    sim.SimulateKeyDown(keyCode);
+                    sim.SimulateDown(keyCode);
                 }
             }
             else
@@ -224,11 +215,11 @@ namespace UnitySymexCrawler
         {
             if (isDown)
             {
-                sim.SimulateKeyDown(keyCode);
+                sim.SimulateDown(keyCode);
             }
             else
             {
-                sim.SimulateKeyUp(keyCode);
+                sim.SimulateUp(keyCode);
             }
             yield break;
         }
@@ -254,16 +245,13 @@ namespace UnitySymexCrawler
         {
             if (isDown)
             {
-                if (Input.GetKey(keyCode))
-                {
-                    sim.SimulateKeyUp(keyCode);
-                    yield return new WaitForFixedUpdate();
-                }
-                sim.SimulateKeyDown(keyCode);
+                sim.SimulateUp(keyCode);
+                yield return new WaitForFixedUpdate();
+                sim.SimulateDown(keyCode);
             }
-            else if (Input.GetKey(keyCode))
+            else
             {
-                sim.SimulateKeyUp(keyCode);
+                sim.SimulateUp(keyCode);
             }
             yield break;
         }
@@ -289,15 +277,12 @@ namespace UnitySymexCrawler
         {
             if (isUp)
             {
-                if (!Input.GetKey(keyCode))
-                {
-                    sim.SimulateKeyDown(keyCode);
-                    yield return new WaitForFixedUpdate();
-                }
-                sim.SimulateKeyUp(keyCode);
+                sim.SimulateDown(keyCode);
+                yield return new WaitForFixedUpdate();
+                sim.SimulateUp(keyCode);
             } else if (!Input.GetKey(keyCode))
             {
-                sim.SimulateKeyDown(keyCode);
+                sim.SimulateDown(keyCode);
             }
             yield break;
         }

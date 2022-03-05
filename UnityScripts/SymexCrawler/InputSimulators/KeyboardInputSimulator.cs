@@ -1,11 +1,10 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using WindowsInput.Native;
 using WindowsInputSimulator = WindowsInput.InputSimulator;
 
 namespace UnitySymexCrawler
 {
-    public class InputSimulator
+    public class KeyboardInputSimulator : InputSimulator
     {
         private WindowsInputSimulator sim = new WindowsInputSimulator();
 
@@ -139,30 +138,36 @@ namespace UnitySymexCrawler
             }
         }
 
-        public void SimulateKeyDown(KeyCode keyCode)
+        public override void SimulateDown(KeyCode keyCode)
         {
             var winKeyCode = ConvertUnityKeyCode(keyCode);
             if (winKeyCode > 0)
             {
                 // Debug.Log("SimulateKeyDown: " + winKeyCode);
                 sim.Keyboard.KeyDown(winKeyCode);
-            } else
+            }
+            else
             {
                 Debug.LogWarning("failed to simulate key down, unrecognized key code: " + keyCode);
             }
         }
 
-        public void SimulateKeyUp(KeyCode keyCode)
+        public override void SimulateUp(KeyCode keyCode)
         {
             var winKeyCode = ConvertUnityKeyCode(keyCode);
             if (winKeyCode > 0)
             {
                 // Debug.Log("SimulateKeyUp: " + winKeyCode);
                 sim.Keyboard.KeyUp(winKeyCode);
-            } else
+            }
+            else
             {
                 Debug.LogWarning("failed to simulate key up, unrecognized key code: " + keyCode);
             }
+        }
+
+        public override void Dispose()
+        {
         }
     }
 }

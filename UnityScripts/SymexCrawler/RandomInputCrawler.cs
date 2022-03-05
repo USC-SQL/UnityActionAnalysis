@@ -8,119 +8,95 @@ namespace UnitySymexCrawler
 {
     public class RandomInputCrawler : MonoBehaviour
     {
-        public float Interval = 0.1f;
-        public int minNumKeysToPress = 1;
-        public int maxNumKeysToPress = 3;
-
-        public List<string> ExcludeKeys = new List<string>() {
-            KeyCode.None.ToString(),
-            KeyCode.Tab.ToString(),
-            KeyCode.LeftWindows.ToString(),
-            KeyCode.RightWindows.ToString(),
-            KeyCode.LeftCommand.ToString(),
-            KeyCode.LeftApple.ToString(),
-            KeyCode.RightCommand.ToString(),
-            KeyCode.RightApple.ToString(),
-            KeyCode.SysReq.ToString(),
-            KeyCode.Print.ToString(),
-            KeyCode.CapsLock.ToString(),
-            KeyCode.Numlock.ToString(),
-            KeyCode.ScrollLock.ToString(),
-            KeyCode.Menu.ToString(),
-            KeyCode.Clear.ToString(),
-            KeyCode.Exclaim.ToString(),
-            KeyCode.DoubleQuote.ToString(),
-            KeyCode.Hash.ToString(),
-            KeyCode.Dollar.ToString(),
-            KeyCode.Percent.ToString(),
-            KeyCode.Ampersand.ToString(),
-            KeyCode.Quote.ToString(),
-            KeyCode.LeftParen.ToString(),
-            KeyCode.RightParen.ToString(),
-            KeyCode.Asterisk.ToString(),
-            KeyCode.Plus.ToString(),
-            KeyCode.Slash.ToString(),
-            KeyCode.Colon.ToString(),
-            KeyCode.Semicolon.ToString(),
-            KeyCode.Less.ToString(),
-            KeyCode.Equals.ToString(),
-            KeyCode.Greater.ToString(),
-            KeyCode.Question.ToString(),
-            KeyCode.At.ToString(),
-            KeyCode.LeftBracket.ToString(),
-            KeyCode.Backslash.ToString(),
-            KeyCode.RightBracket.ToString(),
-            KeyCode.Caret.ToString(),
-            KeyCode.Underscore.ToString(),
-            KeyCode.BackQuote.ToString(),
-            KeyCode.KeypadPeriod.ToString(),
-            KeyCode.KeypadDivide.ToString(),
-            KeyCode.KeypadMultiply.ToString(),
-            KeyCode.KeypadMinus.ToString(),
-            KeyCode.KeypadPlus.ToString(),
-            KeyCode.KeypadEnter.ToString(),
-            KeyCode.KeypadEquals.ToString(),
-            KeyCode.PageUp.ToString(),
-            KeyCode.PageDown.ToString(),
-            KeyCode.RightAlt.ToString(),
-            KeyCode.AltGr.ToString(),
-            KeyCode.Break.ToString(),
-            KeyCode.LeftCurlyBracket.ToString(),
-            KeyCode.Pipe.ToString(),
-            KeyCode.RightCurlyBracket.ToString(),
-            KeyCode.Tilde.ToString(),
-            KeyCode.F1.ToString(),
-            KeyCode.F2.ToString(),
-            KeyCode.F3.ToString(),
-            KeyCode.F4.ToString(),
-            KeyCode.F5.ToString(),
-            KeyCode.F6.ToString(),
-            KeyCode.F7.ToString(),
-            KeyCode.F8.ToString(),
-            KeyCode.F9.ToString(),
-            KeyCode.F10.ToString(),
-            KeyCode.F11.ToString(),
-            KeyCode.F12.ToString(),
-            KeyCode.F13.ToString(),
-            KeyCode.F14.ToString(),
-            KeyCode.F15.ToString(),
-            KeyCode.LeftControl.ToString(),
-            KeyCode.RightControl.ToString(),
-            KeyCode.LeftShift.ToString(),
-            KeyCode.RightShift.ToString(),
-            KeyCode.LeftAlt.ToString(),
-            KeyCode.Keypad0.ToString(),
-            KeyCode.Keypad1.ToString(),
-            KeyCode.Keypad2.ToString(),
-            KeyCode.Keypad3.ToString(),
-            KeyCode.Keypad4.ToString(),
-            KeyCode.Keypad5.ToString(),
-            KeyCode.Keypad6.ToString(),
-            KeyCode.Keypad7.ToString(),
-            KeyCode.Keypad8.ToString(),
-            KeyCode.Keypad9.ToString(),
-            KeyCode.Insert.ToString(),
-            KeyCode.Home.ToString(),
-            KeyCode.End.ToString(),
-            KeyCode.F1.ToString(),
-            KeyCode.F2.ToString(),
-            KeyCode.F3.ToString(),
-            KeyCode.F4.ToString(),
-            KeyCode.F5.ToString(),
-            KeyCode.F6.ToString(),
-            KeyCode.F7.ToString(),
-            KeyCode.F8.ToString(),
-            KeyCode.F9.ToString(),
-            KeyCode.F10.ToString(),
-            KeyCode.F11.ToString(),
-            KeyCode.F12.ToString(),
-            KeyCode.F13.ToString(),
-            KeyCode.F14.ToString(),
-            KeyCode.F15.ToString(),
-            KeyCode.Help.ToString()
+        private static readonly List<KeyCode> DefaultKeyboardKeyCodes = new List<KeyCode>() 
+        {
+            KeyCode.Backspace,
+            KeyCode.Return,
+            KeyCode.Pause,
+            KeyCode.Escape,
+            KeyCode.Space,
+            KeyCode.Comma,
+            KeyCode.Minus,
+            KeyCode.Period,
+            KeyCode.Alpha0,
+            KeyCode.Alpha1,
+            KeyCode.Alpha2,
+            KeyCode.Alpha3,
+            KeyCode.Alpha4,
+            KeyCode.Alpha5,
+            KeyCode.Alpha6,
+            KeyCode.Alpha7,
+            KeyCode.Alpha8,
+            KeyCode.Alpha9,
+            KeyCode.A,
+            KeyCode.B,
+            KeyCode.C,
+            KeyCode.D,
+            KeyCode.E,
+            KeyCode.F,
+            KeyCode.G,
+            KeyCode.H,
+            KeyCode.I,
+            KeyCode.J,
+            KeyCode.K,
+            KeyCode.L,
+            KeyCode.M,
+            KeyCode.N,
+            KeyCode.O,
+            KeyCode.P,
+            KeyCode.Q,
+            KeyCode.R,
+            KeyCode.S,
+            KeyCode.T,
+            KeyCode.U,
+            KeyCode.V,
+            KeyCode.W,
+            KeyCode.X,
+            KeyCode.Y,
+            KeyCode.Z,
+            KeyCode.Delete,
+            KeyCode.UpArrow,
+            KeyCode.DownArrow,
+            KeyCode.RightArrow,
+            KeyCode.LeftArrow
         };
 
-        // if empty, all keys included
+        private static readonly List<KeyCode> DefaultJoystickKeyCodes = new List<KeyCode>() 
+        {
+            KeyCode.JoystickButton0,
+            KeyCode.JoystickButton1,
+            KeyCode.JoystickButton2,
+            KeyCode.JoystickButton3,
+            KeyCode.JoystickButton4,
+            KeyCode.JoystickButton5,
+            KeyCode.JoystickButton6,
+            KeyCode.JoystickButton7,
+            KeyCode.JoystickButton8,
+            KeyCode.JoystickButton9,
+            KeyCode.JoystickButton10,
+            KeyCode.JoystickButton11,
+            KeyCode.JoystickButton12,
+            KeyCode.JoystickButton13,
+            KeyCode.JoystickButton14,
+            KeyCode.JoystickButton15,
+            KeyCode.JoystickButton16,
+            KeyCode.JoystickButton17,
+            KeyCode.JoystickButton18,
+            KeyCode.JoystickButton19,
+            KeyCode.LeftArrow,
+            KeyCode.RightArrow,
+            KeyCode.DownArrow,
+            KeyCode.UpArrow
+        };
+
+        public float Interval = 0.1f;
+        public bool Joystick = false;
+        public int MinNumButtonsToPress = 1;
+        public int MaxNumButtonsToPress = 3;
+
+        public List<string> ExcludeKeys = new List<string>();
+
+        // if empty, all default keys included
         public List<string> IncludeKeys = new List<string>();
         
         private List<KeyCode> keyCodes;
@@ -129,10 +105,10 @@ namespace UnitySymexCrawler
 
         private void Start()
         {
-            inputSim = new InputSimulator();
+            inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
 
             keyCodes = new List<KeyCode>();
-            Array allKeyCodes;
+            List<KeyCode> allKeyCodes;
             if (IncludeKeys.Count > 0)
             {
                 List<KeyCode> kcs = new List<KeyCode>();
@@ -140,21 +116,19 @@ namespace UnitySymexCrawler
                 {
                     kcs.Add((KeyCode)Enum.Parse(typeof(KeyCode), key));
                 }
-                allKeyCodes = kcs.ToArray();
+                allKeyCodes = kcs;
             } else
             {
-                allKeyCodes = Enum.GetValues(typeof(KeyCode));
+                allKeyCodes = Joystick ? DefaultJoystickKeyCodes : DefaultKeyboardKeyCodes;
             }
             foreach (KeyCode keyCode in allKeyCodes)
             {
-                if (keyCode >= KeyCode.Mouse0 || ExcludeKeys.Contains(keyCode.ToString()))
+                if (ExcludeKeys.Contains(keyCode.ToString()))
                 {
                     continue;
                 }
-
                 keyCodes.Add(keyCode);
             }
-
             StartCoroutine("CrawlLoop");
         }
 
@@ -164,33 +138,25 @@ namespace UnitySymexCrawler
             for (; ;)
             {
                 List<KeyCode> keyCodesToPress = new List<KeyCode>();
-                int numToPress = UnityEngine.Random.Range(minNumKeysToPress, maxNumKeysToPress + 1);
+                int numToPress = UnityEngine.Random.Range(MinNumButtonsToPress, MaxNumButtonsToPress + 1);
                 for (int i = 0; i < numToPress; ++i)
                 {
                     keyCodesToPress.Add(keyCodes[UnityEngine.Random.Range(0, keyCodes.Count)]);
                 }
                 Debug.Log("Pressing " + string.Join(", ", keyCodesToPress.Select(kc => kc.ToString())));
-                bool anyReleased = false;
                 foreach (KeyCode keyCode in keyCodesToPress)
                 {
-                    if (Input.GetKey(keyCode))
-                    {
-                        inputSim.SimulateKeyUp(keyCode);
-                        anyReleased = true;
-                    }
+                    inputSim.SimulateUp(keyCode);
                 }
-                if (anyReleased)
-                {
-                    yield return new WaitForFixedUpdate();
-                }
+                yield return new WaitForFixedUpdate();
                 foreach (KeyCode keyCode in keyCodesToPress)
                 {
-                    inputSim.SimulateKeyDown(keyCode);
+                    inputSim.SimulateDown(keyCode);
                 }
                 yield return new WaitForSeconds(Interval);
                 foreach(KeyCode keyCode in keyCodesToPress)
                 {
-                    inputSim.SimulateKeyUp(keyCode);
+                    inputSim.SimulateUp(keyCode);
                 }
             }
         }

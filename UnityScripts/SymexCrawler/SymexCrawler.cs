@@ -16,6 +16,7 @@ namespace UnitySymexCrawler
         public string SymexDatabase;
         public string InputManagerSettings;
         public float Interval = 0.1f;
+        public bool Joystick = false;
         public List<string> SkipActionsContaining;
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
@@ -32,10 +33,10 @@ namespace UnitySymexCrawler
                 throw new Exception("Must specify path to Symex Database and InputManager.asset");
             }
 
-            inputManagerSettings = new InputManagerSettings(InputManagerSettings);
+            inputManagerSettings = new InputManagerSettings(InputManagerSettings, Joystick ? InputManagerMode.JOYSTICK : InputManagerMode.KEYBOARD);
 
             z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
-            inputSim = new InputSimulator();
+            inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
 
             string dbFile = SymexDatabase;
             using var connection = new SqliteConnection("Data Source=" + dbFile);
@@ -210,6 +211,10 @@ namespace UnitySymexCrawler
             if (z3 != null)
             {
                 z3.Dispose();
+            }
+            if (inputSim != null)
+            {
+                inputSim.Dispose();
             }
         }
     }

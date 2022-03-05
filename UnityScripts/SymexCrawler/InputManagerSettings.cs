@@ -8,6 +8,12 @@ using YamlDotNet.Serialization;
 
 namespace UnitySymexCrawler
 {
+    public enum InputManagerMode
+    {
+        KEYBOARD,
+        JOYSTICK
+    }
+
     public class InputManagerAxis
     {
         public KeyCode? positiveKeyCode;
@@ -23,13 +29,15 @@ namespace UnitySymexCrawler
     public class InputManagerSettings
     {
         private Dictionary<string, InputManagerAxis> axes;
-
+        private InputManagerMode mode;
 
         private class InputManagerAxisData
         {
             public string m_Name;
             public string positiveButton;
             public string negativeButton;
+            public int type;
+            public int axis;
         }
 
         private class InputManagerData
@@ -42,9 +50,10 @@ namespace UnitySymexCrawler
             public InputManagerData InputManager;
         }
 
-        public InputManagerSettings(string settingsPath)
+        public InputManagerSettings(string settingsPath, InputManagerMode mode)
         {
             axes = new Dictionary<string, InputManagerAxis>();
+            this.mode = mode;
 
             var deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
 
@@ -78,23 +87,78 @@ namespace UnitySymexCrawler
             }
             foreach (var axisData in data.m_Axes)
             {
+                if (!IncludeAxisData(axisData))
+                {
+                    continue;
+                }
                 KeyCode? positiveKeyCode;
                 KeyCode? negativeKeyCode;
-                if (axisData.positiveButton != null && axisData.positiveButton.Length > 0)
+
+                if (axisData.type == 0) // Key Button
                 {
-                    positiveKeyCode = KeyNameToCode(axisData.positiveButton);
-                }
-                else
+                    if (axisData.positiveButton != null && axisData.positiveButton.Length > 0)
+                    {
+                        positiveKeyCode = KeyNameToCode(axisData.positiveButton);
+                    }
+                    else
+                    {
+                        positiveKeyCode = null;
+                    }
+                    if (axisData.negativeButton != null && axisData.negativeButton.Length > 0)
+                    {
+                        negativeKeyCode = KeyNameToCode(axisData.negativeButton);
+                    }
+                    else
+                    {
+                        negativeKeyCode = null;
+                    }
+                } else if (axisData.type == 2) // Joystick Axis
                 {
-                    positiveKeyCode = null;
-                }
-                if (axisData.negativeButton != null && axisData.negativeButton.Length > 0)
-                {
-                    negativeKeyCode = KeyNameToCode(axisData.negativeButton);
+                    switch (axisData.axis)
+                    {
+                        case 0: // LS X
+                            positiveKeyCode = KeyCode.RightArrow;
+                            negativeKeyCode = KeyCode.LeftArrow;
+                            break;
+                        case 1: // LS Y
+                            positiveKeyCode = KeyCode.UpArrow;
+                            negativeKeyCode = KeyCode.DownArrow;
+                            break;
+                        case 3: // RS X
+                            positiveKeyCode = KeyCode.JoystickButton13;
+                            negativeKeyCode = KeyCode.JoystickButton12;
+                            break;
+                        case 4: // RS Y
+                            positiveKeyCode = KeyCode.JoystickButton15;
+                            negativeKeyCode = KeyCode.JoystickButton14;
+                            break;
+                        case 5: // DPAD X
+                            positiveKeyCode = KeyCode.JoystickButton17;
+                            negativeKeyCode = KeyCode.JoystickButton16;
+                            break;
+                        case 6: // DPAD Y
+                            positiveKeyCode = KeyCode.JoystickButton19;
+                            negativeKeyCode = KeyCode.JoystickButton18;
+                            break;
+                        case 8: // LT
+                            positiveKeyCode = KeyCode.JoystickButton10;
+                            negativeKeyCode = null;
+                            break;
+                        case 9: // RT
+                            positiveKeyCode = KeyCode.JoystickButton11;
+                            negativeKeyCode = null;
+                            break;
+                        default:
+                            positiveKeyCode = null;
+                            negativeKeyCode = null;
+                            break;
+                    }
                 } else
                 {
+                    positiveKeyCode = null;
                     negativeKeyCode = null;
                 }
+
                 if (axes.TryGetValue(axisData.m_Name, out var axis))
                 {
                     if (!axis.positiveKeyCode.HasValue)
@@ -112,13 +176,28 @@ namespace UnitySymexCrawler
             }
         }
 
+        private bool IncludeAxisData(InputManagerAxisData axisData)
+        {
+            if (mode == InputManagerMode.KEYBOARD)
+            {
+                return axisData.type == 0 &&
+                       (axisData.positiveButton == null || axisData.positiveButton.Length == 0 || !axisData.positiveButton.Contains("joystick"))
+                    && (axisData.negativeButton == null || axisData.negativeButton.Length == 0 || !axisData.negativeButton.Contains("joystick")); 
+            } else // mode == InputManagerMode.JOYSTICK
+            {
+                return axisData.type == 2 ||
+                    (axisData.type == 0 && (
+                        (axisData.positiveButton != null && axisData.positiveButton.Contains("joystick")) || 
+                        (axisData.negativeButton != null && axisData.negativeButton.Contains("joystick"))));
+            }
+        }
+
         public static KeyCode? KeyNameToCode(string buttonName)
         {
-            if (buttonName.Contains("joystick"))
+            if (buttonName.StartsWith("joystick button"))
             {
-                return null;
-            }
-            if (buttonName.Contains("ctrl"))
+                return (KeyCode)Enum.Parse(typeof(KeyCode), "JoystickButton" + int.Parse(buttonName.Replace("joystick button", "").Trim()));
+            } else if (buttonName.Contains("ctrl"))
             {
                 return KeyCode.LeftControl;
             }

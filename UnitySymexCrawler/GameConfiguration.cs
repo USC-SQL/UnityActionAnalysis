@@ -6,14 +6,16 @@ namespace UnitySymexCrawler
 {
     public struct GameConfiguration
     {
-        public string databaseFileName;
         public string assemblyFileName;
+        public string outputDatabase;
+        public string outputPrecondFuncs;
         public List<string> assemblySearchDirectories;
 
-        public GameConfiguration(string databaseFileName, string assemblyFileName, List<string> assemblySearchDirs)
+        public GameConfiguration(string assemblyFileName, string outputDatabase, string outputPrecondFuncs, List<string> assemblySearchDirs)
         {
-            this.databaseFileName = databaseFileName;
             this.assemblyFileName = assemblyFileName;
+            this.outputDatabase = outputDatabase;
+            this.outputPrecondFuncs = outputPrecondFuncs;
             assemblySearchDirectories = assemblySearchDirs;
         }
     }

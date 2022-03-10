@@ -17,7 +17,7 @@ namespace UnitySymexCrawler
     {
         public static void Main(string[] args)
         {
-            GameConfiguration gameConfig = GameConfigs.GAME_CONFIG_TETRIS;
+            GameConfiguration gameConfig = GameConfigs.GAME_CONFIG_SPACEMAN;
 
             SymexMachine.SetUpGlobals();
 
@@ -53,7 +53,7 @@ namespace UnitySymexCrawler
                 }
             }
 
-            var databaseFile = gameConfig.databaseFileName;
+            var databaseFile = gameConfig.outputDatabase;
             if (File.Exists(databaseFile))
             {
                 File.Delete(databaseFile);
@@ -62,7 +62,7 @@ namespace UnitySymexCrawler
             using var db = new DatabaseUtil(databaseFile);
             using var z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
 
-            string pfuncsFile = "PreconditionFuncs.cs";
+            string pfuncsFile = gameConfig.outputPrecondFuncs;
             if (File.Exists(pfuncsFile))
             {
                 File.Delete(pfuncsFile);

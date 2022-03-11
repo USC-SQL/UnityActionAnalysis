@@ -50,11 +50,11 @@ namespace UnitySymexCrawler
                 {
                 });
 
-        public static readonly GameConfiguration GAME_CONFIG_SMW =
+        public static readonly GameConfiguration GAME_CONFIG_SMB =
             new GameConfiguration(
-                @"C:\Users\Sasha Volokh\Misc\science-mario\Library\ScriptAssemblies\Assembly-CSharp.dll",
-                "symex.smw.db",
-                @"C:\Users\Sasha Volokh\Misc\science-mario\Assets\Scripts\PreconditionFuncs.cs",
+                @"C:\Users\Sasha Volokh\Misc\SMB-clone\Library\ScriptAssemblies\Assembly-CSharp.dll",
+                "symex.smb.db",
+                @"C:\Users\Sasha Volokh\Misc\SMB-clone\Assets\Scripts\PreconditionFuncs.cs",
                 new List<string>()
                 {
                 });
@@ -64,15 +64,6 @@ namespace UnitySymexCrawler
                 @"C:\Users\Sasha Volokh\Misc\2048-unity\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 "symex.2048.db",
                 @"C:\Users\Sasha Volokh\Misc\2048-unity\Assets\Scripts",
-                new List<string>()
-                {
-                });
-
-        public static readonly GameConfiguration GAME_CONFIG_SPACEMAN =
-            new GameConfiguration(
-                @"C:\Users\Sasha Volokh\Misc\SpaceMan-Game\SpaceMan Platzi\Library\ScriptAssemblies\Assembly-CSharp.dll",
-                "symex.spaceman.db",
-                @"C:\Users\Sasha Volokh\Misc\SpaceMan-Game\SpaceMan Platzi\Assets\Scripts\PreconditionFuncs.cs",
                 new List<string>()
                 {
                 });

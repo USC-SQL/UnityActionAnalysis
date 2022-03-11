@@ -119,6 +119,8 @@ namespace UnitySymexCrawler
 
         private void Start()
         {
+            DontDestroyOnLoad(this);
+
             inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
 
             keyCodes = new List<KeyCode>();
@@ -148,7 +150,7 @@ namespace UnitySymexCrawler
 
         public IEnumerator CrawlLoop()
         {
-            yield return new WaitForSeconds(Interval);
+            yield return new WaitForSecondsRealtime(Interval);
             for (; ;)
             {
                 List<KeyCode> keyCodesToPress = new List<KeyCode>();
@@ -162,12 +164,12 @@ namespace UnitySymexCrawler
                 {
                     inputSim.SimulateUp(keyCode);
                 }
-                yield return new WaitForFixedUpdate();
+                yield return new WaitForSecondsRealtime(0.01f);
                 foreach (KeyCode keyCode in keyCodesToPress)
                 {
                     inputSim.SimulateDown(keyCode);
                 }
-                yield return new WaitForSeconds(Interval);
+                yield return new WaitForSecondsRealtime(Interval);
                 foreach(KeyCode keyCode in keyCodesToPress)
                 {
                     inputSim.SimulateUp(keyCode);

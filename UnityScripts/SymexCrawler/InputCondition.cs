@@ -139,7 +139,7 @@ namespace UnitySymexCrawler
                 if (isDown)
                 {
                     sim.SimulateUp(keyCode);
-                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForSecondsRealtime(0.01f);
                     sim.SimulateDown(keyCode);
                 }
                 else if (Input.GetKey(keyCode))
@@ -180,7 +180,7 @@ namespace UnitySymexCrawler
                 if (isUp)
                 {
                     sim.SimulateDown(keyCode);
-                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForSecondsRealtime(0.01f);
                     sim.SimulateUp(keyCode);
                 }
                 else
@@ -246,7 +246,7 @@ namespace UnitySymexCrawler
             if (isDown)
             {
                 sim.SimulateUp(keyCode);
-                yield return new WaitForFixedUpdate();
+                yield return new WaitForSecondsRealtime(0.01f);
                 sim.SimulateDown(keyCode);
             }
             else
@@ -278,7 +278,7 @@ namespace UnitySymexCrawler
             if (isUp)
             {
                 sim.SimulateDown(keyCode);
-                yield return new WaitForFixedUpdate();
+                yield return new WaitForSecondsRealtime(0.01f);
                 sim.SimulateUp(keyCode);
             } else if (!Input.GetKey(keyCode))
             {

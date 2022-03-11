@@ -28,6 +28,8 @@ namespace UnitySymexCrawler
 
         private void Start()
         {
+            DontDestroyOnLoad(this);
+
             if (SymexDatabase == null || InputManagerSettings == null)
             {
                 throw new Exception("Must specify path to Symex Database and InputManager.asset");
@@ -179,7 +181,7 @@ namespace UnitySymexCrawler
 
         public IEnumerator CrawlLoop()
         {
-            yield return new WaitForSeconds(Interval);
+            yield return new WaitForSecondsRealtime(Interval);
             for (; ;)
             {
                 var actions = ComputeAvailableActions();
@@ -202,7 +204,7 @@ namespace UnitySymexCrawler
                         }
                     }
                 }
-                yield return new WaitForSeconds(Interval);
+                yield return new WaitForSecondsRealtime(Interval);
             }
         }
 

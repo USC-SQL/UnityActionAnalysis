@@ -63,7 +63,7 @@ namespace UnitySymexCrawler
             new GameConfiguration(
                 @"C:\Users\Sasha Volokh\Misc\2048-unity\Library\ScriptAssemblies\Assembly-CSharp.dll",
                 "symex.2048.db",
-                @"C:\Users\Sasha Volokh\Misc\science-mario\Assets\Scripts\PreconditionFuncs.cs",
+                @"C:\Users\Sasha Volokh\Misc\2048-unity\Assets\Scripts",
                 new List<string>()
                 {
                 });

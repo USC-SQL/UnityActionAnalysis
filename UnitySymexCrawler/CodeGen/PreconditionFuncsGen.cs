@@ -96,18 +96,36 @@ namespace UnitySymexCrawler
                 accessorField.Type = new CodeTypeReference(typeof(MethodInfo));
                 methodAccessorFields.Add(accessorField);
 
+                CodeExpression[] paramTypes = new CodeExpression[method.Parameters.Count];
+                for (int idx = 0, n = method.Parameters.Count; idx < n; ++idx)
+                {
+                    paramTypes[idx] = new CodeTypeOfExpression(method.Parameters[i].Type.FullName);
+                }
+
                 CodeStatement assignStmt =
                     new CodeAssignStatement(
                         new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), accessor),
                         new CodeMethodInvokeExpression(new CodeTypeOfExpression(method.DeclaringType.FullName), "GetMethod",
-                            new CodePrimitiveExpression(method.Name), new CodeVariableReferenceExpression("bindingFlags")));
+                            new CodePrimitiveExpression(method.Name), new CodeVariableReferenceExpression("bindingFlags"), 
+                            new CodePrimitiveExpression(null), 
+                            new CodeArrayCreateExpression(new CodeTypeReference(typeof(Type)), paramTypes),
+                            new CodePrimitiveExpression(null)));
 
                 methodAccessors.Add(sig, accessor);
                 methodAccessorAssignStmts.Add(assignStmt);
             }
+
+            CodeExpression[] coercedArgs = new CodeExpression[args.Length];
+            for (int i = 0, n = args.Length; i < n; ++i)
+            {
+                IType paramType = method.Parameters[i].Type;
+                coercedArgs[i] = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression("CompileHelpers"), "ChangeType", args[i], 
+                    new CodeTypeOfExpression(paramType.FullName));
+            }
+
             return new CodeMethodInvokeExpression(
                 new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), accessor), "Invoke", 
-                targetObject, new CodeArrayCreateExpression(new CodeTypeReference(typeof(object)), args));
+                targetObject, new CodeArrayCreateExpression(new CodeTypeReference(typeof(object)), coercedArgs));
         }
 
         private CodeExpression ResolveSymcall(SymbolicMethodCall smc, IMethod m, SymexState s)

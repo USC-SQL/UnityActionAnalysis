@@ -118,7 +118,7 @@ namespace UnitySymexCrawler
             {
                 foreach (FrameStackElement fse in state.frameStack)
                 {
-                    var callInst = fse.opQueue.Peek().Instruction;
+                    var callInst = Helpers.FindEnclosingStatement(fse.opQueue.Peek().Instruction);
                     var m = Helpers.GetInstructionFunction(callInst).Method;
                     var mRes = ibaResult.methodResults[m];
                     if (mRes.leadsToInputDepBranchPoint.Contains(callInst))

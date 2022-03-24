@@ -44,6 +44,15 @@ namespace UnitySymexCrawler
             return (ILFunction)inst;
         }
 
+        public static ILInstruction FindEnclosingStatement(ILInstruction inst)
+        {
+            while (!(inst.Parent is Block))
+            {
+                inst = inst.Parent;
+            }
+            return inst;
+        }
+
         public static Expr MakeDefaultValue(IType type)
         {
             Context z3 = SymexMachine.Instance.Z3;

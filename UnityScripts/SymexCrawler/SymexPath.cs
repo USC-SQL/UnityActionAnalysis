@@ -11,7 +11,7 @@ namespace UnitySymexCrawler
 {
     public class SymexPath
     {
-        private int pathIndex;
+        public readonly int pathIndex;
         private BoolExpr[] condition;
         public readonly Dictionary<int, Symcall> symcalls;
         private Dictionary<FuncDecl, Func<ExprContext, object>> nonInputVars;

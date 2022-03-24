@@ -1,17 +1,19 @@
 from collections import namedtuple
+import json
 
-TreeNode = namedtuple('TreeNode', ['label', 'left_edge', 'right_edge'])
+TreeNode = namedtuple('TreeNode', ['label', 'edges'])
 TreeEdge = namedtuple('TreeEdge', ['label', 'node'])
 TemplateNode = namedtuple('TemplateNode', ['name'])
 EndNode = namedtuple('EndNode', [])
+
+ConditionLabel = namedtuple('ConditionLabel', ['variable', 'value'])
 
 def substitute(root, template_name, subtree):
     if isinstance(root, TemplateNode) and root.name == template_name:
         return subtree
     elif isinstance(root, TreeNode):
         return TreeNode(root.label,
-                    TreeEdge(root.left_edge.label, substitute(root.left_edge.node, template_name, subtree)),
-                    TreeEdge(root.right_edge.label, substitute(root.right_edge.node, template_name, subtree)))
+                        list(map(lambda edge: TreeEdge(edge.label, substitute(edge.node, template_name, subtree)), root.edges)))
     else:
         return root
 
@@ -23,14 +25,20 @@ def node_label(node):
     else:
         return str(node)
 
+def edge_label(edge):
+    if isinstance(edge, ConditionLabel):
+        return '{} == {}'.format(edge.variable, edge.value)
+    else:
+        return str(edge)
+
 def to_dotty(root):
     edges = set()
     def traverse(root, path):
         if isinstance(root, TreeNode):
-            edges.add((node_label(root) + ' ' + str(hash(str(path))), node_label(root.left_edge.node) + ' ' + str(hash(str(path + [root, 'l']))), root.left_edge.label))
-            edges.add((node_label(root) + ' ' + str(hash(str(path))), node_label(root.right_edge.node) + ' ' + str(hash(str(path + [root, 'r']))), root.right_edge.label))
-            traverse(root.left_edge.node, path + [root, 'l'])
-            traverse(root.right_edge.node, path + [root, 'r'])
+            for edge in root.edges:
+                edges.add((node_label(root) + ' ' + str(hash(str(path))), node_label(edge.node) + ' ' + str(hash(str(path + [root, edge_label(edge.label)]))), edge_label(edge.label)))
+            for edge in root.edges:
+                traverse(edge.node, path + [root, edge_label(edge.label)])
     traverse(root, [])
     s = 'digraph tree {\n'
     for edge in edges:
@@ -41,33 +49,41 @@ def to_dotty(root):
 def should_include_condition(cond):
     for p in cond:
         for q in cond:
-            if p[1] == q[1] and p[0] != q[0]:
+            if p[0] == q[0] and p[1] != q[1]:
                 return False
     return True
 
 def to_conditions(tree):
-    conditions = dict()
-    def process_edge(root, edge, condition):
-        if edge.label == 'T':
-            cond = True
-        elif edge.label == 'F':
-            cond = False
-        else:
-            raise Exception('unexpected edge label {}'.format(edge.label))
-        traverse(edge.node, condition + [(cond, root.label)])
+    conditions = list()
     def traverse(root, condition):
         if isinstance(root, TreeNode):
-            process_edge(root, root.left_edge, condition)
-            process_edge(root, root.right_edge, condition)
+            for edge in root.edges:
+                if isinstance(edge.label, ConditionLabel):
+                    traverse(edge.node, condition + [(edge.label.variable, edge.label.value)])
+                else:
+                    raise Exception("unexpected label {}".format(edge.label))
         elif isinstance(root, EndNode):
             cond = set(condition)
             if should_include_condition(cond):
-                conditions[str(cond)] = cond
+                conditions.append(cond)
         else:
             raise Exception('unexpected node {}'.format(root))
     traverse(tree, [])
-    return list(conditions.values())
+    return conditions
+
+def unique_conditions(conds):
+    res = dict()
+    for cond in conds:
+        res[str(cond)] = cond
+    return list(res.values())
 
 def print_conditions(conditions):
+    res = []
     for cond in conditions:
-        print(cond)
+        res.append(list(cond))
+    print(json.dumps(res, indent=2))
+
+def action_to_string(action):
+    conds = list(map(lambda cond: '{} == {}'.format(cond[0], cond[1]), action))
+    conds.sort()
+    return ' && '.join(conds)

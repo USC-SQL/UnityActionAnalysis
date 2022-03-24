@@ -7,7 +7,7 @@ namespace UnitySymexCrawler
 {
     public class SymexAction
     {
-        private readonly SymexPath path;
+        public readonly SymexPath path;
         private readonly MonoBehaviour instance;
         private readonly ISet<InputCondition> contextConditions;
 

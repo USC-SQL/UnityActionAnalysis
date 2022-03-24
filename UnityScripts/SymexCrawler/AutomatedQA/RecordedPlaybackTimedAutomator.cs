@@ -13,7 +13,7 @@ using Unity.RecordedPlayback;
 public class RecordedPlaybackTimedAutomatorConfig : AutomatorConfig<RecordedPlaybackTimedAutomator>
 {
     public TextAsset recordingFile = null;
-    public bool loadEntryScene = true;
+    public bool loadEntryScene = false;
     public float stopTime = 5.0f;
 }
 

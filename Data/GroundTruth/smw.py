@@ -1,20 +1,47 @@
 from groundtruth import *
 
-DMS = TreeNode('Input.GetKeyDown(KeyCode.Z)',
-         TreeEdge('T', TemplateNode('x')),
-         TreeEdge('F', TreeNode('Input.GetKeyUp(KeyCode.Z)',
-                                    TreeEdge('T', TemplateNode('x')),
-                                    TreeEdge('F', TemplateNode('x')))))
+DMS = TreeNode('107',
+               [
+                   TreeEdge(ConditionLabel('Input.GetKey(KeyCode.Z)', 'True'),
+                        TemplateNode('x')),
+                   TreeEdge(ConditionLabel('Input.GetKey(KeyCode.Z)', 'False'),
+                            TreeNode('119',
+                                     [
+                                        TreeEdge(ConditionLabel('Input.GetKeyUp(KeyCode.Z)', 'True'),
+                                              TemplateNode('x')),
+                                        TreeEdge(ConditionLabel('Input.GetKeyUp(KeyCode.Z)', 'False'),
+                                              TemplateNode('x'))
+                                     ]))
+               ])
 
-Jump = TreeNode('Input.GetKeyDown(KeyCode.X)',
-                TreeEdge('T', TemplateNode('x')),
-                TreeEdge('F', TemplateNode('x')))
+Jump = TreeNode('251',
+                [
+                    TreeEdge(ConditionLabel('Input.GetKeyDown(KeyCode.X)', 'True'),
+                             TreeNode('261', [
+                                 TreeEdge(ConditionLabel('Input.GetKeyUp(KeyCode.X)', 'True'), TemplateNode('x')),
+                                 TreeEdge(ConditionLabel('Input.GetKeyUp(KeyCode.X)', 'False'),
+                                          TreeNode('266', [
+                                              TreeEdge(ConditionLabel('Input.GetKey(KeyCode.X)', 'True'), TemplateNode('x')),
+                                              TreeEdge(ConditionLabel('Input.GetKey(KeyCode.X)', 'False'), TemplateNode('x'))
+                                          ]))
+                             ])),
+                    TreeEdge(ConditionLabel('Input.GetKeyDown(KeyCode.X)', 'False'),
+                             TemplateNode('x'))
+                ])
 
-Move = TreeNode('Input.GetKey(KeyCode.LeftArrow)',
-                TreeEdge('T', TemplateNode('x')),
-                TreeEdge('F', TreeNode('Input.GetKey(KeyCode.RightArrow)',
-                                       TreeEdge('T', TemplateNode('x')),
-                                       TreeEdge('F', TemplateNode('x')))))
+Move = TreeNode('67',
+                [
+                    TreeEdge(ConditionLabel('Input.GetKey(KeyCode.LeftArrow)', 'True'),
+                             TemplateNode('x')),
+                    TreeEdge(ConditionLabel('Input.GetKey(KeyCode.LeftArrow)', 'False'),
+                             TreeNode('73',
+                                      [
+                                          TreeEdge(ConditionLabel('Input.GetKey(KeyCode.RightArrow)', 'True'),
+                                                   TemplateNode('x')),
+                                          TreeEdge(ConditionLabel('Input.GetKey(KeyCode.RightArrow)', 'False'),
+                                                   TemplateNode('x'))
+                                      ]))
+                ])
 
-result = substitute(DMS, 'x', substitute(Jump, 'x', substitute(Move, 'x', EndNode())))
-print_conditions(to_conditions(result))
+tree = substitute(DMS, 'x', substitute(Jump, 'x', substitute(Move, 'x', EndNode())))
+print_conditions(unique_conditions(to_conditions(tree)))

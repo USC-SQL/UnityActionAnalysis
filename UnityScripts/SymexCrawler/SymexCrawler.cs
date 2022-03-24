@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 using Microsoft.Z3;
 using Microsoft.Data.Sqlite;
 
+using System.IO;
+using Newtonsoft.Json;
+
 namespace UnitySymexCrawler
 {
 
@@ -18,6 +21,7 @@ namespace UnitySymexCrawler
         public float Interval = 0.1f;
         public bool Joystick = false;
         public List<string> SkipActionsContaining;
+        public string DumpFirstActionSet = ""; // if empty, no dump performed, otherwise dump to specified path
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
         private PreconditionFuncs pfuncs;
@@ -181,10 +185,49 @@ namespace UnitySymexCrawler
 
         public IEnumerator CrawlLoop()
         {
+            bool first = true;
             yield return new WaitForSecondsRealtime(Interval);
             for (; ;)
             {
                 var actions = ComputeAvailableActions();
+                if (first && DumpFirstActionSet.Length > 0)
+                {
+                    ISet<ISet<string>> actionsSer = new HashSet<ISet<string>>();
+                    foreach (SymexAction action in actions)
+                    {
+                        var inputConds = action.TrySolve();
+                        if (inputConds != null && inputConds.Count > 0)
+                        {
+                            ISet<string> actionSer = new HashSet<string>();
+                            foreach (InputCondition inputCond in inputConds)
+                            {
+                                actionSer.Add(inputCond.ToString());
+                            }
+                            bool alreadyPresent = false;
+                            foreach (ISet<string> a in actionsSer)
+                            {
+                                if (a.SetEquals(actionSer))
+                                {
+                                    alreadyPresent = true;
+                                    break;
+                                }
+                            }
+                            if (!alreadyPresent)
+                            {
+                                actionsSer.Add(actionSer);
+                            }
+                        }
+                    }
+                    if (File.Exists(DumpFirstActionSet))
+                    {
+                        File.Delete(DumpFirstActionSet);
+                    }
+                    using (var fs = new StreamWriter(File.OpenWrite(DumpFirstActionSet)))
+                    {
+                        fs.Write(JsonConvert.SerializeObject(actionsSer, Formatting.Indented));
+                    }
+                }
+                first = false;
                 if (actions.Count > 0)
                 {
                     var start = DateTime.Now;

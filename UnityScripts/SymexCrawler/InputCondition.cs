@@ -209,7 +209,7 @@ namespace UnitySymexCrawler
 
         public override string ToString()
         {
-            return "Input.GetKey(" + keyCode + ") == " + isDown;
+            return "Input.GetKey(KeyCode." + keyCode + ") == " + isDown;
         }
         public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
         {
@@ -238,7 +238,7 @@ namespace UnitySymexCrawler
 
         public override string ToString()
         {
-            return "Input.GetKeyDown(" + keyCode + ") == " + isDown;
+            return "Input.GetKeyDown(KeyCode." + keyCode + ") == " + isDown;
         }
 
         public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)
@@ -270,7 +270,7 @@ namespace UnitySymexCrawler
 
         public override string ToString()
         {
-            return "Input.GetKeyUp(" + keyCode + ") == " + isUp;
+            return "Input.GetKeyUp(KeyCode." + keyCode + ") == " + isUp;
         }
 
         public override IEnumerator PerformInput(InputSimulator sim, InputManagerSettings inputManagerSettings)

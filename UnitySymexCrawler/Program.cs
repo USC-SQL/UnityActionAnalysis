@@ -15,10 +15,8 @@ namespace UnitySymexCrawler
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Run(GameConfiguration gameConfig)
         {
-            GameConfiguration gameConfig = GameConfigs.GAME_CONFIG_SMW;
-
             SymexMachine.SetUpGlobals();
 
             var assemblyFileName = gameConfig.assemblyFileName;
@@ -90,8 +88,15 @@ namespace UnitySymexCrawler
 
             pfg.Finish();
 
-            using var pfuncsOut = new StreamWriter(File.OpenWrite(pfuncsFile));
+            using var pfuncsStream = File.OpenWrite(pfuncsFile);
+            using var pfuncsOut = new StreamWriter(pfuncsStream);
             pfg.Write(pfuncsOut);
+        }
+
+        public static void Main(string[] args)
+        {
+            // Run(GameConfigs.GAME_CONFIG_TETRIS);
+            Benchmark.Run();
         }
     }
 }

@@ -126,7 +126,9 @@ namespace UnitySymexCrawler
 
         public void Dispose()
         {
+            connection.Close();
             connection.Dispose();
+            SqliteConnection.ClearAllPools();
         }
     }
 }

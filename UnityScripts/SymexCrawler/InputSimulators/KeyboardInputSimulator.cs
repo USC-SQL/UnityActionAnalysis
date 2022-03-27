@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using WindowsInput.Native;
 using WindowsInputSimulator = WindowsInput.InputSimulator;
 
@@ -135,6 +136,18 @@ namespace UnitySymexCrawler
                     {
                         return 0;
                     }
+            }
+        }
+
+        public override void Reset()
+        {
+            foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+            {
+                VirtualKeyCode winKeyCode = ConvertUnityKeyCode(keyCode);
+                if (winKeyCode > 0)
+                {
+                    sim.Keyboard.KeyUp(winKeyCode);
+                }
             }
         }
 

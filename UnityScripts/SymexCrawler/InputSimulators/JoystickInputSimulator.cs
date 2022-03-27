@@ -94,6 +94,18 @@ namespace UnitySymexCrawler
             }
         }
 
+        public override void Reset()
+        {
+            foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+            {
+                int? btn = GetButtonId(keyCode);
+                if (btn.HasValue)
+                {
+                    joystick.SetBtn(false, RID, (uint)btn.Value);
+                }
+            }
+        }
+
         public override void SimulateDown(KeyCode keyCode)
         {
             int? btn = GetButtonId(keyCode);

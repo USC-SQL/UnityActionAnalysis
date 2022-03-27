@@ -4,44 +4,49 @@ using UnityEngine;
 using Unity.AutomatedQA;
 using Unity.RecordedPlayback;
 
-/**
- * The RecordedPlaybackAutomator does not pass control to the next automator after it finishes playback. 
- * This automator is a wrapper that specifies when to stop the recording playback after a fixed amount of 
- * game time has passed.
- */
-
-public class RecordedPlaybackTimedAutomatorConfig : AutomatorConfig<RecordedPlaybackTimedAutomator>
+namespace UnitySymexCrawler
 {
-    public TextAsset recordingFile = null;
-    public bool loadEntryScene = false;
-    public float stopTime = 5.0f;
-}
 
-public class RecordedPlaybackTimedAutomator : Automator<RecordedPlaybackTimedAutomatorConfig>
-{
-    private RecordedPlaybackAutomator rpa;
+    /**
+        * The RecordedPlaybackAutomator does not pass control to the next automator after it finishes playback. 
+        * This automator is a wrapper that specifies when to stop the recording playback after a fixed amount of 
+        * game time has passed.
+        */
 
-    public override void BeginAutomation()
+    public class RecordedPlaybackTimedAutomatorConfig : AutomatorConfig<RecordedPlaybackTimedAutomator>
     {
-        base.BeginAutomation();
-        rpa.BeginAutomation();
-        StartCoroutine(StopAfterWaiting());
+        public TextAsset recordingFile = null;
+        public bool loadEntryScene = false;
+        public float stopTime = 5.0f;
     }
 
-    private IEnumerator StopAfterWaiting()
+    public class RecordedPlaybackTimedAutomator : Automator<RecordedPlaybackTimedAutomatorConfig>
     {
-        yield return new WaitForSeconds(config.stopTime);
-        RecordedPlaybackController.Instance.Reset();
-        EndAutomation();
+        private RecordedPlaybackAutomator rpa;
+
+        public override void BeginAutomation()
+        {
+            base.BeginAutomation();
+            rpa.BeginAutomation();
+            StartCoroutine(StopAfterWaiting());
+        }
+
+        private IEnumerator StopAfterWaiting()
+        {
+            yield return new WaitForSeconds(config.stopTime);
+            RecordedPlaybackController.Instance.Reset();
+            EndAutomation();
+        }
+
+        public override void Init(RecordedPlaybackTimedAutomatorConfig config)
+        {
+            base.Init(config);
+            rpa = gameObject.AddComponent<RecordedPlaybackAutomator>();
+            RecordedPlaybackAutomatorConfig rpaConfig = new RecordedPlaybackAutomatorConfig();
+            rpaConfig.recordingFile = config.recordingFile;
+            rpaConfig.loadEntryScene = config.loadEntryScene;
+            rpa.Init(rpaConfig);
+        }
     }
 
-    public override void Init(RecordedPlaybackTimedAutomatorConfig config)
-    {
-        base.Init(config);
-        rpa = gameObject.AddComponent<RecordedPlaybackAutomator>();
-        RecordedPlaybackAutomatorConfig rpaConfig = new RecordedPlaybackAutomatorConfig();
-        rpaConfig.recordingFile = config.recordingFile;
-        rpaConfig.loadEntryScene = config.loadEntryScene;
-        rpa.Init(rpaConfig);
-    }
 }

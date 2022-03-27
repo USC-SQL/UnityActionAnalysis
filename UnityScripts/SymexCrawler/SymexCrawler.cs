@@ -21,7 +21,8 @@ namespace UnitySymexCrawler
         public float Interval = 0.1f;
         public bool Joystick = false;
         public List<string> SkipActionsContaining;
-        public string DumpFirstActionSet = ""; // if empty, no dump performed, otherwise dump to specified path
+        public string DumpFirstActionSet = ""; // if empty, no dump performed, otherwise written to specified path
+        public string DumpRunTimes = ""; // if empty, no dump performed, otherwise written to specified path
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
         private PreconditionFuncs pfuncs;
@@ -29,10 +30,14 @@ namespace UnitySymexCrawler
         private Context z3;
         private InputSimulator inputSim;
         private InputManagerSettings inputManagerSettings;
+        private StreamWriter runTimeDumpWriter;
+        private DateTime createTime;
 
         private void Start()
         {
             DontDestroyOnLoad(this);
+
+            createTime = DateTime.Now;
 
             if (SymexDatabase == null || InputManagerSettings == null)
             {
@@ -40,9 +45,15 @@ namespace UnitySymexCrawler
             }
 
             inputManagerSettings = new InputManagerSettings(InputManagerSettings, Joystick ? InputManagerMode.JOYSTICK : InputManagerMode.KEYBOARD);
+            
+            if (DumpRunTimes.Length > 0)
+            {
+                runTimeDumpWriter = File.AppendText(DumpRunTimes);
+            }
 
             z3 = new Context(new Dictionary<string, string>() { { "model", "true" } });
             inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
+            inputSim.Reset();
 
             string dbFile = SymexDatabase;
             using var connection = new SqliteConnection("Data Source=" + dbFile);
@@ -189,7 +200,9 @@ namespace UnitySymexCrawler
             yield return new WaitForSecondsRealtime(Interval);
             for (; ;)
             {
+                DateTime start = DateTime.Now;
                 var actions = ComputeAvailableActions();
+                TimeSpan availActionsDuration = DateTime.Now - start;
                 if (first && DumpFirstActionSet.Length > 0)
                 {
                     ISet<ISet<string>> actionsSer = new HashSet<ISet<string>>();
@@ -230,7 +243,7 @@ namespace UnitySymexCrawler
                 first = false;
                 if (actions.Count > 0)
                 {
-                    var start = DateTime.Now;
+                    DateTime start2 = DateTime.Now;
                     int actionIndex = UnityEngine.Random.Range(0, actions.Count);
                     var selected = actions[actionIndex];
                     var inputConds = selected.TrySolve();
@@ -240,7 +253,12 @@ namespace UnitySymexCrawler
                         if (!ShouldSkipAction(s))
                         {
                             yield return StartCoroutine(inputConds.Perform(inputSim, inputManagerSettings, this));
-                            Debug.Log("Performed action in " + (DateTime.Now - start).TotalMilliseconds + "ms: " + s);
+                            TimeSpan actionPerformDuration = DateTime.Now - start2;
+                            if (runTimeDumpWriter != null)
+                            {
+                                runTimeDumpWriter.WriteLine((DateTime.Now - createTime).TotalSeconds + "," + availActionsDuration.TotalMilliseconds + "," + actionPerformDuration.TotalMilliseconds);
+                            }
+                            Debug.Log("Performed action in " + actionPerformDuration.TotalMilliseconds + "ms: " + s);
                         } else
                         {
                             Debug.Log("Skipped action: " + s);
@@ -260,6 +278,10 @@ namespace UnitySymexCrawler
             if (inputSim != null)
             {
                 inputSim.Dispose();
+            }
+            if (runTimeDumpWriter != null)
+            {
+                runTimeDumpWriter.Dispose();
             }
         }
     }

@@ -2,224 +2,280 @@
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEditor.TestTools;
+using UnityEditor.TestTools.CodeCoverage;
 using System;
 using System.IO;
 using System.Threading;
 
-public class StateDumper : MonoBehaviour
+namespace UnityStateDumper
 {
-    public string DumpDir = "";
-
-    private static float lastDumpTime = 0.0f;
-
-    public struct Entry
+    public class StateDumper : MonoBehaviour
     {
-        public string outFile;
-        public object state;
-        public bool stop;
-    }
+        public string DumpDir = "";
+        public float Duration = float.PositiveInfinity; // seconds
+        public string RecordCodeCoverage = ""; // if empty, not recorded, otherwise written to specified folder after duration has passed
+        public string MoveCodeCoverageFrom = "";
+        public bool StopGameAfterDuration = false;
 
-    public static Thread stateDumpThread = null;
-    public static Queue<Entry> stateDumpQueue = new Queue<Entry>();
-    public static bool printDumpsRemaining = false;
+        private float startTime;
+        private string runId;
 
-    private static void Log(string msg)
-    {
-        Debug.Log(msg);
-    }
+        private static float lastDumpTime = 0.0f;
 
-    private static bool ShouldStop(string dumpDir)
-    {
-        return File.Exists(dumpDir + "/stop");
-    }
-
-    private static bool IgnoreGameObject(GameObject go)
-    {
-        return go.name.StartsWith("Unity.RecordedPlayback") || go.name.Equals("StartRecordedPlaybackFromEditor");
-    }
-
-    public static void ThreadProc()
-    {
-        for (; ; )
+        public struct Entry
         {
-            lock (stateDumpQueue)
+            public string outFile;
+            public object state;
+            public bool stop;
+        }
+
+        public static Thread stateDumpThread = null;
+        public static Queue<Entry> stateDumpQueue = new Queue<Entry>();
+        public static bool printDumpsRemaining = false;
+
+        private static void Log(string msg)
+        {
+            Debug.Log(msg);
+        }
+
+        private static bool ShouldStop(string dumpDir)
+        {
+            return File.Exists(dumpDir + "/stop");
+        }
+
+        private static bool IgnoreGameObject(GameObject go)
+        {
+            return go.name.StartsWith("Unity.RecordedPlayback") || go.name.Equals("StartRecordedPlaybackFromEditor");
+        }
+
+        public static void ThreadProc()
+        {
+            for (; ; )
             {
-                if (stateDumpQueue.Count > 0)
+                lock (stateDumpQueue)
                 {
-                    var entry = stateDumpQueue.Dequeue();
-
-                    if (entry.stop)
+                    if (stateDumpQueue.Count > 0)
                     {
-                        Log("State dumping done!");
-                        break;
-                    }
+                        var entry = stateDumpQueue.Dequeue();
 
-                    using (FileStream fs = File.Create(entry.outFile))
-                    {
-                        string json = Tiny.Json.Encode(entry.state, false);
-                        byte[] bytes = new UTF8Encoding(true).GetBytes(json);
-                        fs.Write(bytes, 0, bytes.Length);
+                        if (entry.stop)
+                        {
+                            Log("State dumping done!");
+                            break;
+                        }
+
+                        using (FileStream fs = File.Create(entry.outFile))
+                        {
+                            string json = Tiny.Json.Encode(entry.state, false);
+                            byte[] bytes = new UTF8Encoding(true).GetBytes(json);
+                            fs.Write(bytes, 0, bytes.Length);
+                        }
                     }
                 }
-            }
-            Thread.Sleep(100);
-        }
-    }
-
-    private void Start()
-    {
-        if (DumpDir == null)
-        {
-            DumpDir = Application.persistentDataPath + "/dump-" + ((int)((DateTime.UtcNow.Ticks - new DateTime(1970, 1, 1).Ticks) / 10000000L)).ToString();
-            Directory.CreateDirectory(DumpDir);
-            Log("Dumping state to: " + DumpDir);
-        }
-
-        if (stateDumpThread == null)
-        {
-            stateDumpThread = new Thread(ThreadProc);
-            stateDumpThread.Start();
-        }
-    }
-
-    private bool notifiedStop = false;
-
-    private void ResetSerializeState()
-    {
-    }
-
-    public object SerializeGameObject(GameObject gameObject)
-    {
-        List<object> children = new List<object>(gameObject.transform.childCount);
-
-        var childCount = gameObject.transform.childCount;
-        for (int i = 0; i != childCount; ++i)
-        {
-            GameObject child = gameObject.transform.GetChild(i).gameObject;
-            if (child.activeInHierarchy && !IgnoreGameObject(child))
-            {
-                children.Add(SerializeGameObject(child));
+                Thread.Sleep(100);
             }
         }
 
-        return new
+        private void Start()
         {
-            gameObject = new
+            DontDestroyOnLoad(this);
+
+            if (DumpDir == null)
             {
-                gameObject.layer,
-                gameObject.name,
-                gameObject.tag
-            },
-            components = new Dictionary<string, object>(),
-            children
-        };
-    }
+                DumpDir = Application.persistentDataPath + "/dump-" + ((int)((DateTime.UtcNow.Ticks - new DateTime(1970, 1, 1).Ticks) / 10000000L)).ToString();
+                Directory.CreateDirectory(DumpDir);
+                Log("Dumping state to: " + DumpDir);
+            }
 
-    struct SceneInfo
-    {
-        public Scene scn;
-        public List<GameObject> roots;
-    }
-
-    public object SerializeGame()
-    {
-        ResetSerializeState();
-
-        UnityEngine.Object[] allGameObjects = FindObjectsOfType(typeof(GameObject));
-        Dictionary<Scene, HashSet<GameObject>> rootGameObjects = new Dictionary<Scene, HashSet<GameObject>>();
-
-        foreach (UnityEngine.Object go in allGameObjects)
-        {
-            var root = ((GameObject)go).transform.root.gameObject;
-            if (root.activeInHierarchy && !IgnoreGameObject(root))
+            if (!Directory.Exists(DumpDir))
             {
-                Scene scn = root.scene;
-                HashSet<GameObject> roots;
-                if (!rootGameObjects.TryGetValue(scn, out roots))
+                Directory.CreateDirectory(DumpDir);
+            }
+            runId = ((DateTime.Now.Ticks - new DateTime(1970, 1, 1).Ticks) / 10000000L).ToString();
+            Directory.CreateDirectory(Path.Combine(DumpDir, runId));
+
+            if (stateDumpThread == null)
+            {
+                stateDumpThread = new Thread(ThreadProc);
+                stateDumpThread.Start();
+            }
+
+            startTime = Time.time;
+
+            if (RecordCodeCoverage.Length > 0)
+            {
+                CodeCoverage.StopRecording(); // stop any existing recording
+                if (!Directory.Exists(MoveCodeCoverageFrom))
                 {
-                    roots = new HashSet<GameObject>();
-                    rootGameObjects.Add(scn, roots);
+                    Directory.CreateDirectory(MoveCodeCoverageFrom);
                 }
-                roots.Add(root);
+                if (Directory.GetFiles(MoveCodeCoverageFrom).Length > 0)
+                {
+                    throw new Exception("folder to move code coverage from already has code coverage data");
+                }
+                if (!Directory.Exists(RecordCodeCoverage))
+                {
+                    Directory.CreateDirectory(RecordCodeCoverage);
+                }
+                Directory.CreateDirectory(Path.Combine(RecordCodeCoverage, runId));
+                CodeCoverage.StartRecording();
             }
         }
 
-        List<SceneInfo> scenes = new List<SceneInfo>();
-        foreach (KeyValuePair<Scene, HashSet<GameObject>> p in rootGameObjects)
+        private bool notifiedStop = false;
+
+        private void ResetSerializeState()
         {
-            if (p.Key.name == "DontDestroyOnLoad")
+        }
+
+        public object SerializeGameObject(GameObject gameObject)
+        {
+            List<object> children = new List<object>(gameObject.transform.childCount);
+
+            var childCount = gameObject.transform.childCount;
+            for (int i = 0; i != childCount; ++i)
             {
-                continue;
+                GameObject child = gameObject.transform.GetChild(i).gameObject;
+                if (child.activeInHierarchy && !IgnoreGameObject(child))
+                {
+                    children.Add(SerializeGameObject(child));
+                }
             }
-            SceneInfo info = new SceneInfo()
+
+            return new
             {
-                scn = p.Key,
-                roots = new List<GameObject>(p.Value)
+                gameObject = new
+                {
+                    gameObject.layer,
+                    gameObject.name,
+                    gameObject.tag
+                },
+                components = new Dictionary<string, object>(),
+                children
             };
-            info.roots.Sort((a, b) => a.transform.GetSiblingIndex() - b.transform.GetSiblingIndex());
-            scenes.Add(info);
         }
 
-        scenes.Sort((a, b) => a.scn.buildIndex - b.scn.buildIndex);
-
-        List<object> result = new List<object>();
-        foreach (SceneInfo info in scenes)
+        struct SceneInfo
         {
-            List<object> rgos = new List<object>(info.roots.Count);
-            foreach (GameObject rgo in info.roots)
+            public Scene scn;
+            public List<GameObject> roots;
+        }
+
+        public object SerializeGame()
+        {
+            ResetSerializeState();
+
+            UnityEngine.Object[] allGameObjects = FindObjectsOfType(typeof(GameObject));
+            Dictionary<Scene, HashSet<GameObject>> rootGameObjects = new Dictionary<Scene, HashSet<GameObject>>();
+
+            foreach (UnityEngine.Object go in allGameObjects)
             {
-                if (rgo.activeInHierarchy)
+                var root = ((GameObject)go).transform.root.gameObject;
+                if (root.activeInHierarchy && !IgnoreGameObject(root))
                 {
-                    rgos.Add(SerializeGameObject(rgo));
+                    Scene scn = root.scene;
+                    HashSet<GameObject> roots;
+                    if (!rootGameObjects.TryGetValue(scn, out roots))
+                    {
+                        roots = new HashSet<GameObject>();
+                        rootGameObjects.Add(scn, roots);
+                    }
+                    roots.Add(root);
                 }
             }
-            result.Add(new
+
+            List<SceneInfo> scenes = new List<SceneInfo>();
+            foreach (KeyValuePair<Scene, HashSet<GameObject>> p in rootGameObjects)
             {
-                name = info.scn.name,
-                rootGameObjects = rgos
-            });
+                if (p.Key.name == "DontDestroyOnLoad")
+                {
+                    continue;
+                }
+                SceneInfo info = new SceneInfo()
+                {
+                    scn = p.Key,
+                    roots = new List<GameObject>(p.Value)
+                };
+                info.roots.Sort((a, b) => a.transform.GetSiblingIndex() - b.transform.GetSiblingIndex());
+                scenes.Add(info);
+            }
+
+            scenes.Sort((a, b) => a.scn.buildIndex - b.scn.buildIndex);
+
+            List<object> result = new List<object>();
+            foreach (SceneInfo info in scenes)
+            {
+                List<object> rgos = new List<object>(info.roots.Count);
+                foreach (GameObject rgo in info.roots)
+                {
+                    if (rgo.activeInHierarchy)
+                    {
+                        rgos.Add(SerializeGameObject(rgo));
+                    }
+                }
+                result.Add(new
+                {
+                    name = info.scn.name,
+                    rootGameObjects = rgos
+                });
+            }
+
+            return new
+            {
+                scenes = result
+            };
         }
 
-        return new
+        private void Update()
         {
-            scenes = result
-        };
-    }
+            float dumpInterval = 0.5f;
 
-    private void Update()
-    {
-        float dumpInterval = 0.5f;
-
-        if (ShouldStop(DumpDir))
-        {
-            if (!notifiedStop)
+            if (ShouldStop(DumpDir))
             {
+                if (!notifiedStop)
+                {
+                    Entry e = new Entry();
+                    e.stop = true;
+                    lock (stateDumpQueue)
+                    {
+                        stateDumpQueue.Enqueue(e);
+                    }
+                    printDumpsRemaining = true;
+                    notifiedStop = true;
+                }
+                return;
+            }
+
+            if (Time.time - lastDumpTime >= dumpInterval)
+            {
+                object state = SerializeGame();
+                string outFile = Path.Combine(DumpDir, runId, "state-" + (Time.time - startTime) + ".json");
+
                 Entry e = new Entry();
-                e.stop = true;
+                e.state = state;
+                e.outFile = outFile;
                 lock (stateDumpQueue)
                 {
                     stateDumpQueue.Enqueue(e);
                 }
-                printDumpsRemaining = true;
-                notifiedStop = true;
+
+                lastDumpTime = Time.time;
             }
-            return;
-        }
 
-        if (Time.time - lastDumpTime >= dumpInterval)
-        {
-            object state = SerializeGame();
-            string outFile = DumpDir + "/state-" + Time.time + ".json";
-
-            Entry e = new Entry();
-            e.state = state;
-            e.outFile = outFile;
-            lock (stateDumpQueue)
+            if (Time.time - startTime >= Duration)
             {
-                stateDumpQueue.Enqueue(e);
+                CodeCoverage.StopRecording();
+                foreach (var file in Directory.GetFileSystemEntries(MoveCodeCoverageFrom))
+                {
+                    File.Move(file, Path.Combine(RecordCodeCoverage, runId, Path.GetFileName(file)));
+                }
+                if (StopGameAfterDuration)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+                Destroy(this);
             }
-
-            lastDumpTime = Time.time;
         }
     }
 }

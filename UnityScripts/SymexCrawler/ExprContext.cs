@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+namespace UnitySymexCrawler
+{
+
 public class ExprContext
 {
     public readonly MonoBehaviour instance;
@@ -9,4 +12,6 @@ public class ExprContext
     {
         this.instance = instance;
     }
+}
+
 }

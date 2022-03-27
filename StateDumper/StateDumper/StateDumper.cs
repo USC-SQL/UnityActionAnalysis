@@ -265,10 +265,14 @@ namespace UnityStateDumper
 
             if (Time.time - startTime >= Duration)
             {
-                CodeCoverage.StopRecording();
-                foreach (var file in Directory.GetFileSystemEntries(MoveCodeCoverageFrom))
+                if (RecordCodeCoverage.Length > 0)
                 {
-                    File.Move(file, Path.Combine(RecordCodeCoverage, runId, Path.GetFileName(file)));
+                    CodeCoverage.StopRecording();
+                    foreach (var file in Directory.GetFileSystemEntries(MoveCodeCoverageFrom))
+                    {
+                        File.Move(file, Path.Combine(RecordCodeCoverage, runId, Path.GetFileName(file)));
+                    }
+                    UnityEngine.TestTools.Coverage.ResetAll();
                 }
                 if (StopGameAfterDuration)
                 {

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24ec80b19598f2a488b5f2e10e21d0f7, type: 3}
+  m_Name: Symex30s
+  m_EditorClassIdentifier: 
+  config:
+    quitOnFinish: 0
+    automators:
+    - id: 0
+    - id: 1
+    - id: 2
+    - id: 3
+  references:
+    version: 1
+    00000000:
+      type: {class: DelayAutomatorConfig, ns: UnitySymexCrawler, asm: Assembly-CSharp}
+      data:
+        WaitSeconds: 1
+    00000001:
+      type: {class: InstantiatePrefabAutomatorConfig, ns: UnitySymexCrawler, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 3522290112265291693, guid: 8f1040a3cadeac041bc290fbb2261893,
+          type: 3}
+    00000002:
+      type: {class: InstantiatePrefabAutomatorConfig, ns: UnitySymexCrawler, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 8639864961872923376, guid: 0a87c537e61a09249a3e73cfb8f47b52,
+          type: 3}
+    00000003:
+      type: {class: GameCrawlerAutomatorConfig, ns: , asm: Unity.AutomatedQA}
+      data:
+        CrawlTimeout: 300
+        WaitForNextStepTimeout: 25
+        MaxTimeStuckBeforeFailing: 45
+        WaitTimeBetweenAttemptingNextAction: 3
+        SecondsToRunBeforeSkippingGenerationOfAReport: 1800
+        RunUntilStuck: 0

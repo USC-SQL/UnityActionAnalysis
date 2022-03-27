@@ -16,7 +16,7 @@ public class SMBPlayer : SMBCharacter {
 	private bool 	_isCoasting;
 	private bool 	_isInvincible;
 	private bool    _lockController;
-	private float   _jumpTimer;
+	public float   _jumpTimer;
 	private float   _runningTimer;
 	private float   _blinkTimer;
 	private int     _blinkAmount;

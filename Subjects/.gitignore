@@ -1,3 +1,12 @@
 SymexCrawler
 StateDumper
 PreconditionFuncs.cs
+manifest.json
+packages-lock.json
+*.log
+ApiUpdaterCheck.txt
+runtimes.*.csv
+actiondump.json
+runtimes.json
+runtimes.csv
+.vs

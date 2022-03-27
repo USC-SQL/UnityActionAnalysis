@@ -78,7 +78,7 @@ namespace UnitySymexCrawler
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
                 startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 startInfo.FileName = "curl.exe";
-                startInfo.Arguments = "https://svolokh.com/research/unitysymexcrawler/notifydone.php";
+                startInfo.Arguments = DoneNotificationURL;
                 process.StartInfo = startInfo;
                 process.Start();
             }

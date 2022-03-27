@@ -18,7 +18,6 @@ def countDistinctStates(dumps, maxTime):
                 h = hashlib.sha256(js.encode('utf-8')).hexdigest()
                 covered.add(h)
         i += 1
-        print('{}/{} processed'.format(i, n))
     return len(covered)
 
 if __name__ == '__main__':

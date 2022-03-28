@@ -277,6 +277,7 @@ namespace UnitySymexCrawler
             }
             if (inputSim != null)
             {
+                inputSim.Reset();
                 inputSim.Dispose();
             }
             if (runTimeDumpWriter != null)

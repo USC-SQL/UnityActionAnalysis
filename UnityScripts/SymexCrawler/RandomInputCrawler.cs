@@ -112,6 +112,9 @@ namespace UnitySymexCrawler
 
         // if empty, all default keys included
         public List<string> IncludeKeys = new List<string>();
+
+        // keys to include in addition to default keys
+        public List<string> AdditionalKeys = new List<string>();
         
         private List<KeyCode> keyCodes;
 
@@ -145,6 +148,10 @@ namespace UnitySymexCrawler
                 }
                 keyCodes.Add(keyCode);
             }
+            foreach (string keyCode in AdditionalKeys)
+            {
+                keyCodes.Add((KeyCode)Enum.Parse(typeof(KeyCode), keyCode));
+            }
             StartCoroutine("CrawlLoop");
         }
 
@@ -174,6 +181,15 @@ namespace UnitySymexCrawler
                 {
                     inputSim.SimulateUp(keyCode);
                 }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (inputSim != null)
+            {
+                inputSim.Reset();
+                inputSim.Dispose();
             }
         }
     }

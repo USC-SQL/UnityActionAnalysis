@@ -28,7 +28,10 @@ namespace UnitySymexCrawler
 
         public void OnDestroy()
         {
-            inputSim.Dispose();
+            if (inputSim != null)
+            {
+                inputSim.Dispose();
+            }
         }
     }
 }

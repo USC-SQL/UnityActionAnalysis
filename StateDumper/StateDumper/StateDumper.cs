@@ -101,7 +101,7 @@ namespace UnityStateDumper
                 stateDumpThread.Start();
             }
 
-            startTime = Time.time;
+            startTime = Time.realtimeSinceStartup;
 
             if (RecordCodeCoverage.Length > 0)
             {
@@ -247,10 +247,10 @@ namespace UnityStateDumper
                 return;
             }
 
-            if (Time.time - lastDumpTime >= dumpInterval)
+            if (Time.realtimeSinceStartup - lastDumpTime >= dumpInterval)
             {
                 object state = SerializeGame();
-                string outFile = Path.Combine(DumpDir, runId, "state-" + (Time.time - startTime) + ".json");
+                string outFile = Path.Combine(DumpDir, runId, "state-" + (Time.realtimeSinceStartup - startTime) + ".json");
 
                 Entry e = new Entry();
                 e.state = state;
@@ -260,10 +260,10 @@ namespace UnityStateDumper
                     stateDumpQueue.Enqueue(e);
                 }
 
-                lastDumpTime = Time.time;
+                lastDumpTime = Time.realtimeSinceStartup;
             }
 
-            if (Time.time - startTime >= Duration)
+            if (Time.realtimeSinceStartup - startTime >= Duration)
             {
                 if (RecordCodeCoverage.Length > 0)
                 {

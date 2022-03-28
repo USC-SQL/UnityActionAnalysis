@@ -63,7 +63,10 @@ with open("{}.csv".format(os.path.basename(subjectDir)), 'w') as outFile:
                 raise Exception('unexpected more than 1 file in {}'.format(lineCovIterDir))
             linecov = computeLineCoverage(os.path.join(lineCovIterDir, files[0]))
             linecovs.append(linecov)
-        iterIndex = 1
-        for statecov, linecov in zip(statecovs, linecovs):
-            outFile.write('{},{},{},{}\n'.format(configName, iterIndex, statecov, linecov))
-            iterIndex += 1
+        row = [configName]
+        for statecov in statecovs:
+            row.append(str(statecov))
+        for linecov in linecovs:
+            row.append(str(linecov))
+        outFile.write(','.join(row))
+        outFile.write('\n')

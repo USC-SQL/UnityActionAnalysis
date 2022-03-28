@@ -67,6 +67,8 @@ namespace UnitySymexCrawler
                         {
                             Destroy(randomCrawler);
                         }
+
+                        Time.timeScale = 1.0f;
                         SceneManager.LoadScene(InitialScene);
                     }
                 }

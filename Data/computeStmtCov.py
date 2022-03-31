@@ -1,0 +1,46 @@
+import os.path
+import sys
+import xml.etree.ElementTree as ET
+
+def shouldSkipClass(className):
+    return className.startswith('UnitySymexCrawler.') or className.startswith('Tiny.') or className.startswith('UnityStateDumper.')
+
+def computeStatementCoverage(samples):
+    sequencePoints = {}
+    for xmlPath in samples:
+        tree = ET.parse(xmlPath)
+        root = tree.getroot()
+        classes = root.findall('.//*/Class')
+        for cls in classes:
+            className = cls.find('./FullName').text
+            if shouldSkipClass(className):
+                continue
+            methods = cls.findall('.//*/Method')
+            for method in methods:
+                metadataToken = method.find('./MetadataToken').text
+                methodSeqPoints = method.findall('.//*/SequencePoint')
+                for sp in methodSeqPoints:
+                    spId = metadataToken + ':' + sp.attrib['offset']
+                    visited = int(sp.attrib['vc']) > 0
+                    if spId not in sequencePoints:
+                        sequencePoints[spId] = visited
+                    elif visited and not sequencePoints[spId]:
+                        sequencePoints[spId] = True
+    numVisitedSeqPoints = 0
+    for spId, visited in sequencePoints.items():
+        if visited:
+            numVisitedSeqPoints += 1
+    return numVisitedSeqPoints/len(sequencePoints)
+
+if __name__ == '__main__':
+    samplesDir = sys.argv[1]
+    maxNum = None
+    if len(sys.argv) > 2:
+        maxNum = int(sys.argv[2])
+    samples = []
+    for f in os.listdir(samplesDir):
+        if f.endswith('.xml'):
+            sampleNum = int(os.path.splitext(f)[0].split('_')[1])
+            if sampleNum <= maxNum:
+                samples.append(os.path.join(samplesDir, f))
+    print(computeStatementCoverage(samples))

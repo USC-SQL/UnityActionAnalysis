@@ -6,6 +6,7 @@ using UnityEditor.TestTools;
 using UnityEditor.TestTools.CodeCoverage;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 
 namespace UnityStateDumper
@@ -16,12 +17,13 @@ namespace UnityStateDumper
         public float Duration = float.PositiveInfinity; // seconds
         public string RecordCodeCoverage = ""; // if empty, not recorded, otherwise written to specified folder after duration has passed
         public string MoveCodeCoverageFrom = "";
+        public float CodeCoverageSampleRate = 2.0f;
         public bool StopGameAfterDuration = false;
 
         private float startTime;
         private string runId;
-
-        private static float lastDumpTime = 0.0f;
+        private float lastDumpTime;
+        private float lastCodeCovSampleTime;
 
         public struct Entry
         {
@@ -33,7 +35,9 @@ namespace UnityStateDumper
         public static Thread stateDumpThread = null;
         public static Queue<Entry> stateDumpQueue = new Queue<Entry>();
         public static bool printDumpsRemaining = false;
-
+        private static bool? prevBatchmode;
+        private static bool? prevUseProjectSettings;
+        
         private static void Log(string msg)
         {
             Debug.Log(msg);
@@ -77,9 +81,31 @@ namespace UnityStateDumper
             }
         }
 
+        // hack so the code coverage GUI doesn't pop up whenever we sample the code coverage
+        private static void ForceCodeCovBatchmode(bool setting)
+        {
+            Type cmdLineManager = Type.GetType("UnityEditor.TestTools.CodeCoverage.CommandLineManager,Unity.TestTools.CodeCoverage.Editor");
+            Type cmdLineManagerImpl = Type.GetType("UnityEditor.TestTools.CodeCoverage.CommandLineManagerImplementation,Unity.TestTools.CodeCoverage.Editor");
+            object cmdLineManagerInst = cmdLineManager.GetMethod("get_instance").Invoke(null, new object[0]);
+            var batchmode = cmdLineManagerImpl.GetProperty("batchmode");
+            prevBatchmode = (bool)batchmode.GetValue(cmdLineManagerInst);
+            batchmode.SetValue(cmdLineManagerInst, setting);
+        }
+
+        private static void ForceCodeCovUseProjectSettings(bool setting)
+        {
+            Type cmdLineManager = Type.GetType("UnityEditor.TestTools.CodeCoverage.CommandLineManager,Unity.TestTools.CodeCoverage.Editor");
+            Type cmdLineManagerImpl = Type.GetType("UnityEditor.TestTools.CodeCoverage.CommandLineManagerImplementation,Unity.TestTools.CodeCoverage.Editor");
+            object cmdLineManagerInst = cmdLineManager.GetMethod("get_instance").Invoke(null, new object[0]);
+            var useProjectSettings = cmdLineManagerImpl.GetProperty("useProjectSettings");
+            prevUseProjectSettings = (bool)useProjectSettings.GetValue(cmdLineManagerInst);
+            useProjectSettings.SetValue(cmdLineManagerInst, setting);
+        }
+
         private void Start()
         {
             DontDestroyOnLoad(this);
+            prevBatchmode = null;
 
             if (DumpDir == null)
             {
@@ -102,9 +128,14 @@ namespace UnityStateDumper
             }
 
             startTime = Time.realtimeSinceStartup;
+            lastDumpTime = startTime;
+            lastCodeCovSampleTime = startTime;
 
             if (RecordCodeCoverage.Length > 0)
             {
+                ForceCodeCovBatchmode(true);
+                ForceCodeCovUseProjectSettings(true);
+
                 CodeCoverage.StopRecording(); // stop any existing recording
                 if (!Directory.Exists(MoveCodeCoverageFrom))
                 {
@@ -263,11 +294,20 @@ namespace UnityStateDumper
                 lastDumpTime = Time.realtimeSinceStartup;
             }
 
+            if (Time.realtimeSinceStartup - lastCodeCovSampleTime >= CodeCoverageSampleRate)
+            {
+                CodeCoverage.PauseRecording();
+                CodeCoverage.UnpauseRecording();
+                lastCodeCovSampleTime = Time.realtimeSinceStartup;
+            }
+
             if (Time.realtimeSinceStartup - startTime >= Duration)
             {
                 if (RecordCodeCoverage.Length > 0)
                 {
+                    RevertForcedCodeCovSettings();
                     CodeCoverage.StopRecording();
+
                     foreach (var file in Directory.GetFileSystemEntries(MoveCodeCoverageFrom))
                     {
                         File.Move(file, Path.Combine(RecordCodeCoverage, runId, Path.GetFileName(file)));
@@ -280,6 +320,22 @@ namespace UnityStateDumper
                 }
                 Destroy(this);
             }
+        }
+
+        private void RevertForcedCodeCovSettings()
+        {
+            if (prevBatchmode.HasValue)
+            {
+                ForceCodeCovBatchmode(prevBatchmode.Value);
+                ForceCodeCovUseProjectSettings(prevUseProjectSettings.Value);
+                prevBatchmode = null;
+                prevUseProjectSettings = null;
+            }
+        }
+
+        void OnDestroy()
+        {
+            RevertForcedCodeCovSettings();
         }
     }
 }

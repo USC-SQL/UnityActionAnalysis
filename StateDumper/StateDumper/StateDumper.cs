@@ -21,7 +21,7 @@ namespace UnityStateDumper
         public bool StopGameAfterDuration = false;
 
         private float startTime;
-        private string runId;
+        public string runId { get; private set; }
         private float lastDumpTime;
         private float lastCodeCovSampleTime;
 

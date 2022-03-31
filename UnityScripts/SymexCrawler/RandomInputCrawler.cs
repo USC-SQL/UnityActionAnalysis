@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace UnitySymexCrawler
@@ -115,14 +117,22 @@ namespace UnitySymexCrawler
 
         // keys to include in addition to default keys
         public List<string> AdditionalKeys = new List<string>();
+
+        // JSON file to write statistics to
+        public string StatisticsOutputFile = "";
         
         private List<KeyCode> keyCodes;
-
         private InputSimulator inputSim;
+        private int numActionsPerformed;
+        private string runId;
 
         private void Start()
         {
             DontDestroyOnLoad(this);
+
+            numActionsPerformed = 0;
+            var stateDumper = (UnityStateDumper.StateDumper)FindObjectOfType(typeof(UnityStateDumper.StateDumper));
+            runId = stateDumper.runId;
 
             inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
 
@@ -152,14 +162,29 @@ namespace UnitySymexCrawler
             {
                 keyCodes.Add((KeyCode)Enum.Parse(typeof(KeyCode), keyCode));
             }
+
             StartCoroutine("CrawlLoop");
         }
 
         public IEnumerator CrawlLoop()
         {
-            yield return new WaitForSecondsRealtime(Interval);
+            List<KeyCode> lastKeyCodesPressed = null;
+            float lastActionTime = Time.realtimeSinceStartup;
             for (; ;)
             {
+                if (Time.realtimeSinceStartup - lastActionTime < Interval)
+                {
+                    yield return new WaitForEndOfFrame();
+                    continue;
+                }
+                if (lastKeyCodesPressed != null)
+                {
+                    foreach (KeyCode keyCode in lastKeyCodesPressed)
+                    {
+                        inputSim.SimulateUp(keyCode);
+                    }
+                    lastKeyCodesPressed = null;
+                }
                 List<KeyCode> keyCodesToPress = new List<KeyCode>();
                 int numToPress = UnityEngine.Random.Range(MinNumButtonsToPress, MaxNumButtonsToPress + 1);
                 for (int i = 0; i < numToPress; ++i)
@@ -176,16 +201,32 @@ namespace UnitySymexCrawler
                 {
                     inputSim.SimulateDown(keyCode);
                 }
-                yield return new WaitForSecondsRealtime(Interval);
-                foreach(KeyCode keyCode in keyCodesToPress)
-                {
-                    inputSim.SimulateUp(keyCode);
-                }
+                lastKeyCodesPressed = keyCodesToPress;
+                ++numActionsPerformed;
+                lastActionTime = Time.realtimeSinceStartup;
+                yield return new WaitForEndOfFrame();
             }
         }
 
         private void OnDestroy()
         {
+            try
+            {
+                if (StatisticsOutputFile.Length > 0)
+                {
+                    using (var sw = new StreamWriter(File.OpenWrite(StatisticsOutputFile + "." + runId + ".json")))
+                    {
+                        sw.Write(JsonConvert.SerializeObject(new
+                        {
+                            NumActionsPerformed = numActionsPerformed
+                        }));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.StackTrace);
+            }
             if (inputSim != null)
             {
                 inputSim.Reset();

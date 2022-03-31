@@ -21,8 +21,9 @@ namespace UnitySymexCrawler
         public float Interval = 0.1f;
         public bool Joystick = false;
         public List<string> SkipActionsContaining;
-        public string DumpFirstActionSet = ""; // if empty, no dump performed, otherwise written to specified path
-        public string DumpRunTimes = ""; // if empty, no dump performed, otherwise written to specified path
+        public string DumpFirstActionSet = "";
+        public string DumpRunTimes = ""; 
+        public string StatisticsOutputFile = ""; 
 
         private Dictionary<MethodInfo, SymexMethod> symexMethods;
         private PreconditionFuncs pfuncs;
@@ -32,12 +33,17 @@ namespace UnitySymexCrawler
         private InputManagerSettings inputManagerSettings;
         private StreamWriter runTimeDumpWriter;
         private DateTime createTime;
+        private int numActionsPerformed;
+        private string runId;
 
         private void Start()
         {
             DontDestroyOnLoad(this);
 
             createTime = DateTime.Now;
+            numActionsPerformed = 0;
+            var stateDumper = (UnityStateDumper.StateDumper)FindObjectOfType(typeof(UnityStateDumper.StateDumper));
+            runId = stateDumper.runId;
 
             if (SymexDatabase == null || InputManagerSettings == null)
             {
@@ -197,9 +203,14 @@ namespace UnitySymexCrawler
         public IEnumerator CrawlLoop()
         {
             bool first = true;
-            yield return new WaitForSecondsRealtime(Interval);
+            float lastActionTime = Time.realtimeSinceStartup;
             for (; ;)
             {
+                if (Time.realtimeSinceStartup - lastActionTime < Interval)
+                {
+                    yield return new WaitForEndOfFrame();
+                    continue;
+                }
                 DateTime start = DateTime.Now;
                 var actions = ComputeAvailableActions();
                 TimeSpan availActionsDuration = DateTime.Now - start;
@@ -253,6 +264,8 @@ namespace UnitySymexCrawler
                         if (!ShouldSkipAction(s))
                         {
                             yield return StartCoroutine(inputConds.Perform(inputSim, inputManagerSettings, this));
+                            ++numActionsPerformed;
+                            lastActionTime = Time.realtimeSinceStartup;
                             TimeSpan actionPerformDuration = DateTime.Now - start2;
                             if (runTimeDumpWriter != null)
                             {
@@ -265,12 +278,28 @@ namespace UnitySymexCrawler
                         }
                     }
                 }
-                yield return new WaitForSecondsRealtime(Interval);
+                yield return new WaitForEndOfFrame();
             }
         }
 
         private void OnDestroy()
         {
+            try
+            {
+                if (StatisticsOutputFile.Length > 0)
+                {
+                    using (var sw = new StreamWriter(File.OpenWrite(StatisticsOutputFile + "." + runId + ".json")))
+                    {
+                        sw.Write(JsonConvert.SerializeObject(new
+                        {
+                            NumActionsPerformed = numActionsPerformed
+                        }));
+                    }
+                }
+            } catch (Exception e)
+            {
+                Debug.LogError(e.StackTrace);
+            }
             if (z3 != null)
             {
                 z3.Dispose();

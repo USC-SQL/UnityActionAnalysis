@@ -4,6 +4,20 @@ import hashlib
 import os.path
 import shutil
 
+class StateCoverageAccum:
+    def __init__(self, stateHashFn):
+        self.covered = set()
+        self.stateHashFn = stateHashFn
+
+    def addState(self, dumpPath):
+        with open(dumpPath, 'r') as f:
+            s = json.load(f)
+            h = self.stateHashFn(s)
+            self.covered.add(h)
+
+    def getStateCoverage(self):
+        return len(self.covered)
+
 def defaultHash(s):
     js = json.dumps(s, sort_keys=True)
     return hashlib.sha256(js.encode('utf-8')).hexdigest()
@@ -22,18 +36,13 @@ def uniqueGameObjectsHash(s):
     return hash(frozenset(gameObjects))
 
 def countDistinctStates(dumps, maxTime, stateHashFn):
-    covered = set()
-    i = 0
+    accum = StateCoverageAccum(stateHashFn)
     for d in dumps:
         filename = os.path.basename(d)
         t = float(os.path.splitext(filename)[0].split('-')[1])
         if t <= maxTime:
-            with open(d, 'r') as f:
-                s = json.loads(f.read())
-                h = stateHashFn(s)
-                covered.add(h)
-        i += 1
-    return len(covered)
+            accum.addState(d)
+    return accum.getStateCoverage()
 
 if __name__ == '__main__':
     dumpDir = sys.argv[1]

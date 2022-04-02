@@ -2,12 +2,11 @@ import os.path
 import sys
 import xml.etree.ElementTree as ET
 
-def shouldSkipClass(className):
-    return className.startswith('UnitySymexCrawler.') or className.startswith('Tiny.') or className.startswith('UnityStateDumper.')
+class StatementCoverageAccum:
+    def __init__(self):
+        self.sequencePoints = {}
 
-def computeStatementCoverage(samples):
-    sequencePoints = {}
-    for xmlPath in samples:
+    def addSample(self, xmlPath):
         tree = ET.parse(xmlPath)
         root = tree.getroot()
         classes = root.findall('.//*/Class')
@@ -22,15 +21,28 @@ def computeStatementCoverage(samples):
                 for sp in methodSeqPoints:
                     spId = metadataToken + ':' + sp.attrib['offset']
                     visited = int(sp.attrib['vc']) > 0
-                    if spId not in sequencePoints:
-                        sequencePoints[spId] = visited
-                    elif visited and not sequencePoints[spId]:
-                        sequencePoints[spId] = True
-    numVisitedSeqPoints = 0
-    for spId, visited in sequencePoints.items():
-        if visited:
-            numVisitedSeqPoints += 1
-    return numVisitedSeqPoints/len(sequencePoints)
+                    if spId not in self.sequencePoints:
+                        self.sequencePoints[spId] = visited
+                    elif visited and not self.sequencePoints[spId]:
+                        self.sequencePoints[spId] = True
+
+    def getStatementCoverage(self):
+        if len(self.sequencePoints) == 0:
+            return 0
+        numVisitedSeqPoints = 0
+        for spId, visited in self.sequencePoints.items():
+            if visited:
+                numVisitedSeqPoints += 1
+        return numVisitedSeqPoints / len(self.sequencePoints)
+
+def shouldSkipClass(className):
+    return className.startswith('UnitySymexCrawler.') or className.startswith('Tiny.') or className.startswith('UnityStateDumper.')
+
+def computeStatementCoverage(samples):
+    accum = StatementCoverageAccum()
+    for xmlPath in samples:
+        accum.addSample(xmlPath)
+    return accum.getStatementCoverage()
 
 if __name__ == '__main__':
     samplesDir = sys.argv[1]

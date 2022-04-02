@@ -45,8 +45,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SymexDatabase: C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Subjects\UnityTetris\Assets\symex.tetris.db
   InputManagerSettings: C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Subjects\UnityTetris\ProjectSettings\InputManager.asset
-  Interval: 0
+  Interval: 0.1
   Joystick: 0
   SkipActionsContaining: []
   DumpFirstActionSet: 
   DumpRunTimes: 
+  StatisticsOutputFile: C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Tetris\symex\stats

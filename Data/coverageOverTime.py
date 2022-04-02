@@ -4,8 +4,8 @@ import os.path
 import sys
 
 subjectDir = sys.argv[1]
-codeCovSamplingRate = 2
-timeInterval = 25
+codeCovSamplingRate = 5
+timeInterval = 10
 maxTime = 300
 
 configs = os.listdir(subjectDir)

@@ -56,25 +56,7 @@ Subjects.Push({ Name: "Tetris"
 								 , RunButtonCoord: {X: 1714, Y: 325}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Tetris\symex"} ] })
 
-Subjects.Push({ Name: "Asteroids"
-              , WindowTitlePrefix: "Unity-3D-Asteroids - MainScene"
-			  , AutomatedRuns: [ { Name: "Blind"
-								 , AssetCoord:     {X: 256, Y: 661}
-								 , RunButtonCoord: {X: 1661, Y: 427}
-								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Asteroids\blind"}
-			                   , { Name: "Null"
-							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1661, Y: 385}
-								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Asteroids\null"}
-							   , { Name: "Smart"
-							     , AssetCoord:     {X: 256, Y: 693}
-								 , RunButtonCoord: {X: 1661, Y: 427}
-								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Asteroids\smart"}
-							   , { Name: "Symex"
-							     , AssetCoord:     {X: 256, Y: 710}
-								 , RunButtonCoord: {X: 1661, Y: 427}
-								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Asteroids\symex"} ] })
-								 
+
 Subjects.Push({ Name: "Mario Bros"
               , WindowTitlePrefix: "SMB-clone - Main Menu"
 			  , AutomatedRuns: [ { Name: "Blind"

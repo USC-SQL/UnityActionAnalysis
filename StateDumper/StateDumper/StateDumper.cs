@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEditor.TestTools;
 using UnityEditor.TestTools.CodeCoverage;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading;
+using Newtonsoft.Json;
 
 namespace UnityStateDumper
 {
@@ -17,6 +16,7 @@ namespace UnityStateDumper
         public float Duration = float.PositiveInfinity; // seconds
         public string RecordCodeCoverage = ""; // if empty, not recorded, otherwise written to specified folder after duration has passed
         public string MoveCodeCoverageFrom = "";
+        public string WriteDummyStats = "";
         public float CodeCoverageSampleRate = 2.0f;
         public bool StopGameAfterDuration = false;
 
@@ -313,6 +313,13 @@ namespace UnityStateDumper
                         File.Move(file, Path.Combine(RecordCodeCoverage, runId, Path.GetFileName(file)));
                     }
                     UnityEngine.TestTools.Coverage.ResetAll();
+                }
+                if (WriteDummyStats.Length > 0)
+                {
+                    using (var sw = new StreamWriter(File.OpenWrite(WriteDummyStats + "." + runId + ".json")))
+                    {
+                        sw.Write(JsonConvert.SerializeObject(new { }));
+                    }
                 }
                 if (StopGameAfterDuration)
                 {

@@ -174,6 +174,18 @@ namespace UnityStateDumper
                 }
             }
 
+            Dictionary<string, object> components = new Dictionary<string, object>();
+            foreach (Component c in gameObject.GetComponents(typeof(Component)))
+            {
+                string name = c.GetType().Name;
+                if (!components.ContainsKey(name))
+                {
+                    components.Add(name, new { });
+                }
+            }
+
+            Transform t = gameObject.transform;
+
             return new
             {
                 gameObject = new
@@ -182,7 +194,13 @@ namespace UnityStateDumper
                     gameObject.name,
                     gameObject.tag
                 },
-                components = new Dictionary<string, object>(),
+                transform = new
+                {
+                    position = new { x = t.position.x, y = t.position.y, z = t.position.z },
+                    rotation = new { x = t.rotation.x, y = t.rotation.y, z = t.rotation.z },
+                    scale = new { x = t.localScale.x, y = t.localScale.y, z = t.localScale.z }
+                },
+                components,
                 children
             };
         }

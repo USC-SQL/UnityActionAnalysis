@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace UnitySymexCrawler
 {
 
-    public class SymexCrawler : MonoBehaviour
+    public class SymexCrawler : MonoBehaviour, ICrawler
     {
         public string SymexDatabase;
         public string InputManagerSettings;
@@ -35,6 +35,7 @@ namespace UnitySymexCrawler
         private DateTime createTime;
         private int numActionsPerformed;
         private string runId;
+        private bool isPaused;
 
         private void Start()
         {
@@ -44,6 +45,7 @@ namespace UnitySymexCrawler
             numActionsPerformed = 0;
             var stateDumper = (UnityStateDumper.StateDumper)FindObjectOfType(typeof(UnityStateDumper.StateDumper));
             runId = stateDumper.runId;
+            isPaused = false;
 
             if (SymexDatabase == null || InputManagerSettings == null)
             {
@@ -206,7 +208,7 @@ namespace UnitySymexCrawler
             float lastActionTime = Time.realtimeSinceStartup;
             for (; ;)
             {
-                if (Time.realtimeSinceStartup - lastActionTime < Interval)
+                if (isPaused || Time.realtimeSinceStartup - lastActionTime < Interval)
                 {
                     yield return new WaitForEndOfFrame();
                     continue;
@@ -313,6 +315,16 @@ namespace UnitySymexCrawler
             {
                 runTimeDumpWriter.Dispose();
             }
+        }
+
+        public void Pause()
+        {
+            isPaused = true;
+        }
+
+        public void Resume()
+        {
+            isPaused = false;
         }
     }
 

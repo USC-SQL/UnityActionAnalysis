@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnitySymexCrawler
 {
-    public class RandomInputCrawler : MonoBehaviour
+    public class RandomInputCrawler : MonoBehaviour, ICrawler
     {
         private static readonly List<KeyCode> DefaultKeyboardKeyCodes = new List<KeyCode>() 
         {
@@ -125,6 +125,7 @@ namespace UnitySymexCrawler
         private InputSimulator inputSim;
         private int numActionsPerformed;
         private string runId;
+        private bool isPaused;
 
         private void Start()
         {
@@ -133,6 +134,7 @@ namespace UnitySymexCrawler
             numActionsPerformed = 0;
             var stateDumper = (UnityStateDumper.StateDumper)FindObjectOfType(typeof(UnityStateDumper.StateDumper));
             runId = stateDumper.runId;
+            isPaused = false;
 
             inputSim = Joystick ? (InputSimulator)new JoystickInputSimulator() : new KeyboardInputSimulator();
 
@@ -172,7 +174,7 @@ namespace UnitySymexCrawler
             float lastActionTime = Time.realtimeSinceStartup;
             for (; ;)
             {
-                if (Time.realtimeSinceStartup - lastActionTime < Interval)
+                if (isPaused || Time.realtimeSinceStartup - lastActionTime < Interval)
                 {
                     yield return new WaitForEndOfFrame();
                     continue;
@@ -232,6 +234,16 @@ namespace UnitySymexCrawler
                 inputSim.Reset();
                 inputSim.Dispose();
             }
+        }
+
+        public void Pause()
+        {
+            isPaused = true;
+        }
+
+        public void Resume()
+        {
+            isPaused = false;
         }
     }
 }

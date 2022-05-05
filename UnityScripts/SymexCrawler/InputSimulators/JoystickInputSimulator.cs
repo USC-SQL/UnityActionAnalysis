@@ -87,7 +87,12 @@ namespace UnitySymexCrawler
                     else if (keyCode >= KeyCode.Joystick1Button0 && keyCode < KeyCode.Joystick2Button0)
                     {
                         return keyCode - KeyCode.Joystick1Button0 + 1;
-                    } else
+                    }
+                    else if (keyCode >= KeyCode.Joystick2Button0 && keyCode < KeyCode.Joystick3Button0)
+                    {
+                        return keyCode - KeyCode.Joystick2Button0 + 1;
+                    }
+                    else
                     {
                         return null;
                     }

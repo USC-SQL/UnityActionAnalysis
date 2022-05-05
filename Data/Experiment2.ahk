@@ -13,28 +13,28 @@ ExitApp
 return
 
 ^+PgDn::
-NumRunIters := 3
+NumRunIters := 4
 
 ; assumes the assets are in list view, Unity maximized on 1920x1080 display
 Subjects := []
 
 Subjects.Push({ Name: "Pacman"
-              , WindowTitlePrefix: "Pacman - game"
+              , WindowTitlePrefix: "Pacman - menu"
 			  , AutomatedRuns: [ { Name: "Blind"
 			                     , AssetCoord:     {X: 256, Y: 661}
-								 , RunButtonCoord: {X: 1652, Y: 327}
+								 , RunButtonCoord: {X: 1659, Y: 367}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Pacman\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1659, Y: 305}
+								 , RunButtonCoord: {X: 1659, Y: 367}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Pacman\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
-								 , RunButtonCoord: {X: 1652, Y: 327}
+								 , RunButtonCoord: {X: 1659, Y: 367}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Pacman\smart" }
 							   , { Name: "Symex"
 							     , AssetCoord:     {X: 256, Y: 710}
-								 , RunButtonCoord: {X: 1652, Y: 327}
+								 , RunButtonCoord: {X: 1659, Y: 367}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Pacman\symex"} ] })
 
 Subjects.Push({ Name: "Tetris"
@@ -45,7 +45,7 @@ Subjects.Push({ Name: "Tetris"
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Tetris\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1714, Y: 308}
+								 , RunButtonCoord: {X: 1714, Y: 325}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Tetris\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
@@ -61,38 +61,38 @@ Subjects.Push({ Name: "Mario Bros"
               , WindowTitlePrefix: "SMB-clone - Main Menu"
 			  , AutomatedRuns: [ { Name: "Blind"
 			                     , AssetCoord:     {X: 256, Y: 661}
-								 , RunButtonCoord: {X: 1699, Y: 386}
+								 , RunButtonCoord: {X: 1718, Y: 366}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioBros\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1715, Y: 347}
+								 , RunButtonCoord: {X: 1718, Y: 366}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioBros\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
-								 , RunButtonCoord: {X: 1699, Y: 386}
+								 , RunButtonCoord: {X: 1718, Y: 366}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioBros\smart" }
 							   , { Name: "Symex"
 							     , AssetCoord:     {X: 256, Y: 710}
-								 , RunButtonCoord: {X: 1699, Y: 386}
+								 , RunButtonCoord: {X: 1718, Y: 366}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioBros\symex"} ] })
 
 Subjects.Push({ Name: "Mario World"
               , WindowTitlePrefix: "science-mario - GameWorldScene"
 			  , AutomatedRuns: [ { Name: "Blind"
 			                     , AssetCoord:     {X: 256, Y: 661}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioWorld\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1707, Y: 307}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioWorld\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioWorld\smart" }
 							   , { Name: "Symex"
 							     , AssetCoord:     {X: 256, Y: 710}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\MarioWorld\symex"} ] })
 
 Subjects.Push({ Name: "Runner"
@@ -103,7 +103,7 @@ Subjects.Push({ Name: "Runner"
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Runner\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1724, Y: 346}
+								 , RunButtonCoord: {X: 1715, Y: 365}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\Runner\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
@@ -118,19 +118,19 @@ Subjects.Push({ Name: "2048"
               , WindowTitlePrefix: "2048-unity - GameScene"
 			  , AutomatedRuns: [ { Name: "Blind"
 			                     , AssetCoord:     {X: 256, Y: 661}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\2048\blind" }
 							   , { Name: "Null"
 							     , AssetCoord:     {X: 256, Y: 678}
-								 , RunButtonCoord: {X: 1711, Y: 307}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\2048\null" }
 							   , { Name: "Smart"
 							     , AssetCoord:     {X: 256, Y: 693}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\2048\smart" }
 							   , { Name: "Symex"
 							     , AssetCoord:     {X: 256, Y: 710}
-								 , RunButtonCoord: {X: 1710, Y: 348}
+								 , RunButtonCoord: {X: 1710, Y: 328}
 								 , DataDir: "C:\Users\Sasha Volokh\Misc\UnitySymexCrawler\Data\Exp2Results\2048\symex"} ] })
 
 CoordMode, Mouse, Client
@@ -138,6 +138,8 @@ SetTitleMatchMode, 1
 for index, subject in Subjects
 {
     WinActivate % subject.WindowTitlePrefix
+	Sleep 5000
+	
 	for index2, autoRun in subject.AutomatedRuns
 	{
 		Loop %NumRunIters%

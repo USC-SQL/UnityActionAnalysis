@@ -1,4 +1,4 @@
-from countDistinctStates import countDistinctStates, uniqueGameObjectsHash, defaultHash
+from countDistinctStates import countDistinctStates, defaultHash, uniqueGameObjectsHashByName, uniqueGameObjectsHashByComponents
 from computeStmtCov import computeStatementCoverage
 import os.path
 import sys
@@ -27,7 +27,8 @@ with open("{}.csv".format(os.path.basename(subjectDir)), 'w') as outFile:
         configName = os.path.basename(configDir)
         numActionsPerformed = []
         statecovs = []
-        statecovUniqueGos = []
+        statecovUniq1s = []
+        statecovUniq2s = []
         linecovs = []
         stateCovDir = os.path.join(configDir, 'statecov')
         lineCovDir = os.path.join(configDir, 'linecov')
@@ -48,9 +49,12 @@ with open("{}.csv".format(os.path.basename(subjectDir)), 'w') as outFile:
 
             statedumps = [os.path.join(stateCovIterDir, f) for f in os.listdir(stateCovIterDir) if f.endswith('.json')]
             statecov = countDistinctStates(statedumps, float('inf'), defaultHash)
-            stateCovUniqueGo = countDistinctStates(statedumps, float('inf'), uniqueGameObjectsHash)
+            stateCovUniq1 = countDistinctStates(statedumps, float('inf'), uniqueGameObjectsHashByName)
+            stateCovUniq2 = countDistinctStates(statedumps, float('inf'), uniqueGameObjectsHashByComponents)
+
             statecovs.append(statecov)
-            statecovUniqueGos.append(stateCovUniqueGo)
+            statecovUniq1s.append(stateCovUniq1)
+            statecovUniq2s.append(stateCovUniq2)
 
             files = os.listdir(lineCovIterDir)
             if len(files) > 1:
@@ -64,8 +68,10 @@ with open("{}.csv".format(os.path.basename(subjectDir)), 'w') as outFile:
                 header.append('Num Actions {}'.format(i))
             for i in range(len(statecovs)):
                 header.append('State Cov {}'.format(i))
-            for i in range(len(statecovUniqueGos)):
-                header.append('State Cov (Unique Game Objects) {}'.format(i))
+            for i in range(len(statecovUniq1s)):
+                header.append('State Cov (Unique 1) {}'.format(i))
+            for i in range(len(statecovUniq2s)):
+                header.append('State Cov (Unique 2) {}'.format(i))
             for i in range(len(linecovs)):
                 header.append('Stmt Cov {}'.format(i))
             outFile.write(','.join(header))
@@ -77,8 +83,10 @@ with open("{}.csv".format(os.path.basename(subjectDir)), 'w') as outFile:
             row.append(str(actionsPerformed))
         for statecov in statecovs:
             row.append(str(statecov))
-        for statecovUniqueGo in statecovUniqueGos:
-            row.append(str(statecovUniqueGo))
+        for statecovUniq1 in statecovUniq1s:
+            row.append(str(statecovUniq1))
+        for statecovUniq2 in statecovUniq2s:
+            row.append(str(statecovUniq2))
         for linecov in linecovs:
             row.append(str(linecov))
         outFile.write(','.join(row))

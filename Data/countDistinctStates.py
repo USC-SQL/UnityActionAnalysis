@@ -35,7 +35,20 @@ def defaultHash(s):
     js = json.dumps(t, sort_keys=True)
     return hashlib.sha256(js.encode('utf-8')).hexdigest()
 
-def uniqueGameObjectsHash(s):
+def uniqueGameObjectsHashByName(s):
+    gameObjects = set()
+    def gameObjectKey(go):
+        return '{}:{}'.format(go['gameObject']['name'], go['gameObject']['tag'])
+    def traverseGameObject(go):
+        gameObjects.add(gameObjectKey(go))
+        for child in go["children"]:
+            traverseGameObject(child)
+    for scn in s["scenes"]:
+        for go in scn["rootGameObjects"]:
+            traverseGameObject(go)
+    return hash(frozenset(gameObjects))
+
+def uniqueGameObjectsHashByComponents(s):
     gameObjects = set()
     def gameObjectKey(go):
         key = set()
@@ -68,6 +81,4 @@ if __name__ == '__main__':
         maxTime = float(sys.argv[2])
     dumps = [os.path.join(dumpDir, f) for f in os.listdir(dumpDir) if f.endswith('.json')]
     numDistinctStates = countDistinctStates(dumps, maxTime, defaultHash)
-    numUniqueGoDistinctStates = countDistinctStates(dumps, maxTime, uniqueGameObjectsHash)
-    print('{} distinct states considering all game objects'.format(numDistinctStates))
-    print('{} distinct states considering unique game objects'.format(numUniqueGoDistinctStates))
+    print('{} distinct states'.format(numDistinctStates))

@@ -1,12 +1,18 @@
-from countDistinctStates import StateCoverageAccum, uniqueGameObjectsHash
+from countDistinctStates import StateCoverageAccum, defaultHash, uniqueGameObjectsHashByName, uniqueGameObjectsHashByComponents
 from computeStmtCov import StatementCoverageAccum
 import os.path
 import sys
 
+stateDefs = [defaultHash, uniqueGameObjectsHashByName, uniqueGameObjectsHashByComponents]
+
 subjectDir = sys.argv[1]
+stateDef = stateDefs[int(sys.argv[2])]
+combineMode = sys.argv[3]
+if combineMode != 'avg' and combineMode != 'max':
+    raise Exception('invalid combineMode {}, should be either avg or max'.format(combineMode))
 codeCovSamplingRate = 5
 timeInterval = 10
-maxTime = 300
+maxTime = 600
 
 configs = os.listdir(subjectDir)
 header = ['Time'] + configs
@@ -23,7 +29,7 @@ class RunCursor:
         codeCovSamples.sort(key=self.getCodeCovSampleNum)
         self.codeCovSamples = codeCovSamples
         self.codeCovSamplesPos = 0
-        self.stateCovAccum = StateCoverageAccum(uniqueGameObjectsHash)
+        self.stateCovAccum = StateCoverageAccum(stateDef)
         self.stmtCovAccum = StatementCoverageAccum()
 
     def getStateDumpTime(self, stateDumpPath):
@@ -74,6 +80,12 @@ class ConfigCursor:
             avgStmtCov += cursor.getStmtCoverage()
         return avgStmtCov/len(self.runCursors)
 
+    def getMaxStateCoverage(self):
+        return max([cursor.getStateCoverage() for cursor in self.runCursors.values()])
+
+    def getMaxStmtCoverage(self):
+        return max([cursor.getStmtCoverage() for cursor in self.runCursors.values()])
+
 configCursors = dict()
 for config in os.listdir(subjectDir):
     configDir = os.path.join(subjectDir, config)
@@ -92,8 +104,12 @@ while time <= maxTime:
     for config in configOrder:
         cursor = configCursors[config]
         cursor.accumUntilTime(time)
-        stateCovPoint.append(cursor.getAverageStateCoverage())
-        stmtCovPoint.append(cursor.getAverageStmtCoverage())
+        if combineMode == 'avg':
+            stateCovPoint.append(cursor.getAverageStateCoverage())
+            stmtCovPoint.append(cursor.getAverageStmtCoverage())
+        else:
+            stateCovPoint.append(cursor.getMaxStateCoverage())
+            stmtCovPoint.append(cursor.getMaxStmtCoverage())
     stateCovPoints.append(stateCovPoint)
     stmtCovPoints.append(stmtCovPoint)
     time += timeInterval

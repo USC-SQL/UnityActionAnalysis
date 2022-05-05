@@ -8,7 +8,9 @@ namespace UnitySymexCrawler
 {
     public class CrawlRestarter : MonoBehaviour
     {
+#if !UNITY_AWESOME_RUNNER
         public string GameObjectNameTrigger = "";
+#endif
         public string InitialSceneName = "";
         public TextAsset RecordingFile = null;
         public float RecordingDuration = 5.0f;
@@ -16,10 +18,14 @@ namespace UnitySymexCrawler
 
         void Start()
         {
+            DontDestroyOnLoad(this);
+
+            #if !UNITY_AWESOME_RUNNER
             if (GameObjectNameTrigger.Length == 0)
             {
                 throw new Exception("GameObjectNameTrigger not specified");
             }
+            #endif
 
             if (InitialSceneName.Length == 0)
             {
@@ -37,12 +43,15 @@ namespace UnitySymexCrawler
             }
 
             var canvasGroup = trigger.GetComponent<CanvasGroup>();
-            if (canvasGroup != null)
+            if (canvasGroup != null && (!canvasGroup.isActiveAndEnabled || !canvasGroup.interactable))
             {
-                if (!canvasGroup.interactable)
-                {
-                    return false;
-                }
+                return false;
+            }
+
+            var canvas = trigger.GetComponent<Canvas>();
+            if (canvas != null && !canvas.isActiveAndEnabled)
+            {
+                return false;
             }
 
             return true;
@@ -52,8 +61,14 @@ namespace UnitySymexCrawler
         {
             for (; ;)
             {
+                bool shouldRestart;
+#if UNITY_AWESOME_RUNNER
+                shouldRestart = GameManager.instance.gameRestartedPlayerDied && GameManager.instance.health < 0;
+#else
                 GameObject target = GameObject.Find(GameObjectNameTrigger);
-                if (target != null && IsEnabled(target))
+                shouldRestart = target != null && IsEnabled(target);
+#endif
+                if (shouldRestart)
                 {
                     var crawler = GetComponent<ICrawler>();
                     if (crawler != null)
@@ -61,6 +76,13 @@ namespace UnitySymexCrawler
                         crawler.Pause();
                     }
                     SceneManager.LoadScene(InitialSceneName);
+                    Time.timeScale = 1.0f;
+#if PACMAN_CLONE
+                    GameManager.DestroySelf();
+#elif UNITY_AWESOME_RUNNER
+                    GameManager.instance.gameRestartedPlayerDied = false;
+                    GameManager.instance.health = 3;
+#endif
                     if (RecordingFile != null)
                     {
                         AutomatedRun.RunConfig runConfig = new AutomatedRun.RunConfig();
@@ -70,6 +92,7 @@ namespace UnitySymexCrawler
                         config.loadEntryScene = false;
                         config.stopTime = RecordingDuration;
                         runConfig.automators.Add(config);
+                        CentralAutomationController.Instance.Reset();
                         CentralAutomationController.Instance.Run(runConfig);
                         yield return new WaitForSeconds(RecordingDuration);
                         CentralAutomationController.Instance.Reset();

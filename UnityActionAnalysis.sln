@@ -11,27 +11,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfflineAnalysisTests", "Off
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4D01FB51-269F-4127-99E4-2DACA466073D}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{4D01FB51-269F-4127-99E4-2DACA466073D}.Debug|x64.ActiveCfg = Debug|x64
 		{4D01FB51-269F-4127-99E4-2DACA466073D}.Debug|x64.Build.0 = Debug|x64
-		{4D01FB51-269F-4127-99E4-2DACA466073D}.Release|Any CPU.ActiveCfg = Release|x64
 		{4D01FB51-269F-4127-99E4-2DACA466073D}.Release|x64.ActiveCfg = Release|x64
 		{4D01FB51-269F-4127-99E4-2DACA466073D}.Release|x64.Build.0 = Release|x64
-		{39A7B7F5-A8BA-48E4-848F-B3EFFA92967E}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{39A7B7F5-A8BA-48E4-848F-B3EFFA92967E}.Debug|x64.ActiveCfg = Debug|x64
 		{39A7B7F5-A8BA-48E4-848F-B3EFFA92967E}.Debug|x64.Build.0 = Debug|x64
-		{39A7B7F5-A8BA-48E4-848F-B3EFFA92967E}.Release|Any CPU.ActiveCfg = Release|x64
 		{39A7B7F5-A8BA-48E4-848F-B3EFFA92967E}.Release|x64.ActiveCfg = Release|x64
-		{DC2973F1-F780-41EE-8DFE-63004D68A644}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{DC2973F1-F780-41EE-8DFE-63004D68A644}.Debug|x64.ActiveCfg = Debug|x64
 		{DC2973F1-F780-41EE-8DFE-63004D68A644}.Debug|x64.Build.0 = Debug|x64
-		{DC2973F1-F780-41EE-8DFE-63004D68A644}.Release|Any CPU.ActiveCfg = Release|x64
 		{DC2973F1-F780-41EE-8DFE-63004D68A644}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

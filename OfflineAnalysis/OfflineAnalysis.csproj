@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4D01FB51-269F-4127-99E4-2DACA466073D}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>OfflineAnalysis</RootNamespace>
+    <AssemblyName>OfflineAnalysis</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Analysis\InputBranchAnalysis.cs" />
+    <Compile Include="Analysis\UnityAnalysis.cs" />
+    <Compile Include="CodeGen\PreconditionFuncsGen.cs" />
+    <Compile Include="CodeGen\ResolutionException.cs" />
+    <Compile Include="GameConfiguration.cs" />
+    <Compile Include="InputInstrumentation.cs" />
+    <Compile Include="OfflineAnalysis.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Symex\Configuration.cs" />
+    <Compile Include="Symex\InstructionPointer.cs" />
+    <Compile Include="Symex\MemoryAddress.cs" />
+    <Compile Include="Symex\MethodPool.cs" />
+    <Compile Include="Symex\Operation.cs" />
+    <Compile Include="Symex\Operations\Abort.cs" />
+    <Compile Include="Symex\Operations\Assign.cs" />
+    <Compile Include="Symex\Operations\AssignConstant.cs" />
+    <Compile Include="Symex\Operations\AssignDefaultValue.cs" />
+    <Compile Include="Symex\Operations\AssignFromRef.cs" />
+    <Compile Include="Symex\Operations\AssignNewArray.cs" />
+    <Compile Include="Symex\Operations\AssignNewClassInstance.cs" />
+    <Compile Include="Symex\Operations\AssignSummarizedConstructorResult.cs" />
+    <Compile Include="Symex\Operations\AssignSummarizedInstanceMethodResult.cs" />
+    <Compile Include="Symex\Operations\AssignSummarizedStaticMethodResult.cs" />
+    <Compile Include="Symex\Operations\AssignToRef.cs" />
+    <Compile Include="Symex\Operations\BinaryOp.cs" />
+    <Compile Include="Symex\Operations\BoolNot.cs" />
+    <Compile Include="Symex\Operations\Branch.cs" />
+    <Compile Include="Symex\Operations\Call.cs" />
+    <Compile Include="Symex\Operations\Compare.cs" />
+    <Compile Include="Symex\Operations\Convert.cs" />
+    <Compile Include="Symex\Operations\DebugPrintVariable.cs" />
+    <Compile Include="Symex\Operations\Fetch.cs" />
+    <Compile Include="Symex\Operations\IsOp.cs" />
+    <Compile Include="Symex\Operations\MakeArrayElementRef.cs" />
+    <Compile Include="Symex\Operations\MakeInvokeArgVar.cs" />
+    <Compile Include="Symex\Operations\MakeInvokeReturnVar.cs" />
+    <Compile Include="Symex\Operations\MakeInvokeThisVar.cs" />
+    <Compile Include="Symex\Operations\MakeLocalDestVar.cs" />
+    <Compile Include="Symex\Operations\MakeObjectFieldRef.cs" />
+    <Compile Include="Symex\Operations\MakeRef.cs" />
+    <Compile Include="Symex\Operations\MakeReturnVar.cs" />
+    <Compile Include="Symex\Operations\MakeStaticFieldRef.cs" />
+    <Compile Include="Symex\Operations\MakeTempVar.cs" />
+    <Compile Include="Symex\Operations\ReadArrayLength.cs" />
+    <Compile Include="Symex\Operations\Return.cs" />
+    <Compile Include="Symex\Operations\ValueInLongSet.cs" />
+    <Compile Include="Symex\Reference.cs" />
+    <Compile Include="Symex\ReferenceStorage.cs" />
+    <Compile Include="Symex\SortPool.cs" />
+    <Compile Include="Symex\SymbolicMethodCall.cs" />
+    <Compile Include="Symex\SymexMachine.cs" />
+    <Compile Include="Symex\SymexState.cs" />
+    <Compile Include="Symex\Variable.cs" />
+    <Compile Include="UnityConfiguration.cs" />
+    <Compile Include="Utilities\DatabaseUtil.cs" />
+    <Compile Include="Utilities\Helpers.cs" />
+    <Compile Include="Utilities\PrettyPrint.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CommandLine, Version=2.9.1.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommandLineParser.2.9.1\lib\net461\CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.Decompiler, Version=7.2.1.6856, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <HintPath>..\packages\ICSharpCode.Decompiler.7.2.1.6856\lib\netstandard2.0\ICSharpCode.Decompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Data.Sqlite, Version=6.0.7.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.6.0.7\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Z3, Version=4.10.2.0, Culture=neutral, PublicKeyToken=9c8d792caae602a2, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.Z3.4.10.2\lib\netstandard2.0\Microsoft.Z3.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.11.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.6.1341, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.6\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=2.0.6.1341, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.2.0.6\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3, Version=2.0.6.1341, Culture=neutral, PublicKeyToken=9c301db686d0bd12, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.provider.e_sqlite3.2.0.6\lib\netstandard2.0\SQLitePCLRaw.provider.e_sqlite3.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.CodeDom, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.CodeDom.6.0.0\lib\net461\System.CodeDom.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Common, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.Common.4.3.0\lib\net451\System.Data.Common.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reflection.Metadata.5.0.0\lib\net461\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.AccessControl.5.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.6.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=6.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.6.0.5\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.6\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.6\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.6\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.6\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Z3.4.10.2\build\Microsoft.Z3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Z3.4.10.2\build\Microsoft.Z3.targets'))" />
+    <Error Condition="!Exists('..\packages\System.Text.Json.6.0.5\build\System.Text.Json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Text.Json.6.0.5\build\System.Text.Json.targets'))" />
+  </Target>
+  <Import Project="..\packages\Microsoft.Z3.4.10.2\build\Microsoft.Z3.targets" Condition="Exists('..\packages\Microsoft.Z3.4.10.2\build\Microsoft.Z3.targets')" />
+  <Import Project="..\packages\System.Text.Json.6.0.5\build\System.Text.Json.targets" Condition="Exists('..\packages\System.Text.Json.6.0.5\build\System.Text.Json.targets')" />
+</Project>

@@ -1,5 +1,5 @@
 # Overview
-This repository provides the implementation of our paper "Static Analysis for Automated Identification of Valid Game Actions During Exploration" presented at the Foundations of Digital Games (FDG) 2022 conference. 
+This repository provides the implementation of our paper "Static Analysis for Automated Identification of Valid Game Actions During Exploration" (FDG 2022).
 
 <p align="center">
 <img width="640" height="266" src="https://user-images.githubusercontent.com/61521182/183323280-a66dcf47-6bd7-4a6c-86b1-e30c6133a389.gif">
@@ -75,6 +75,8 @@ Processing TetrisEngine.GameLogic.Update()
 Generating file C:\Users\svolokh\repos\UnityTetris\Assets\Scripts\PreconditionFuncs.cs
 Wrote database C:\Users\svolokh\repos\UnityTetris\paths.db
 ```
+
+The tool should be re-run if there are any changes made to the game code.
 
 ## 4. Copy scripts for identifying and performing actions
 

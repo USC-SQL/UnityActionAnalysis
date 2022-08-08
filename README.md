@@ -90,7 +90,7 @@ In the scene from which you want to begin the automated exploration, create a ne
 
 a) Specify the absolute path to the `paths.db` file created by the offline tool in `Analysis Database Path`.
 
-b) Specify the absolute path to your project's InputManager.asset, this is located in `<root>\ProjectSettings\InputManager.asset`. This is required for looking up the necessary key codes / joystick buttons for simulating the relevant inputs.
+b) Specify the absolute path to your project's InputManager.asset in `Input Manager Settings Path`, this is located in `<root>\ProjectSettings\InputManager.asset`. This is required for looking up the necessary key codes / joystick buttons for simulating the relevant inputs.
 
 c) If your project is not already configured as such, make sure Asset Serialization Mode is set to `Force Text`.
 
@@ -110,5 +110,5 @@ Pull up the offline tool, and this time run `OfflineAnalysis.exe --instrument <c
 ```
 Instrumenting input API calls of C:\Users\svolokh\UnityTetris\Library\ScriptAssemblies\Assembly-CSharp.dll
 ```
-Now the game assembly is modified so that inputs can be simulated directly. Go back to the Unity project, and enable the `Use Instrumentation Input Simulator` option for the Random Agent. Now play the game and it will work the same as before, except now you can freely tab out and do other activities and the exploration will continue.
+Now the game assembly is modified so that inputs can be simulated directly. Go back to the Unity project, and enable the `Use Instrumentation Input Simulator` option for the Random Agent. Now start the game and the agent will run the same as before, except now you can freely tab out and do other activities and the exploration will continue.
 **Important note:** since this is modifying the compiled assembly directly, if any of the game code changes (such that Assembly-CSharp.dll is re-compiled), then the instrumentation will be lost and you will need to re-run the above command.

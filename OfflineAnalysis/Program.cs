@@ -66,7 +66,26 @@ namespace UnityActionAnalysis
                 configAssemblySearchDirectories = new List<string>();
             }
 
-            return new GameConfiguration(configAssemblyFileName, configOutputDatabase, configOutputPrecondFuncs, configAssemblySearchDirectories);
+            ISet<string> configIgnoreNamespaces;
+            if (configJson.TryGetProperty("ignoreNamespaces", out JsonElement ignoreNamespaces))
+            {
+                if (ignoreNamespaces.ValueKind != JsonValueKind.Array)
+                {
+                    throw new Exception("config ignoreNamespaces should be an array");
+                }
+                int numElems = ignoreNamespaces.GetArrayLength();
+                configIgnoreNamespaces = new HashSet<string>();
+                for (int i = 0; i < numElems; ++i)
+                {
+                    JsonElement elem = ignoreNamespaces[i];
+                    configIgnoreNamespaces.Add(elem.GetString());
+                }
+            } else
+            {
+                configIgnoreNamespaces = new HashSet<string>();
+            }
+
+            return new GameConfiguration(configAssemblyFileName, configOutputDatabase, configOutputPrecondFuncs, configAssemblySearchDirectories, configIgnoreNamespaces);
         }
 
         static void Main(string[] args)

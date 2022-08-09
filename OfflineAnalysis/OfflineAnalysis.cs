@@ -50,7 +50,10 @@ namespace UnityActionAnalysis
             var ua = new UnityAnalysis(decompiler);
 
             List<IMethod> targets = new List<IMethod>();
-            foreach (IMethod method in ua.FindMonoBehaviourMethods(m => (m.Name == "Update" || m.Name == "FixedUpdate" || m.Name == "LateUpdate") && m.Parameters.Count == 0))
+            foreach (IMethod method in ua.FindMonoBehaviourMethods(m =>
+                (m.Name == "Update" || m.Name == "FixedUpdate" || m.Name == "LateUpdate") 
+                && m.Parameters.Count == 0
+                && !gameConfig.IsNamespaceIgnored(m.Namespace)))
             {
                 if (ua.DoesInvokeInputAPI(method))
                 {

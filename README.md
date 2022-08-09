@@ -49,7 +49,8 @@ Create a JSON configuration file to specify where the compiled game assembly is 
     "scriptOutputDirectory": "C:\\Users\\svolokh\\repos\\UnityTetris\\Assets\\Scripts",
     "assemblySearchDirectories": [
         "C:\\Program Files\\Unity\\Hub\\Editor\\2020.3.28f1\\Editor\\Data\\Managed\\UnityEngine"
-    ]
+    ],
+    "ignoreNamespaces": []
 }
 ```
 
@@ -60,6 +61,8 @@ b) Specify the directory where to output the analysis database in `databaseOutpu
 c) Specify the folder into which to generate the helper script in `scriptOutputDirectory`, this will usually be `<root>\Assets\Scripts`.
 
 d) Indicate additional directories to search for assemblies in an array for `assemblySearchDirectories`. This will usually just be a single path to the Unity's libraries. If your game is split across multiple assemblies (usually not the case) then indicate the directories of these assemblies as well.
+
+e) Indicate any namespaces to exclude from the analysis in the `ignoreNamespaces` field.
 
 ## 3. Run the offline tool 
 

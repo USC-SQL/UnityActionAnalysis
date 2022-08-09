@@ -9,13 +9,13 @@ namespace UnityActionAnalysis
 {
     public class InputInstrumentation
     {
-        public static bool IsInstrumented(string assemblyFileName)
+        public static bool IsInstrumented(string assemblyFileName, GameConfiguration config)
         {
             using (ModuleDefinition module = ModuleDefinition.ReadModule(assemblyFileName))
             {
                 foreach (TypeDefinition type in module.Types)
                 {
-                    if (type.Namespace == "UnityActionAnalysis")
+                    if (type.Namespace == "UnityActionAnalysis" || config.IsNamespaceIgnored(type.Namespace))
                     {
                         continue;
                     }
@@ -70,7 +70,7 @@ namespace UnityActionAnalysis
         {
             Console.WriteLine("Instrumenting input API calls of " + config.assemblyFileName);
 
-            if (IsInstrumented(config.assemblyFileName))
+            if (IsInstrumented(config.assemblyFileName, config))
             {
                 Console.WriteLine("Assembly is already instrumented, skipping");
                 return;
@@ -94,7 +94,7 @@ namespace UnityActionAnalysis
 
             foreach (TypeDefinition type in module.Types)
             {
-                if (type.Namespace == "UnityActionAnalysis")
+                if (type.Namespace == "UnityActionAnalysis" || config.IsNamespaceIgnored(type.Namespace))
                 {
                     continue;
                 }

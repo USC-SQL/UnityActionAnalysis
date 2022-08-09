@@ -22,7 +22,7 @@ namespace UnityActionAnalysis
             SymexMachine.SetUpGlobals();
 
             var assemblyFileName = gameConfig.assemblyFileName;
-            if (InputInstrumentation.IsInstrumented(assemblyFileName))
+            if (InputInstrumentation.IsInstrumented(assemblyFileName, gameConfig))
             {
                 assemblyFileName = assemblyFileName + ".orig";
                 Console.WriteLine("Info: Assembly is instrumented, using original copy at " + assemblyFileName);

@@ -1,12 +1,6 @@
 # Overview
 This repository provides the implementation of our paper "Static Analysis for Automated Identification of Valid Game Actions During Exploration" (FDG 2022).
 
-<p align="center">
-<img width="640" height="266" src="https://user-images.githubusercontent.com/61521182/183323280-a66dcf47-6bd7-4a6c-86b1-e30c6133a389.gif">
-</p>
-
-(TODO: bibliography information)
-
 In this repository is the implementation of our approach for the Unity game engine. We've provided:
 
 1. The offline analysis tool for computing the possible actions in terms of execution paths through the input-handling code.
@@ -20,13 +14,19 @@ In this repository is the implementation of our approach for the Unity game engi
 - The provided code relies on Windows-specific APIs and therefore will only run on the Windows operating system (either Windows 10 or 11)
 
 # Games
+
 The following open-source Unity games were used in our paper's experiments and give an idea of what kinds of input-handling code our prototype implementation supports:
+
 - [Pacman](https://github.com/vilbeyli/Pacman)
 - [UnityTetris](https://github.com/Mukarillo/UnityTetris)
 - [SMB-clone](https://github.com/linhdvu14/SMB-clone)
 - [science-mario](https://github.com/lucasnfe/science-mario)
 - [Unity-Awesome-Runner](https://github.com/rajandeepsingh13/Unity-Awesome-Runner)
 - [2048-unity](https://github.com/jamiltron/2048-unity)
+
+<p align="center">
+<img width="640" height="266" src="https://user-images.githubusercontent.com/61521182/183323280-a66dcf47-6bd7-4a6c-86b1-e30c6133a389.gif">
+</p>
 
 # Usage
 In this section we provide instructions on how to get the random exploration agent running for a Unity game (along with the associated code for determining/simulating valid game actions).

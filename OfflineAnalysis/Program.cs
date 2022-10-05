@@ -12,16 +12,16 @@ namespace UnityActionAnalysis
 
         public class Options
         {
-            [Option("instrument", 
-                Required = false, 
-                Default = false,
-                HelpText = "Instead of analyzing the assembly, instrument the assembly's invocations to Input APIs to be compatible with InstrInputSimulator")]
-            public bool Instrument { get; set; }
-
             [Value(0, 
                 MetaName = "config", 
                 HelpText = "Path to JSON file describing the input assembly and analysis output paths, see README for configuration format")]
             public string ConfigJsonPath { get; set;  }
+
+            [Option("instrument",
+                Required = false,
+                Default = false,
+                HelpText = "Instead of analyzing the assembly, instrument the assembly's invocations to Input APIs to be compatible with InstrInputSimulator")]
+            public bool Instrument { get; set; }
         }
 
         private static GameConfiguration ParseConfiguration(JsonElement configJson)
@@ -85,7 +85,24 @@ namespace UnityActionAnalysis
                 configIgnoreNamespaces = new HashSet<string>();
             }
 
-            return new GameConfiguration(configAssemblyFileName, configOutputDatabase, configOutputPrecondFuncs, configAssemblySearchDirectories, configIgnoreNamespaces);
+            bool optSkipNonInputBranches = true;
+            bool optSummarizeNonInputMethods = true;
+            if (configJson.TryGetProperty("branchSkipOpt", out JsonElement branchSkipOpt))
+            {
+                optSkipNonInputBranches = branchSkipOpt.GetBoolean();
+            }
+            if (configJson.TryGetProperty("summarizeMethodsOpt", out JsonElement summarizeMethodsOpt))
+            {
+                optSummarizeNonInputMethods = summarizeMethodsOpt.GetBoolean();
+            }
+
+            return new GameConfiguration(
+                configAssemblyFileName, 
+                configOutputDatabase, 
+                configOutputPrecondFuncs, 
+                configAssemblySearchDirectories, 
+                configIgnoreNamespaces,
+                new OptimizationSettings(skipNonInputBranches: optSkipNonInputBranches, summarizeNonInputMethods: optSummarizeNonInputMethods));
         }
 
         static void Main(string[] args)
@@ -102,7 +119,6 @@ namespace UnityActionAnalysis
             }
 
             GameConfiguration config = ParseConfiguration(configJson);
-
             if (opts.Instrument)
             {
                 InputInstrumentation.Run(config);

@@ -85,7 +85,10 @@ namespace UnityActionAnalysis
                     Console.WriteLine("\tAnalyzing branches");
                     InputBranchAnalysis iba = new InputBranchAnalysis(method, methodPool);
                     var ibaResult = iba.Perform();
-                    SymexMachine m = new SymexMachine(decompiler, method, methodPool, new UnityConfiguration(ibaResult));
+                    SymexMachine m = new SymexMachine(decompiler, method, methodPool, 
+                        new UnityConfiguration(ibaResult, 
+                            optSkipNonInputBranches: gameConfig.optimizationSettings.skipNonInputBranches, 
+                            optSummarizeNonInputMethods: gameConfig.optimizationSettings.summarizeNonInputMethods));
                     Console.WriteLine("\tRunning symbolic execution");
                     m.Run();
                     Console.WriteLine("\tWriting path information to database");

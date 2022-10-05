@@ -28,10 +28,14 @@ namespace UnityActionAnalysis
     public class UnityConfiguration : Configuration
     {
         private InputBranchAnalysis.Result ibaResult;
+        private bool optSkipNonInputBranches;
+        private bool optSummarizeNonInputMethods;
 
-        public UnityConfiguration(InputBranchAnalysis.Result ibaResult)
+        public UnityConfiguration(InputBranchAnalysis.Result ibaResult, bool optSkipNonInputBranches = true, bool optSummarizeNonInputMethods = true)
         {
             this.ibaResult = ibaResult;
+            this.optSkipNonInputBranches = optSkipNonInputBranches;
+            this.optSummarizeNonInputMethods = optSummarizeNonInputMethods;
         }
 
         public override bool IsMethodSummarized(IMethod method)
@@ -44,9 +48,15 @@ namespace UnityActionAnalysis
             {
                 return true;
             }
-            ILInstruction entryPoint = SymexMachine.Instance.MethodPool.MethodEntryPoint(method).GetInstruction();
-            InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
-            return !res.mayReturnInput && !res.leadsToInputDepBranchPoint.Contains(entryPoint);
+            if (optSummarizeNonInputMethods)
+            {
+                ILInstruction entryPoint = SymexMachine.Instance.MethodPool.MethodEntryPoint(method).GetInstruction();
+                InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
+                return !res.mayReturnInput && !res.leadsToInputDepBranchPoint.Contains(entryPoint);
+            } else
+            {
+                return false;
+            }
         }
 
         public override void ApplyMethodSummary(IMethod method, List<Expr> arguments, Variable resultVar, SymexState state)
@@ -108,27 +118,37 @@ namespace UnityActionAnalysis
 
         public override bool ShouldSkipBranchCase(BranchCase branchCase, ILInstruction branchInst, SymexState state)
         {
-            IMethod method = branchCase.IP.GetCurrentMethod();
-            InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
-            if (res.inputDepBranchPoints.Contains(branchInst))
+            if (optSkipNonInputBranches)
+            {
+                IMethod method = branchCase.IP.GetCurrentMethod();
+                InputBranchAnalysis.MethodAnalysisResult res = ibaResult.methodResults[method];
+                if (res.inputDepBranchPoints.Contains(branchInst))
+                {
+                    return false;
+                }
+                if (state.frameStack.Count > 0)
+                {
+                    foreach (FrameStackElement fse in state.frameStack)
+                    {
+#if UAA_OLD_SKIP_BEHAVIOR
+                        var callInst = fse.opQueue.Peek().Instruction;
+#else
+                        var callInst = Helpers.FindEnclosingStatement(fse.opQueue.Peek().Instruction);
+#endif
+                        var m = Helpers.GetInstructionFunction(callInst).Method;
+                        var mRes = ibaResult.methodResults[m];
+                        if (mRes.leadsToInputDepBranchPoint.Contains(callInst))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                ILInstruction target = branchCase.IP.GetInstruction();
+                return !res.leadsToInputDepBranchPoint.Contains(target);
+            } else
             {
                 return false;
             }
-            if (state.frameStack.Count > 0)
-            {
-                foreach (FrameStackElement fse in state.frameStack)
-                {
-                    var callInst = Helpers.FindEnclosingStatement(fse.opQueue.Peek().Instruction);
-                    var m = Helpers.GetInstructionFunction(callInst).Method;
-                    var mRes = ibaResult.methodResults[m];
-                    if (mRes.leadsToInputDepBranchPoint.Contains(callInst))
-                    {
-                        return false;
-                    }
-                }
-            }
-            ILInstruction target = branchCase.IP.GetInstruction();
-            return !res.leadsToInputDepBranchPoint.Contains(target);
         }
 
         public override object NewStateCustomData()

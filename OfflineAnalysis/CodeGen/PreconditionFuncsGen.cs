@@ -99,7 +99,7 @@ namespace UnityActionAnalysis
                 CodeExpression[] paramTypes = new CodeExpression[method.Parameters.Count];
                 for (int idx = 0, n = method.Parameters.Count; idx < n; ++idx)
                 {
-                    paramTypes[idx] = new CodeTypeOfExpression(method.Parameters[i].Type.FullName);
+                    paramTypes[idx] = new CodeTypeOfExpression(method.Parameters[idx].Type.FullName);
                 }
 
                 CodeStatement assignStmt =

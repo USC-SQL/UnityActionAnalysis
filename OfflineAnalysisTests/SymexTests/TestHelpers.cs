@@ -19,7 +19,7 @@ namespace UnityActionAnalysis.Tests
         public static SymexMachine CreateMachine(string entryPointClassFullName, string entryPointMethodName, Configuration config)
         {
             SymexMachine.SetUpGlobals();
-            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\x64\Debug\OfflineAnalysisTestCases.dll";
+            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\Debug\OfflineAnalysisTestCases.dll";
             var peFile = new PEFile(assemblyPath,
                 new FileStream(assemblyPath, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);

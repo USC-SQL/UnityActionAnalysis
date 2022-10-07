@@ -15,7 +15,7 @@ namespace UnityActionAnalysis.Tests
 
         public static InputBranchAnalysis CreateInputBranchAnalysis(string entryPointClassFullName, string entryPointMethodName)
         {
-            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\x64\Debug\OfflineAnalysisTestCases.dll";
+            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\Debug\OfflineAnalysisTestCases.dll";
             var peFile = new PEFile(assemblyPath,
                 new FileStream(assemblyPath, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);

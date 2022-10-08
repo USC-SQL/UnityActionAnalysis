@@ -15,11 +15,11 @@ namespace UnityActionAnalysis.Tests
 
         public static InputBranchAnalysis CreateInputBranchAnalysis(string entryPointClassFullName, string entryPointMethodName)
         {
-            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\Debug\OfflineAnalysisTestCases.dll";
+            string assemblyPath = TestHelpers.GetTestCasesAssemblyPath();
             var peFile = new PEFile(assemblyPath,
                 new FileStream(assemblyPath, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);
-            var assemblyResolver = new UniversalAssemblyResolver(assemblyPath, true,
+            var assemblyResolver = new UniversalAssemblyResolver(assemblyPath, false,
                 peFile.DetectTargetFrameworkId(),
                 peFile.DetectRuntimePack(),
                 PEStreamOptions.PrefetchMetadata,

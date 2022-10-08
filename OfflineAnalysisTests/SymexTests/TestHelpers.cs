@@ -16,14 +16,19 @@ namespace UnityActionAnalysis.Tests
 {
     public class TestHelpers
     {
+        public static string GetTestCasesAssemblyPath()
+        {
+            return @"../../../../../OfflineAnalysisTestCases/bin/x64/Debug/net6.0/OfflineAnalysisTestCases.dll";
+        }
+
         public static SymexMachine CreateMachine(string entryPointClassFullName, string entryPointMethodName, Configuration config)
         {
             SymexMachine.SetUpGlobals();
-            string assemblyPath = @"..\..\..\..\OfflineAnalysisTestCases\bin\Debug\OfflineAnalysisTestCases.dll";
+            string assemblyPath = GetTestCasesAssemblyPath();
             var peFile = new PEFile(assemblyPath,
                 new FileStream(assemblyPath, FileMode.Open, FileAccess.Read),
                 streamOptions: PEStreamOptions.PrefetchEntireImage);
-            var assemblyResolver = new UniversalAssemblyResolver(assemblyPath, true,
+            var assemblyResolver = new UniversalAssemblyResolver(assemblyPath, false,
                 peFile.DetectTargetFrameworkId(),
                 peFile.DetectRuntimePack(),
                 PEStreamOptions.PrefetchMetadata,

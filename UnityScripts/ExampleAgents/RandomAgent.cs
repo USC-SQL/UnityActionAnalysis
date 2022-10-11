@@ -12,7 +12,6 @@ namespace UnityActionAnalysis
         public string InputManagerSettingsPath;
 
         public float ActionInterval = 0.1f;
-        public bool UseInstrumentationInputSimulator = false;
 
         private ActionManager actionManager;
         private InputSimulator inputSim;
@@ -35,15 +34,7 @@ namespace UnityActionAnalysis
             Debug.Log(actionManager.ActionCount + " game actions");
 
             InputManagerSettings inputManagerSettings = new InputManagerSettings(InputManagerSettingsPath, InputManagerMode.KEYBOARD);
-
-            if (UseInstrumentationInputSimulator)
-            {
-                // Can use InstrInputSimulator instead of KeyboardInputSimulator to simulate inputs without simulating actual keyboard events (see README)
-                inputSim = new InstrInputSimulator(inputManagerSettings, this);
-            } else
-            {
-                inputSim = new KeyboardInputSimulator(inputManagerSettings, this);
-            }
+            inputSim = new InstrInputSimulator(inputManagerSettings, this);
 
             StartCoroutine("AgentLoop");
         }

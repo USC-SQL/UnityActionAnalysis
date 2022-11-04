@@ -72,7 +72,7 @@ namespace UnityActionAnalysis
                         }
                     }
                 }
-                yield return new WaitForSecondsRealtime(ActionInterval);
+                yield return new WaitForSeconds(ActionInterval);
             }
         }
     }

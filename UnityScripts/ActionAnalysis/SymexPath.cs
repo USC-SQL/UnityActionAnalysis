@@ -48,12 +48,14 @@ namespace UnityActionAnalysis
                         {
                             compiled = ExprCompile.ResolveValue(arg, this);
                         }
+#if LOG_RESOLUTION_WARNINGS
                         catch (ResolutionException e)
                         {
-#if LOG_RESOLUTION_WARNINGS
                             Debug.LogWarning("failed to resolve value '" + arg + "' due to: " + e.Message);
-#endif
                         }
+#else
+                        catch (ResolutionException) { }
+#endif
                         args.Add(compiled);
                     }
                     inputArgs.Add(symcallId, args);
@@ -64,12 +66,14 @@ namespace UnityActionAnalysis
                         var fn = ExprCompile.ResolveVariable(variable.Name.ToString(), this);
                         nonInputVars.Add(variable, fn);
                     }
+#if LOG_RESOLUTION_WARNINGS
                     catch (ResolutionException e)
                     {
-#if LOG_RESOLUTION_WARNINGS
                         Debug.LogWarning("failed to resolve variable '" + variable + "' due to: " + e.Message);
-#endif
                     }
+#else
+                    catch (ResolutionException) { }
+#endif
                 }
             }
 
@@ -237,14 +241,20 @@ namespace UnityActionAnalysis
                     object value = fn(ctx);
                     var assertion = z3.MkEq(z3.MkConst(v.Name, v.Range), SymexHelpers.ToZ3Expr(value, v.Range, z3));
                     solver.Assert(assertion);
-                } catch (ResolutionException e)
-                {
+                }
 #if LOG_RESOLUTION_WARNINGS
+                catch (ResolutionException e)
+                {
                     Debug.LogWarning("failed to evaluate variable " + v.Name.ToString() + " due to: " + e.Message);
-#endif
                     result = null;
                     return false;
                 }
+#else
+                catch (ResolutionException) {
+                    result = null;
+                    return false;
+                }
+#endif
             }
             if (solver.Check() == Status.SATISFIABLE)
             {
@@ -252,15 +262,23 @@ namespace UnityActionAnalysis
                 {
                     ModelToInputConditions(solver.Model, ctx, z3, out result);
                     return true;
-                } catch (ResolutionException e)
-                {
+                }
 #if LOG_RESOLUTION_WARNINGS
+                catch (ResolutionException e)
+                {
                     Debug.LogWarning("failed to resolve input variables (action will have no effect): " + e.Message);
-#endif
                     result = null;
                     return false;
                 }
-            } else
+#else
+                catch (ResolutionException)
+                {
+                    result = null;
+                    return false;
+                }
+#endif
+            }
+            else
             {
                 result = null;
                 return false;

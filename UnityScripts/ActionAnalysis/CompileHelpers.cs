@@ -9,7 +9,7 @@ namespace UnityActionAnalysis
     public static class CompileHelpers
     {
 
-        public static bool Equals(object x, object y)
+        public static new bool Equals(object x, object y)
         {
             object yc = ChangeType(y, x.GetType());
             return x.Equals(yc);

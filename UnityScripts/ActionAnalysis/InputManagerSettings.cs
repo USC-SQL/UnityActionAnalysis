@@ -79,7 +79,7 @@ namespace UnityActionAnalysis
                 try
                 {
                     data = deserializer.Deserialize<InputManagerParsed>(sb.ToString()).InputManager;
-                } catch (YamlDotNet.Core.SemanticErrorException e)
+                } catch (YamlDotNet.Core.SemanticErrorException)
                 {
                     throw new Exception("Could not parse InputManager.asset; make sure asset serialization mode is set to \"Force Text\"");
                 }
